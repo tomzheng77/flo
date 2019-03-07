@@ -4,6 +4,7 @@
     [sayaka.subprocess :as s]
     [sayaka.proxy :as proxy]
     [sayaka.http-server :as http]
+    [sayaka.restrictions :as r]
     [taoensso.timbre :as timbre
      :refer [log trace debug info warn error fatal report
              logf tracef debugf infof warnf errorf fatalf reportf

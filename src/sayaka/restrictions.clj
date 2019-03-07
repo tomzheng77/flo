@@ -57,6 +57,13 @@
   (doseq [dir (list-files c/user-projects)] (user-755 dir))
   (doseq [dir (list-files c/user-programs)] (root-755 dir)))
 
+(defn recover
+  "grants the user all access in order to recover
+  from a catastrophic failure"
+  []
+  (add-wheel)
+  (clear-all-restrictions))
+
 (defn restrict-dirs
   "restricts and unlocks dirs using a predicate on directory name"
   [pred]

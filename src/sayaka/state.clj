@@ -1,7 +1,8 @@
 (ns sayaka.state
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [sayaka.constants :as c])
+            [sayaka.constants :as c]
+            [sayaka.restrictions :as r])
   (:import (java.io PushbackReader)
            (org.apache.commons.io FileUtils)))
 
@@ -9,11 +10,17 @@
   {:root           true
    :queue          []
    :proxy-settings {:transparent true}
-   :last           nil})
+   :last           nil
+   :invalid        false})
 
 (defn read-state []
-  (with-open [r (io/reader c/primary-db :encoding c/encoding)]
-    (edn/read (new PushbackReader r))))
+  (try
+    (with-open [r (io/reader c/primary-db :encoding c/encoding)]
+      (edn/read (new PushbackReader r)))
+    (catch Exception e
+      (do
+        (.printStackTrace e)
+        (r/recover)))))
 
 (defn write-state [state]
   (FileUtils/writeStringToFile
