@@ -29,19 +29,17 @@
 (def orbit-address "103.29.84.69")
 (def orbit-port 9002)
 
-(def monika-user "tomzheng")
-(def monika-user-projects (str "/home/" monika-user "/Documents/Projects"))
-(def monika-user-programs (str "/home/" monika-user "/Documents/Programs"))
-(def monika-user-browsers (str "/home/" monika-user "/Documents/Browsers"))
+(def user "tomzheng")
+(def user-projects (str "/home/" user "/Documents/Projects"))
+(def user-programs (str "/home/" user "/Documents/Programs"))
+(def user-browsers (str "/home/" user "/Documents/Browsers"))
 (def processes-dir "/proc")
 
-(def monika-home (System/getenv "MONIKA_HOME"))
-(assert (not= monika-home nil) "MONIKA_HOME not found, please check /etc/environment")
+(def home (str "/home/" user "/sayaka"))
+(def primary-log (str home "/sayaka.log"))
+(def primary-db (str home "/sayaka.edn"))
 
-(def primary-log (str monika-home "/monika.log"))
-(def primary-db (str monika-home "/monika.edn"))
-
-(def certificate-root (str monika-home "/certs"))
+(def certificate-root (str home "/certs"))
 (def certificate (str certificate-root "/certificate.cer"))
 (def private-key (str certificate-root "/private-key.pem"))
 (def key-store (str certificate-root "/private-key.pem"))

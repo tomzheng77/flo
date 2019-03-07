@@ -78,11 +78,11 @@
                 :stderr (slurp stderr-bytes)}))))))))
 
 (defn send-notify
-  "sends a notification to the monika user via the message bus.
+  "sends a notification to the user via the message bus.
   dunst needs to be installed first"
   ([title] (send-notify title ""))
   ([title message]
-   (let [user-id (read-string (str/trim (:stdout (call "id" "-u" c/monika-user))))]
-     (call "sudo" "-u" c/monika-user "DISPLAY=${display:1:-1}"
+   (let [user-id (read-string (str/trim (:stdout (call "id" "-u" c/user))))]
+     (call "sudo" "-u" c/user "DISPLAY=${display:1:-1}"
            (str "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" user-id "/bus")
            "notify-send" title message))))

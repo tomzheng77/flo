@@ -22,21 +22,21 @@
       (not-empty (s/find-executable cmd))
       (str "executable '" cmd "' cannot be located"))))
 
-(defn monika-client [])
-(defn monika-server []
+(defn sayaka-client [])
+(defn sayaka-server []
   (info "M.O.N.I.K.A starting")
   (check-environment)
   (proxy/start-server)
-  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/monika-user "--dport" "80" "-j" "REJECT")
-  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/monika-user "--dport" "443" "-j" "REJECT")
+  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
+  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT")
   (info "M.O.N.I.K.A started"))
 
-(defn monika-orbit [])
+(defn sayaka-orbit [])
 
 (defn -main
-  ([] monika-client)
+  ([] sayaka-client)
   ([mode]
    (case mode
-     "--server" (monika-server)
-     "--client" (monika-client)
-     "--orbit" (monika-orbit))))
+     "--server" (sayaka-server)
+     "--client" (sayaka-client)
+     "--orbit" (sayaka-orbit))))
