@@ -2,7 +2,11 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [sayaka.constants :as c]
-            [sayaka.restrictions :as r])
+            [sayaka.restrictions :as r]
+            [taoensso.timbre :as timbre
+             :refer [log trace debug info warn error fatal report
+                     logf tracef debugf infof warnf errorf fatalf reportf
+                     spy get-env]])
   (:import (java.io PushbackReader)
            (org.apache.commons.io FileUtils)))
 
@@ -18,9 +22,7 @@
     (with-open [r (io/reader c/primary-db :encoding c/encoding)]
       (edn/read (new PushbackReader r)))
     (catch Exception e
-      (do
-        (.printStackTrace e)
-        (r/recover)))))
+      (do (fatal e) (r/recover)))))
 
 (defn write-state [state]
   (FileUtils/writeStringToFile
