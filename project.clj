@@ -10,6 +10,9 @@
                  [org.apache.commons/commons-exec "1.3"]
                  [net.lightbody.bmp/mitm "2.1.5"]
                  [org.clojure/test.check "0.10.0-alpha3"]
-                 [commons-io/commons-io "2.6"]]
+                 [commons-io/commons-io "2.6"]
+                 [http-kit "2.3.0"]
+                 [clj-time "0.15.0"]
+                 [compojure "1.6.1"]]
   :main ^:skip-aot monika-clj.core
   :profiles {:uberjar {:aot :all}})
