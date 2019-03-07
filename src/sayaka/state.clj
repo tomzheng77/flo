@@ -6,7 +6,8 @@
             [taoensso.timbre :as timbre
              :refer [log trace debug info warn error fatal report
                      logf tracef debugf infof warnf errorf fatalf reportf
-                     spy get-env]])
+                     spy get-env]]
+            [sayaka.utils :as u])
   (:import (java.io PushbackReader)
            (org.apache.commons.io FileUtils)))
 
@@ -17,14 +18,17 @@
    :last           nil
    :invalid        false})
 
-(defn read-state []
+(defn read-state
+  []
   (try
     (with-open [r (io/reader c/primary-db :encoding c/encoding)]
       (edn/read (new PushbackReader r)))
     (catch Exception e
       (do (fatal e) (r/recover)))))
 
-(defn write-state [state]
+(defn write-state
+  [state]
+  (u/mkdirs c/home)
   (FileUtils/writeStringToFile
     (io/file c/primary-db)
     (pr-str state)
