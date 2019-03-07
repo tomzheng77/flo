@@ -1,4 +1,4 @@
-(ns monika-clj.constants
+(ns sayaka.constants
   (:require [clojure.string :as str])
   (:require [clojure.set :as set :refer [union]])
   (:import (java.io File)

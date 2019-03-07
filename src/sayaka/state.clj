@@ -1,7 +1,7 @@
-(ns monika-clj.state
+(ns sayaka.state
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [monika-clj.constants :as c])
+            [sayaka.constants :as c])
   (:import (java.io PushbackReader)
            (org.apache.commons.io FileUtils)))
 

@@ -14,5 +14,5 @@
                  [http-kit "2.3.0"]
                  [clj-time "0.15.0"]
                  [compojure "1.6.1"]]
-  :main ^:skip-aot monika-clj.core
+  :main ^:skip-aot sayaka.core
   :profiles {:uberjar {:aot :all}})

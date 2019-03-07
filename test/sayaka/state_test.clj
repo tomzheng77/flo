@@ -1,4 +1,4 @@
-(ns monika-clj.state-test
+(sayaka.state-test
   (:require [clojure.test :refer :all]))
 
 (require '[clojure.test.check :as tc])

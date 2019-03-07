@@ -1,6 +1,6 @@
-(ns monika-clj.subprocess
+(ns sayaka.subprocess
   (:require
-    [monika-clj.constants :as c]
+    [sayaka.constants :as c]
     [taoensso.timbre :as timbre
      :refer [log trace debug info warn error fatal report
              logf tracef debugf infof warnf errorf fatalf reportf

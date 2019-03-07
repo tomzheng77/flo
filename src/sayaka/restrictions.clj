@@ -1,7 +1,7 @@
-(ns monika-clj.restrictions
+(ns sayaka.restrictions
   (:require [clojure.java.io :as io]
-            [monika-clj.constants :as c]
-            [monika-clj.subprocess :as s]
+            [sayaka.constants :as c]
+            [sayaka.subprocess :as s]
             [clojure.string :as str])
   (:import (java.io File)))
 

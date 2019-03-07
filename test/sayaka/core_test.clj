@@ -1,6 +1,6 @@
-(ns monika-clj.core-test
+(ns sayaka.core-test
   (:require [clojure.test :refer :all]
-            [monika-clj.core :refer :all]))
+            [sayaka.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

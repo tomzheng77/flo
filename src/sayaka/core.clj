@@ -1,8 +1,9 @@
-(ns monika-clj.core
+(ns sayaka.core
   (:require
-    [monika-clj.constants :as c]
-    [monika-clj.subprocess :as s]
-    [monika-clj.proxy :as proxy]
+    [sayaka.constants :as c]
+    [sayaka.subprocess :as s]
+    [sayaka.proxy :as proxy]
+    [sayaka.http-server :as http]
     [taoensso.timbre :as timbre
      :refer [log trace debug info warn error fatal report
              logf tracef debugf infof warnf errorf fatalf reportf

@@ -1,5 +1,5 @@
-(ns monika-clj.proxy
-  (:require [monika-clj.constants :as c]
+(ns sayaka.proxy
+  (:require [sayaka.constants :as c]
             [clojure.java.io :as io]
             [clojure.string :as str])
   (:import (org.littleshoot.proxy.impl DefaultHttpProxyServer)
