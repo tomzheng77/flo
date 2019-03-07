@@ -27,6 +27,7 @@
   (info "S.A.Y.A.K.A starting")
   (check-environment)
   (proxy/start-server)
+  (http/start-server)
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT")
   (info "S.A.Y.A.K.A started"))
