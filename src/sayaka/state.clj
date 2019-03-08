@@ -20,7 +20,7 @@
   {:next     []
    :previous nil})
 
-(defn is-super
+(defn is-idle
   [state]
   (or (nil? (:last state))
       (= (-> state :last :action) "unlock")))

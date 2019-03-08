@@ -3,7 +3,7 @@
             [sayaka.constants :as c]
             [sayaka.subprocess :as s]
             [clojure.string :as str])
-  (:import (java.io File)))
+  (:use [sayaka.utils]))
 
 (defn force-logout []
   (s/call "killall" "-u" c/user "i3")
@@ -13,7 +13,7 @@
   ([dir] (kill-within dir (s/process-report)))
   ([dir report]
    (doseq [process report]
-     (if (str/starts-with? (:exe process) (.getCanonicalPath dir))
+     (if (str/starts-with? (:exe process) (canonical-path dir))
        (s/call "kill" (:pid process))))))
 
 (defn list-files [path] (vec (.listFiles (io/file path))))
@@ -37,17 +37,17 @@
 (defn add-wheel [] (change-groups (fn [groups] (conj groups "wheel"))))
 (defn remove-wheel [] (change-groups (fn [groups] (disj groups "wheel"))))
 
-(defn user-755 [^File file]
-  (s/call "chown" (str c/user ":" c/user) (.getCanonicalPath file))
-  (s/call "chmod" "755" (.getCanonicalPath file)))
+(defn user-755 [file]
+  (s/call "chown" (str c/user ":" c/user) (canonical-path file))
+  (s/call "chmod" "755" (canonical-path file)))
 
 (defn root-755 [file]
-  (s/call "chown" "root:root" (.getCanonicalPath file))
-  (s/call "chmod" "755" (.getCanonicalPath file)))
+  (s/call "chown" "root:root" (canonical-path file))
+  (s/call "chmod" "755" (canonical-path file)))
 
 (defn root-700 [file]
-  (s/call "chown" "root:root" (.getCanonicalPath file))
-  (s/call "chmod" "700" (.getCanonicalPath file)))
+  (s/call "chown" "root:root" (canonical-path file))
+  (s/call "chmod" "700" (canonical-path file)))
 
 (defn disable-login [] (s/call "passwd" "-l" c/user))
 (defn enable-login [] (s/call "passwd" "-l" c/user))
@@ -67,6 +67,8 @@
 (defn restrict-dirs
   "restricts and unlocks dirs using a predicate on directory name"
   [allow-name]
+  (root-755 c/user-projects)
+  (root-755 c/user-programs)
   (let [report (s/process-report)]
     (do
       (doseq [dir (list-files c/user-projects)]

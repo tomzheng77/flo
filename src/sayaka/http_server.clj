@@ -17,12 +17,12 @@
 
 (defn add-wheel
   [args]
-  (if (-> args :state st/is-super)
+  (if (-> args :state st/is-idle)
     (do (r/add-wheel) "user has been added to the wheel group")))
 
 (defn remove-wheel
   [args]
-  (if (-> args :state st/is-super)
+  (if (-> args :state st/is-idle)
     (do (r/remove-wheel) "user has been removed from the wheel group")))
 
 (defn restart-proxy
