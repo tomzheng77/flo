@@ -12,11 +12,13 @@
            (org.apache.commons.io FileUtils)))
 
 (def initial-state
-  {:root           true
-   :queue          []
+  {:queue          []
    :proxy-settings {:transparent true}
-   :last           nil
-   :invalid        false})
+   :last           nil})
+
+(defn is-super [state]
+  (or (nil? (:last state))
+      (= (-> state :last :action) "unlock")))
 
 (defn read-state
   []

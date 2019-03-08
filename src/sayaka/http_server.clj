@@ -1,44 +1,43 @@
 (ns sayaka.http-server
   (:require [org.httpkit.server :refer [run-server]]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [sayaka.state :as st]
+            [sayaka.proxy :as proxy]
+            [sayaka.restrictions :as r]))
 
 (defn between [args]
-  (:start-time)
-  (:end-time)
-  (:script)
-  (:script-args))
+  (:start-time args)
+  (:end-time args)
+  (:action args)
+  (:action-args args))
 
-(defn status [args]
-  (:start-time)
-  (:end-time)
-  (:script)
-  (:script-args))
+(defn status
+  [args]
+  (pr-str (:state args)))
 
-(defn add-wheel [args]
-  (:start-time)
-  (:end-time)
-  (:script)
-  (:script-args))
+(defn add-wheel
+  [args]
+  (if (-> args :state st/is-super)
+    (do (r/add-wheel) "user has been added to the wheel group")))
 
-(defn remove-wheel [args]
-  (:start-time)
-  (:end-time)
-  (:script)
-  (:script-args))
+(defn remove-wheel
+  [args]
+  (if (-> args :state st/is-super)
+    (do (r/remove-wheel) "user has been removed from the wheel group")))
 
-(defn restart-proxy [args]
-  (:start-time)
-  (:end-time)
-  (:script)
-  (:script-args))
+(defn restart-proxy
+  [args]
+  (proxy/start-server (-> args :state :proxy-settings))
+  "the proxy has been restarted")
 
 (defn run-script [args]
-  (case (:script args)
-    "between" (between args)
-    "status" (status args)
-    "add-wheel" (add-wheel args)
-    "remove-wheel" (remove-wheel args)
-    "restart-proxy" (restart-proxy args)))
+  (let [args-ws (assoc args :state (st/read-state))]
+    (case (:script args)
+      "between" (between args-ws)
+      "status" (status args-ws)
+      "add-wheel" (add-wheel args-ws)
+      "remove-wheel" (remove-wheel args-ws)
+      "restart-proxy" (restart-proxy args-ws))))
 
 (defn serve [req]
   (let [signals (read-string (:body req))]
