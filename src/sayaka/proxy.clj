@@ -12,7 +12,7 @@
 (def default-settings {})
 (def example-settings {:must-not-contain-ctype #{"text/css"}
                        :must-start-with        #{"www.mvnrepository.com"}
-                       :must-contain           #{"clojure"}
+                       :must-contain           "clojure"
                        :must-not-contain       #{"anime"}})
 
 (defn no-restrictions [settings]
@@ -60,6 +60,11 @@
   [^HttpMessage response]
   (HttpHeaders/getHeader response "Content-Type"))
 
+(defn set-of [item-or-coll]
+  (if (coll? item-or-coll)
+    (set item-or-coll)
+    #{item-or-coll}))
+
 (defn should-allow
   "tests whether the HTTP transaction should be allowed."
   ([request response settings]
@@ -70,12 +75,12 @@
   ([url content-type settings _]
    (true?
      (and
-       (not-any? (fn [ctype] (str/includes? ctype content-type)) (:must-not-contain-ctype settings))
-       (not-any? (partial str/includes? url) (:must-not-contain settings))
+       (not-any? (fn [ctype] (str/includes? ctype content-type)) (set-of (:must-not-contain-ctype settings)))
+       (not-any? (partial str/includes? url) (set-of (:must-not-contain settings)))
        (or
          (and (nil? (:must-start-with settings)) (nil? (:must-contain settings)))
-         (some (partial str/starts-with? url) (:must-start-with settings))
-         (some (partial str/includes? url) (:must-contain settings)))))))
+         (some (partial str/starts-with? url) (set-of (:must-start-with settings)))
+         (some (partial str/includes? url) (set-of (:must-contain settings))))))))
 
 (def server-lock (new Object))
 (def server-atom (atom nil))
