@@ -10,7 +10,7 @@
            (java.util.regex Pattern)))
 
 (def default-settings {:transparent true})
-(def example-settings {:transparent false :allow #{"www.google.com" "www.sbt.com"} :deny #{"www.youtube.com"}})
+(def example-settings {:transparent false :allow #{"www.google.com" "www.sbt.com"} :deny #{"www.youtube.com" #"anime"}})
 
 (defn mkdirs [file-path] (.mkdirs (io/file file-path)))
 
