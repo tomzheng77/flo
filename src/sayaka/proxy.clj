@@ -10,7 +10,7 @@
            (java.util.regex Pattern)))
 
 (def default-settings {})
-(def example-settings {:must-not-contain-ctype #{"text/html"}
+(def example-settings {:must-not-contain-ctype #{"text/css"}
                        :must-start-with        #{"www.mvnrepository.com"}
                        :must-contain           #{"clojure"}
                        :must-not-contain       #{"anime"}})
@@ -60,25 +60,22 @@
   [^HttpMessage response]
   (HttpHeaders/getHeader response "Content-Type"))
 
-(defn matches
-  "tests whether the text can be matched by the pattern.
-  pattern can be either string or regex.Pattern."
-  [text pattern]
-  (if (instance? Pattern pattern)
-    (re-find pattern text)
-    (str/starts-with? text pattern)))
-
 (defn should-allow
-  "tests whether the HTTP transaction should be allowed.
-  depends on the value of settings-atom"
-  [request response settings]
-  (let [url (find-url request)
-        content-type (find-content-type response)]
-    (or
-      (not (str/includes? "text/html" content-type))
-      (and
-        (some (partial matches url) (:allow-prefix settings))
-        (not (some (partial matches url) (:deny-substr settings)))))))
+  "tests whether the HTTP transaction should be allowed."
+  ([request response settings]
+   (should-allow
+     (find-url request)
+     (find-content-type response)
+     settings nil))
+  ([url content-type settings _]
+   (true?
+     (and
+       (not-any? (fn [ctype] (str/includes? ctype content-type)) (:must-not-contain-ctype settings))
+       (not-any? (partial str/includes? url) (:must-not-contain settings))
+       (or
+         (and (nil? (:must-start-with settings)) (nil? (:must-contain settings)))
+         (some (partial str/starts-with? url) (:must-start-with settings))
+         (some (partial str/includes? url) (:must-contain settings)))))))
 
 (def server-lock (new Object))
 (def server-atom (atom nil))
