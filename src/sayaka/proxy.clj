@@ -9,10 +9,17 @@
            (io.netty.handler.codec.http HttpResponse DefaultFullHttpResponse HttpVersion HttpResponseStatus HttpHeaders HttpMessage HttpRequest)
            (java.util.regex Pattern)))
 
-(def default-settings {:transparent true})
-(def example-settings {:transparent false
-                       :allow-prefix #{"www.google.com" "www.sbt.com"}
-                       :deny-substr #{"www.youtube.com" "anime"}})
+(def default-settings {})
+(def example-settings {:must-not-contain-ctype #{"text/html"}
+                       :must-start-with        #{"www.mvnrepository.com"}
+                       :must-contain           #{"clojure"}
+                       :must-not-contain       #{"anime"}})
+
+(defn no-restrictions [settings]
+  (and (nil? (:must-not-contain-ctype settings))
+       (nil? (:must-start-with settings))
+       (nil? (:must-contain settings))
+       (nil? (:must-not-contain settings))))
 
 (defn mkdirs [file-path] (.mkdirs (io/file file-path)))
 
@@ -31,17 +38,22 @@
         (.savePrivateKeyAsPemFile (io/file c/private-key) "123456")
         (.saveRootCertificateAndKey "PKCS12" (io/file c/key-store) "private-key" "123456"))))
 
+(defn take-before
+  [str char]
+  (let [index (str/index-of str char)]
+    (if (nil? index) str (subs str 0 index))))
+
 (defn find-url
   "finds the destination URL of a HttpRequest"
-  [^HttpRequest request]
-  (let [host (HttpHeaders/getHeader request "Host")
-        uri (.getUri request)
-        http-regex #"^https?://"]
-    (str/replace-first
-      (if (re-find http-regex uri)
-        uri
-        (str host uri))
-      http-regex "")))
+  ([^HttpRequest request]
+   (find-url
+     (HttpHeaders/getHeader request "Host")
+     (.getUri request)))
+  ([host uri]
+   (let [prefix #"^https?://"]
+     (-> (if (re-find prefix uri) uri (str host uri))
+         (str/replace-first prefix "")
+         (take-before "?")))))
 
 (defn find-content-type
   "finds the content type of a request or response"
@@ -66,7 +78,7 @@
       (not (str/includes? "text/html" content-type))
       (and
         (some (partial matches url) (:allow-prefix settings))
-        (some (partial matches url) (:deny-substr settings))))))
+        (not (some (partial matches url) (:deny-substr settings)))))))
 
 (def server-lock (new Object))
 (def server-atom (atom nil))
@@ -124,6 +136,6 @@
        (if @server-atom (.stop @server-atom))
        (reset! settings-atom settings)
        (reset! server-atom
-               (if (:transparent settings)
+               (if (no-restrictions settings)
                  (start-server-mitm-off)
                  (start-server-mitm-on)))))))
