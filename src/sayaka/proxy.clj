@@ -10,7 +10,9 @@
            (java.util.regex Pattern)))
 
 (def default-settings {:transparent true})
-(def example-settings {:transparent false :allow #{"www.google.com" "www.sbt.com"} :deny #{"www.youtube.com" #"anime"}})
+(def example-settings {:transparent false
+                       :allow-prefix #{"www.google.com" "www.sbt.com"}
+                       :deny-substr #{"www.youtube.com" "anime"}})
 
 (defn mkdirs [file-path] (.mkdirs (io/file file-path)))
 
@@ -63,8 +65,8 @@
     (or
       (not (str/includes? "text/html" content-type))
       (and
-        (some (partial matches url) (:allow settings))
-        (some (partial matches url) (:deny settings))))))
+        (some (partial matches url) (:allow-prefix settings))
+        (some (partial matches url) (:deny-substr settings))))))
 
 (def server-lock (new Object))
 (def server-atom (atom nil))

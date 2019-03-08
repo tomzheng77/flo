@@ -12,11 +12,10 @@
   (:import (java.io PushbackReader)
            (org.apache.commons.io FileUtils)
            (java.time LocalDateTime)))
-
-{:at (LocalDateTime/now)
- :proxy (proxy/default-settings)
- :projects #{"server365"}
- }
+;
+;(def maps {:at (LocalDateTime/now)
+;           :proxy (proxy/default-settings)
+;           :projects #{"server365"}})
 
 (def initial-state
   {:next     []
