@@ -24,7 +24,7 @@
     (with-open [r (io/reader c/primary-db :encoding c/encoding)]
       (edn/read (new PushbackReader r)))
     (catch Exception e
-      (do (fatal e) (r/recover)))))
+      (do (fatal e) (r/recover) initial-state))))
 
 (defn write-state
   [state]

@@ -2,6 +2,7 @@
   (:require
     [sayaka.constants :as c]
     [sayaka.subprocess :as s]
+    [sayaka.state :as st]
     [sayaka.proxy :as proxy]
     [sayaka.http-server :as http]
     [sayaka.restrictions :as r]
@@ -42,8 +43,9 @@
       (do
         (doseq [e errors] (fatal e))
         (System/exit 1))))
-  (proxy/start-server)
   (http/start-server)
+  (let [state (st/read-state)]
+    (proxy/start-server (:proxy-settings state)))
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT")
   (info "S.A.Y.A.K.A started"))
