@@ -52,7 +52,7 @@
   [text pattern]
   (if (instance? Pattern pattern)
     (re-find pattern text)
-    (str/includes? text pattern)))
+    (str/starts-with? text pattern)))
 
 (defn should-allow
   "tests whether the HTTP transaction should be allowed.
