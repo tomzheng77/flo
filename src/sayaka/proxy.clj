@@ -14,13 +14,20 @@
 
 (defn mkdirs [file-path] (.mkdirs (io/file file-path)))
 
+(defn file-exists [path]
+  (let [file (io/file path)]
+    (and
+      (.exists file)
+      (.isFile file)
+      (.canRead file))))
+
 (defn write-certificates []
-  (mkdirs c/certificate-root)
-  (let [gen (.build (RootCertificateGenerator/builder))]
-    (do
-      (.saveRootCertificateAsPemFile gen (io/file c/certificate))
-      (.savePrivateKeyAsPemFile gen (io/file c/private-key) "123456")
-      (.saveRootCertificateAndKey gen "PKCS12" (io/file c/key-store) "private-key" "123456"))))
+  (if (some (complement file-exists) [c/certificate c/private-key c/key-store])
+    (mkdirs c/certificate-root)
+    (-> (.build (RootCertificateGenerator/builder))
+        (.saveRootCertificateAsPemFile (io/file c/certificate))
+        (.savePrivateKeyAsPemFile (io/file c/private-key) "123456")
+        (.saveRootCertificateAndKey "PKCS12" (io/file c/key-store) "private-key" "123456"))))
 
 (defn find-url
   "finds the destination URL of a HttpRequest"
@@ -87,6 +94,7 @@
 (defn start-server-mitm-on []
   "starts a HttpProxyServer instance with mitm filter enabled
   the instance is returned at the end"
+  (write-certificates)
   (let [source (new KeyStoreFileCertificateSource "PKCS12" (io/file c/key-store) "private-key" "123456")]
     (let [mitm (.build (.rootCertificateSource (ImpersonatingMitmManager/builder) source))]
       (-> (DefaultHttpProxyServer/bootstrap)
