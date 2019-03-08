@@ -66,14 +66,14 @@
 
 (defn restrict-dirs
   "restricts and unlocks dirs using a predicate on directory name"
-  [pred]
+  [allow-name]
   (let [report (s/process-report)]
     (do
       (doseq [dir (list-files c/user-projects)]
-        (if (pred (.getName dir))
+        (if (allow-name (.getName dir))
           (user-755 dir)
           (do (root-700 dir) (kill-within dir report))))
       (doseq [dir (list-files c/user-programs)]
-        (if (pred (.getName dir))
+        (if (allow-name (.getName dir))
           (root-755 dir)
           (do (root-700 dir) (kill-within dir report)))))))
