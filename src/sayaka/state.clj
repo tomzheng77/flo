@@ -10,11 +10,14 @@
             [sayaka.utils :as u]
             [sayaka.proxy :as proxy])
   (:import (java.io PushbackReader)
-           (org.apache.commons.io FileUtils)))
-;
-;(def maps {:at (LocalDateTime/now)
-;           :proxy (proxy/default-settings)
-;           :projects #{"server365"}})
+           (org.apache.commons.io FileUtils)
+           (java.time LocalDateTime)))
+
+
+(def maps {:at       (LocalDateTime/now)
+           :type     "profile"
+           :proxy    (proxy/default-settings)
+           :projects #{"server365"}})
 
 (def initial-state
   {:next     []
