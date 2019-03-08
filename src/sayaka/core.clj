@@ -45,7 +45,7 @@
         (System/exit 1))))
   (http/start-server)
   (let [state (st/read-state)]
-    (proxy/start-server (:proxy-settings state)))
+    (proxy/start-server (st/proxy-settings state)))
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT")
   (info "S.A.Y.A.K.A started"))

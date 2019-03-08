@@ -27,7 +27,7 @@
 
 (defn restart-proxy
   [args]
-  (proxy/start-server (-> args :state :proxy-settings))
+  (proxy/start-server (-> args :state st/proxy-settings))
   "the proxy has been restarted")
 
 (defn run-script [args]
