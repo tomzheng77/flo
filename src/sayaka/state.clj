@@ -10,8 +10,7 @@
             [sayaka.utils :as u]
             [sayaka.proxy :as proxy])
   (:import (java.io PushbackReader)
-           (org.apache.commons.io FileUtils)
-           (java.time LocalDateTime)))
+           (org.apache.commons.io FileUtils)))
 ;
 ;(def maps {:at (LocalDateTime/now)
 ;           :proxy (proxy/default-settings)
