@@ -57,7 +57,7 @@
      (if-not exec
        (error "the command" cmd "is not found")
        (do
-         (debug "run:" cmd "=>" exec)
+         (debug "run:" cmd "=>" exec args)
          (let [command (new org.apache.commons.exec.CommandLine exec)
                service (new DefaultExecutor)
                stdin (new ByteArrayInputStream (byte-array []))

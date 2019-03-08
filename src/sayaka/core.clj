@@ -29,7 +29,7 @@
   run this program. returns a list of error messages."
   []
   (flat-list
-    (if-not (= (System/getenv "USER") "root") "user is not root")
+    ;(if-not (= (System/getenv "USER") "root") "user is not root")
     (if-not SystemUtils/IS_OS_LINUX "environment is not linux")
     (for [cmd c/commands]
       (if (empty? (s/find-executable cmd))

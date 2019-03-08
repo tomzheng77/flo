@@ -32,7 +32,7 @@
   (let [primary-group (:stdout (s/call "id" "-gn" c/user))
         all-groups (set (map str/trim (drop 2 (str/split (:stdout (s/call "groups" c/user)) #" "))))
         secondary-groups (disj all-groups primary-group)]
-    (s/call "usermod" "-G" (update secondary-groups) c/user)))
+    (s/call "usermod" "-G" (str/join "," (update secondary-groups)) c/user)))
 
 (defn add-wheel [] (change-groups (fn [groups] (conj groups "wheel"))))
 (defn remove-wheel [] (change-groups (fn [groups] (disj groups "wheel"))))
