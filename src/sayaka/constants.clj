@@ -24,10 +24,10 @@
 (def raw-paths (set (split-with-string path-separator (System/getenv "PATH"))))
 (def global-paths (union custom-paths raw-paths))
 
-(def proxy-port 9000)
-(def interpreter-port 9001)
+(def proxy-port 9003)
+(def interpreter-port 9004)
 (def orbit-address "103.29.84.69")
-(def orbit-port 9002)
+(def orbit-port 9005)
 
 (def user "tomzheng")
 (def user-projects (str "/home/" user "/Documents/Projects"))

@@ -17,7 +17,9 @@
     <orderEntry type="library" name="Leiningen: clojure-complete:0.2.4" level="project" />
     <orderEntry type="library" name="Leiningen: clout:2.2.1" level="project" />
     <orderEntry type="library" name="Leiningen: com.barchart.udt/barchart-udt-bundle:2.3.0" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fzakaria/slf4j-timbre:0.3.12" level="project" />
     <orderEntry type="library" name="Leiningen: com.google.guava/guava:20.0" level="project" />
+    <orderEntry type="library" name="Leiningen: com.palletops/log-config:0.1.4" level="project" />
     <orderEntry type="library" name="Leiningen: com.taoensso/encore:2.91.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.taoensso/timbre:4.10.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.taoensso/truss:1.5.0" level="project" />
@@ -40,10 +42,14 @@
     <orderEntry type="library" name="Leiningen: org.bouncycastle/bcprov-jdk15on:1.58" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.8.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/test.check:0.10.0-alpha3" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/tools.logging:0.2.6" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.macro:0.1.5" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.nrepl:0.2.12" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.reader:0.10.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.littleshoot/littleproxy:1.1.2" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/jcl-over-slf4j:1.7.14" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/jul-to-slf4j:1.7.14" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/log4j-over-slf4j:1.7.14" level="project" />
     <orderEntry type="library" name="Leiningen: org.slf4j/slf4j-api:1.7.24" level="project" />
     <orderEntry type="library" name="Leiningen: ring/ring-codec:1.1.0" level="project" />
     <orderEntry type="library" name="Leiningen: ring/ring-core:1.6.3" level="project" />

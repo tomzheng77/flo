@@ -13,6 +13,11 @@
                  [commons-io/commons-io "2.6"]
                  [http-kit "2.3.0"]
                  [clj-time "0.15.0"]
-                 [compojure "1.6.1"]]
+                 [compojure "1.6.1"]
+                 [org.slf4j/log4j-over-slf4j "1.7.14"]
+                 [org.slf4j/jul-to-slf4j "1.7.14"]
+                 [org.slf4j/jcl-over-slf4j "1.7.14"]
+                 [com.fzakaria/slf4j-timbre "0.3.12"]
+                 [com.palletops/log-config "0.1.4"]]
   :main ^:skip-aot sayaka.core
   :profiles {:uberjar {:aot :all}})

@@ -17,27 +17,31 @@
 (timbre/merge-config!
   {:appenders {:spit (appenders/spit-appender {:fname c/primary-log})}})
 
-(def is-root (= (System/getenv "USER") "root"))
-(def is-linux SystemUtils/IS_OS_LINUX)
+(defn flat-list [& args]
+  (filter
+    (complement nil?)
+    (flatten
+      (list args))))
 
 (defn check-environment
+  "checks the system to determine whether it is suitable to
+  run this program. returns a list of error messages."
   []
-  (try
-    (do
-      (assert is-root "user is not root")
-      (assert is-linux "environment is not linux")
-      (doseq [cmd c/commands]
-        (assert
-          (not-empty (s/find-executable cmd))
-          (str "executable '" cmd "' cannot be located"))))
-    (catch Exception e
-      (do (fatal e)
-          (System/exit 1)))))
+  (flat-list
+    (if-not (= (System/getenv "USER") "root") "user is not root")
+    (if-not SystemUtils/IS_OS_LINUX "environment is not linux")
+    (for [cmd c/commands]
+      (if (empty? (s/find-executable cmd))
+        (str "executable '" cmd "' cannot be located")))))
 
 (defn sayaka-client [])
 (defn sayaka-server []
   (info "S.A.Y.A.K.A starting")
-  (check-environment)
+  (let [errors (check-environment)]
+    (if (not-empty errors)
+      (do
+        (doseq [e errors] (fatal e))
+        (System/exit 1))))
   (proxy/start-server)
   (http/start-server)
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
