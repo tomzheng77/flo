@@ -30,7 +30,8 @@
   (proxy/start-server (-> args :state st/proxy-settings))
   "the proxy has been restarted")
 
-(defn run-script [args]
+(defn run-script
+  [args]
   (let [args-ws (assoc args :state (st/read-state))]
     (case (:script args)
       "between" (between args-ws)
