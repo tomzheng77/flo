@@ -1,4 +1,5 @@
 (ns octavia.subprocess
+  (:use [octavia.utils])
   (:require
     [octavia.constants :as c]
     [taoensso.timbre :as timbre
@@ -8,22 +9,6 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [clojure.java.shell :as sh]))
-
-(defn- is-executable-file
-  [file-path]
-  (let [file (io/file file-path)]
-    (and
-      (.exists file)
-      (.isFile file)
-      (.canExecute file))))
-
-(defn- is-readable-dir
-  [file-path]
-  (let [file (io/file file-path)]
-    (and
-      (.exists file)
-      (.isDirectory file)
-      (.canRead file))))
 
 (defn- read-process [process-dir]
   {:pid (read-string (.getName process-dir))

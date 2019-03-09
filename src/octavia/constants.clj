@@ -1,14 +1,10 @@
 (ns octavia.constants
+  (:use [octavia.utils])
   (:require [clojure.string :as str])
   (:require [clojure.set :as set :refer [union]])
   (:import (java.io File)
            (java.util.regex Pattern)
            (java.nio.charset Charset)))
-
-(defn re-quote [s] (Pattern/quote s))
-
-(defn split-with-string [separator string]
-  (str/split string (re-pattern (re-quote separator))))
 
 (def encoding "UTF-8")
 (def charset (Charset/forName encoding))
