@@ -13,24 +13,21 @@
            (org.apache.commons.io FileUtils)
            (java.time LocalDateTime)))
 
-
-(def maps {:at       (LocalDateTime/now)
-           :type     "profile"
-           :proxy    proxy/default-settings
-           :projects #{"server365"}})
-
 (def initial-state
   {:next     []
    :previous nil})
 
+(def example-state {:time           (LocalDateTime/now)
+                    :proxy-settings proxy/default-settings
+                    :projects       #{"server365" "google-chrome"}})
+
 (defn is-idle
   [state]
-  (or (nil? (:last state))
-      (= (-> state :last :type) "unlock")))
+  (empty? (:next state)))
 
 (defn proxy-settings
   [state]
-  (or (-> state :last :proxy)
+  (or (-> state :previous :proxy-settings)
       (proxy/default-settings)))
 
 (defn read-state
@@ -48,8 +45,3 @@
     (io/file c/primary-db)
     (pr-str state)
     (str c/encoding)))
-
-(defn set-of [item-or-coll]
-  (if (coll? item-or-coll)
-    (set item-or-coll)
-    #{item-or-coll}))
