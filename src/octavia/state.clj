@@ -26,7 +26,7 @@
 (defn is-idle
   [state]
   (or (nil? (:last state))
-      (= (-> state :last :action) "unlock")))
+      (= (-> state :last :type) "unlock")))
 
 (defn proxy-settings
   [state]
@@ -48,3 +48,8 @@
     (io/file c/primary-db)
     (pr-str state)
     (str c/encoding)))
+
+(defn set-of [item-or-coll]
+  (if (coll? item-or-coll)
+    (set item-or-coll)
+    #{item-or-coll}))

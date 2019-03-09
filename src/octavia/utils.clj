@@ -26,3 +26,8 @@
       (.exists file)
       (.isDirectory file)
       (.canRead file))))
+
+(defn take-before
+  [str char]
+  (let [index (str/index-of str char)]
+    (if (nil? index) str (subs str 0 index))))

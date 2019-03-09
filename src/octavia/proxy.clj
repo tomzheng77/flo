@@ -1,4 +1,5 @@
 (ns octavia.proxy
+  (:use [octavia.utils])
   (:require [octavia.constants :as c]
             [clojure.java.io :as io]
             [clojure.string :as str])
@@ -6,8 +7,7 @@
            (net.lightbody.bmp.mitm RootCertificateGenerator KeyStoreFileCertificateSource)
            (net.lightbody.bmp.mitm.manager ImpersonatingMitmManager)
            (org.littleshoot.proxy HttpFiltersSourceAdapter HttpFiltersAdapter)
-           (io.netty.handler.codec.http HttpResponse DefaultFullHttpResponse HttpVersion HttpResponseStatus HttpHeaders HttpMessage HttpRequest)
-           (java.util.regex Pattern)))
+           (io.netty.handler.codec.http HttpResponse DefaultFullHttpResponse HttpVersion HttpResponseStatus HttpHeaders HttpMessage HttpRequest)))
 
 (def default-settings {})
 (def example-settings {:must-not-contain-ctype #{"text/css"}
@@ -38,11 +38,6 @@
         (.savePrivateKeyAsPemFile (io/file c/private-key) "123456")
         (.saveRootCertificateAndKey "PKCS12" (io/file c/key-store) "private-key" "123456"))))
 
-(defn take-before
-  [str char]
-  (let [index (str/index-of str char)]
-    (if (nil? index) str (subs str 0 index))))
-
 (defn find-url
   "finds the destination URL of a HttpRequest"
   ([^HttpRequest request]
@@ -59,11 +54,6 @@
   "finds the content type of a request or response"
   [^HttpMessage response]
   (HttpHeaders/getHeader response "Content-Type"))
-
-(defn set-of [item-or-coll]
-  (if (coll? item-or-coll)
-    (set item-or-coll)
-    #{item-or-coll}))
 
 (defn should-allow
   "tests whether the HTTP transaction should be allowed."
