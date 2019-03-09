@@ -19,13 +19,24 @@
     (is (= true (st/is-idle st/initial-state))))
   (testing "should start with default proxy settings"
     (is (= proxy/default-settings (st/proxy-settings st/initial-state))))
-  (testing "should intersect nil"
+  (testing "should intersect nil with nil"
     (is (= {:allow #{}
             :proxy {:not-contain-ctype #{},
                     :start-with        #{},
                     :contain           #{},
                     :not-contain       #{}}}
-           (st/intersect nil nil)))))
+           (st/intersect nil nil))))
+  (testing "should intersect nil with anything else"
+    (is (= {:allow #{}
+            :proxy {:not-contain-ctype #{"B"},
+                    :start-with        #{},
+                    :contain           #{},
+                    :not-contain       #{"E"}}}
+           (st/intersect nil {:allow #{"A"}
+                              :proxy {:not-contain-ctype #{"B"},
+                                      :start-with        #{"C"},
+                                      :contain           #{"D"},
+                                      :not-contain       #{"E"}}})))))
 
 (testing "Arithmetic"
   (testing "with positive integers"
