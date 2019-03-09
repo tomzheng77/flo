@@ -67,7 +67,7 @@
        (not-any? (fn [ctype] (str/includes? ctype content-type)) (u/to-set (:not-contain-ctype settings)))
        (not-any? (partial str/includes? url) (u/to-set (:not-contain settings)))
        (or
-         (and (nil? (:start-with settings)) (nil? (:contain settings)))
+         (and (empty? (:start-with settings)) (empty? (:contain settings)))
          (some (partial str/starts-with? url) (u/to-set (:start-with settings)))
          (some (partial str/includes? url) (u/to-set (:contain settings))))))))
 
