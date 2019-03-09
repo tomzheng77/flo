@@ -38,7 +38,7 @@
 
 (defn octavia-client [])
 (defn octavia-server []
-  (info "S.A.Y.A.K.A starting")
+  (info "octavia starting")
   (let [errors (check-environment)]
     (if (not-empty errors)
       (do
@@ -49,7 +49,7 @@
     (proxy/start-server (st/proxy-settings state)))
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT")
-  (info "S.A.Y.A.K.A started"))
+  (info "octavia started"))
 
 (defn octavia-orbit [])
 
