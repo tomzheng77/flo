@@ -2,7 +2,9 @@
   (:require [clojure.test :refer :all]
             [clojure.test.check :as tc]
             [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop])
+            [clojure.test.check.properties :as prop]
+            [octavia.utils :as util]
+            [octavia.state :as st])
   (:gen-class))
 
 (def sort-idempotent-prop
@@ -16,7 +18,7 @@
     (is (= 4 (+ 2 2)))
     (is (= 7 (+ 3 4))))
   (testing "with negative integers"
-    (is (= -4 (+ -2 -21)))
+    (is (= -4 (+ -2 -2)))
     (is (= -1 (+ 3 -4)))))
 
 (tc/quick-check 100 sort-idempotent-prop)

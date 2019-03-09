@@ -1,7 +1,7 @@
 (ns octavia.subprocess
-  (:use [octavia.utils])
   (:require
     [octavia.constants :as c]
+    [octavia.utils :as u]
     [taoensso.timbre :as timbre
      :refer [log trace debug info warn error fatal report
              logf tracef debugf infof warnf errorf fatalf reportf
@@ -22,14 +22,14 @@
        (io/file)
        (.listFiles)
        (set)
-       (filter is-readable-dir)
+       (filter u/is-readable-dir)
        (map read-process)))
 
 (defn find-executable
   [file-name]
   (->> c/global-paths
        (map (fn [path-item] (str path-item c/file-separator file-name)))
-       (filter is-executable-file)))
+       (filter u/is-executable-file)))
 
 (defn call
   "runs a command with the given arguments. waits until the execution
@@ -42,9 +42,9 @@
          (debug "run:" cmd "=>" exec args)
          (apply sh/sh
                 (concat (cons cmd args) [:env
-                {"PATH"        c/global-path
-                 "http_proxy"  ""
-                 "https_proxy" ""}])))))))
+                                         {"PATH"        c/global-path
+                                          "http_proxy"  ""
+                                          "https_proxy" ""}])))))))
 
 (defn send-notify
   "sends a notification to the user via the message bus.

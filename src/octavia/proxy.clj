@@ -1,6 +1,6 @@
 (ns octavia.proxy
-  (:use [octavia.utils])
   (:require [octavia.constants :as c]
+            [octavia.utils :as u]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.set :as set])
@@ -31,7 +31,7 @@
 
 (defn write-certificates []
   (if (some (complement file-exists) [c/certificate c/private-key c/key-store])
-    (mkdirs c/certificate-root)
+    (u/mkdirs c/certificate-root)
     (-> (.build (RootCertificateGenerator/builder))
         (.saveRootCertificateAsPemFile (io/file c/certificate))
         (.savePrivateKeyAsPemFile (io/file c/private-key) "123456")
@@ -47,7 +47,7 @@
    (let [prefix #"^https?://"]
      (-> (if (re-find prefix uri) uri (str host uri))
          (str/replace-first prefix "")
-         (take-before "?")))))
+         (u/take-before "?")))))
 
 (defn find-content-type
   "finds the content type of a request or response"
@@ -64,12 +64,12 @@
   ([url content-type settings _]
    (true?
      (and
-       (not-any? (fn [ctype] (str/includes? ctype content-type)) (set-of (:not-contain-ctype settings)))
-       (not-any? (partial str/includes? url) (set-of (:not-contain settings)))
+       (not-any? (fn [ctype] (str/includes? ctype content-type)) (u/set-of (:not-contain-ctype settings)))
+       (not-any? (partial str/includes? url) (u/set-of (:not-contain settings)))
        (or
          (and (nil? (:start-with settings)) (nil? (:contain settings)))
-         (some (partial str/starts-with? url) (set-of (:start-with settings)))
-         (some (partial str/includes? url) (set-of (:contain settings))))))))
+         (some (partial str/starts-with? url) (u/set-of (:start-with settings)))
+         (some (partial str/includes? url) (u/set-of (:contain settings))))))))
 
 (def server-lock (new Object))
 (def server-atom (atom nil))
@@ -140,7 +140,12 @@
                   :start-with set/intersection
                   :contain set/intersection
                   :not-contain set/union)]
-    (assoc settings attr (combine (set-of (attr settings)) (set-of rest)))))
+    (assoc
+      settings
+      attr
+      (combine
+        (u/set-of (attr settings))
+        (u/set-of rest)))))
 
 (defn satisfy-both
   [settings-one settings-two]

@@ -1,9 +1,9 @@
 (ns octavia.state
-  (:use [octavia.utils])
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [octavia.constants :as c]
             [octavia.restrictions :as r]
+            [octavia.utils :as u]
             [taoensso.timbre :as timbre
              :refer [log trace debug info warn error fatal report
                      logf tracef debugf infof warnf errorf fatalf reportf
@@ -58,7 +58,7 @@
 
 (defn write-state
   [state]
-  (mkdirs c/home)
+  (u/mkdirs c/home)
   (FileUtils/writeStringToFile
     (io/file c/primary-db)
     (pr-str state)

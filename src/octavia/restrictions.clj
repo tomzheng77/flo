@@ -2,8 +2,8 @@
   (:require [clojure.java.io :as io]
             [octavia.constants :as c]
             [octavia.subprocess :as s]
-            [clojure.string :as str])
-  (:use [octavia.utils]))
+            [octavia.utils :as u]
+            [clojure.string :as str]))
 
 (defn force-logout []
   (s/call "killall" "-u" c/user "i3")
@@ -13,7 +13,7 @@
   ([dir] (kill-within dir (s/process-report)))
   ([dir report]
    (doseq [process report]
-     (if (str/starts-with? (:exe process) (canonical-path dir))
+     (if (str/starts-with? (:exe process) (u/canonical-path dir))
        (s/call "kill" (:pid process))))))
 
 (defn list-files [path] (vec (.listFiles (io/file path))))
@@ -38,8 +38,8 @@
 (defn remove-wheel [] (change-groups (fn [groups] (disj groups "wheel"))))
 
 (defn ch [file user perm]
-  (s/call "chown" (str user ":" user) (canonical-path file))
-  (s/call "chmod" perm (canonical-path file)))
+  (s/call "chown" (str user ":" user) (u/canonical-path file))
+  (s/call "chmod" perm (u/canonical-path file)))
 
 (defn user-755 [file] (ch file c/user "755"))
 (defn root-755 [file] (ch file "root" "755"))
