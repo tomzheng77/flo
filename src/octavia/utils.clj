@@ -1,7 +1,8 @@
 (ns octavia.utils
   (:require [clojure.java.io :as io]
             [clojure.string :as str])
-  (:import (java.util.regex Pattern)))
+  (:import (java.util.regex Pattern)
+           (java.time LocalDateTime)))
 
 (defn mkdirs [file-path] (.mkdirs (io/file file-path)))
 (defn canonical-path [file-path] (.getCanonicalPath (io/file file-path)))
@@ -38,3 +39,5 @@
     (if (coll? item-or-coll)
       (set item-or-coll)
       #{item-or-coll})))
+
+(defn now [] (LocalDateTime/now))
