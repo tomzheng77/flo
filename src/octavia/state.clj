@@ -16,7 +16,7 @@
 
 (def maps {:at       (LocalDateTime/now)
            :type     "profile"
-           :proxy    (proxy/default-settings)
+           :proxy    proxy/default-settings
            :projects #{"server365"}})
 
 (def initial-state

@@ -29,8 +29,8 @@
 (defn change-groups
   "changes the secondary groups of the user with a function"
   [update]
-  (let [primary-group (:stdout (s/call "id" "-gn" c/user))
-        all-groups (set (map str/trim (drop 2 (str/split (:stdout (s/call "groups" c/user)) #" "))))
+  (let [primary-group (:out (s/call "id" "-gn" c/user))
+        all-groups (set (map str/trim (drop 2 (str/split (:out (s/call "groups" c/user)) #" "))))
         secondary-groups (disj all-groups primary-group)]
     (s/call "usermod" "-G" (str/join "," (update secondary-groups)) c/user)))
 

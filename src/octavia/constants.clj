@@ -23,6 +23,7 @@
 
 (def raw-paths (set (split-with-string path-separator (System/getenv "PATH"))))
 (def global-paths (union custom-paths raw-paths))
+(def global-path (str/join path-separator global-paths))
 
 (def proxy-port 9003)
 (def interpreter-port 9004)

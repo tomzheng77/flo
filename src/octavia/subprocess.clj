@@ -6,10 +6,8 @@
              logf tracef debugf infof warnf errorf fatalf reportf
              spy get-env]]
     [clojure.java.io :as io]
-    [clojure.string :as str])
-  (:import (org.apache.commons.exec DefaultExecutor PumpStreamHandler ExecuteException)
-           (java.io ByteArrayInputStream ByteArrayOutputStream)
-           (java.util Map)))
+    [clojure.string :as str]
+    [clojure.java.shell :as sh]))
 
 (defn- is-executable-file
   [file-path]
@@ -52,37 +50,23 @@
   "runs a command with the given arguments. waits until the execution
   completes or an error is thrown"
   ([cmd & args]
-   (let [exec (first (find-executable cmd))
-         #^"[Ljava.lang.String;" args-array (into-array String args)]
+   (let [exec (first (find-executable cmd))]
      (if-not exec
        (error "the command" cmd "is not found")
        (do
          (debug "run:" cmd "=>" exec args)
-         (let [command (new org.apache.commons.exec.CommandLine exec)
-               service (new DefaultExecutor)
-               stdin (new ByteArrayInputStream (byte-array []))
-               stdout (new ByteArrayOutputStream)
-               stderr (new ByteArrayOutputStream)
-               pump (new PumpStreamHandler stdout stderr stdin)
-               ^Map env {"PATH"        "asdf"
-                         "http_proxy"  ""
-                         "https_proxy" ""}]
-           (do
-             (.addArguments command args-array)
-             (.setStreamHandler service pump)
-             (let [exit-value (try (.execute service command env) (catch ExecuteException e (.getExitValue e)))
-                   stdout-bytes (.toByteArray stdout)
-                   stderr-bytes (.toByteArray stderr)]
-               {:exit   exit-value
-                :stdout (slurp stdout-bytes)
-                :stderr (slurp stderr-bytes)}))))))))
+         (apply sh/sh
+                (concat (cons cmd args) [:env
+                {"PATH"        c/global-path
+                 "http_proxy"  ""
+                 "https_proxy" ""}])))))))
 
 (defn send-notify
   "sends a notification to the user via the message bus.
   dunst needs to be installed first"
   ([title] (send-notify title ""))
   ([title message]
-   (let [user-id (read-string (str/trim (:stdout (call "id" "-u" c/user))))]
+   (let [user-id (read-string (str/trim (:out (call "id" "-u" c/user))))]
      (call "sudo" "-u" c/user "DISPLAY=${display:1:-1}"
            (str "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" user-id "/bus")
            "notify-send" title message))))
