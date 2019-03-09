@@ -2,7 +2,8 @@
   (:use [octavia.utils])
   (:require [octavia.constants :as c]
             [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.set :as set])
   (:import (org.littleshoot.proxy.impl DefaultHttpProxyServer)
            (net.lightbody.bmp.mitm RootCertificateGenerator KeyStoreFileCertificateSource)
            (net.lightbody.bmp.mitm.manager ImpersonatingMitmManager)
@@ -10,18 +11,16 @@
            (io.netty.handler.codec.http HttpResponse DefaultFullHttpResponse HttpVersion HttpResponseStatus HttpHeaders HttpMessage HttpRequest)))
 
 (def default-settings {})
-(def example-settings {:must-not-contain-ctype #{"text/css"}
-                       :must-start-with        #{"www.mvnrepository.com"}
-                       :must-contain           "clojure"
-                       :must-not-contain       #{"anime"}})
+(def example-settings {:not-contain-ctype #{"text/css"}
+                       :start-with        #{"www.mvnrepository.com"}
+                       :contain           "clojure"
+                       :not-contain       #{"anime"}})
 
 (defn no-restrictions [settings]
-  (and (nil? (:must-not-contain-ctype settings))
-       (nil? (:must-start-with settings))
-       (nil? (:must-contain settings))
-       (nil? (:must-not-contain settings))))
-
-(defn mkdirs [file-path] (.mkdirs (io/file file-path)))
+  (and (nil? (:not-contain-ctype settings))
+       (nil? (:start-with settings))
+       (nil? (:contain settings))
+       (nil? (:not-contain settings))))
 
 (defn file-exists [path]
   (let [file (io/file path)]
@@ -65,12 +64,12 @@
   ([url content-type settings _]
    (true?
      (and
-       (not-any? (fn [ctype] (str/includes? ctype content-type)) (set-of (:must-not-contain-ctype settings)))
-       (not-any? (partial str/includes? url) (set-of (:must-not-contain settings)))
+       (not-any? (fn [ctype] (str/includes? ctype content-type)) (set-of (:not-contain-ctype settings)))
+       (not-any? (partial str/includes? url) (set-of (:not-contain settings)))
        (or
-         (and (nil? (:must-start-with settings)) (nil? (:must-contain settings)))
-         (some (partial str/starts-with? url) (set-of (:must-start-with settings)))
-         (some (partial str/includes? url) (set-of (:must-contain settings))))))))
+         (and (nil? (:start-with settings)) (nil? (:contain settings)))
+         (some (partial str/starts-with? url) (set-of (:start-with settings)))
+         (some (partial str/includes? url) (set-of (:contain settings))))))))
 
 (def server-lock (new Object))
 (def server-atom (atom nil))
@@ -131,3 +130,22 @@
                (if (no-restrictions settings)
                  (start-server-mitm-off)
                  (start-server-mitm-on)))))))
+
+(defn inc-restrict
+  "increases restrictions for the specified attribute on a settings object
+  by adding or removing elements from the corresponding set."
+  [settings attr rest]
+  (let [combine (case attr
+                  :not-contain-ctype set/union
+                  :start-with set/intersection
+                  :contain set/intersection
+                  :not-contain set/union)]
+    (assoc settings attr (combine (set-of (attr settings)) (set-of rest)))))
+
+(defn satisfy-both
+  [settings-one settings-two]
+  (-> settings-one
+      (inc-restrict :not-contain-ctype (:not-contain-ctype settings-two))
+      (inc-restrict :start-with (:start-with settings-two))
+      (inc-restrict :contain (:contain settings-two))
+      (inc-restrict :not-contain (:not-contain settings-two))))

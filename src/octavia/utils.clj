@@ -33,6 +33,8 @@
     (if (nil? index) str (subs str 0 index))))
 
 (defn set-of [item-or-coll]
-  (if (coll? item-or-coll)
-    (set item-or-coll)
-    #{item-or-coll}))
+  (if-not item-or-coll
+    #{}
+    (if (coll? item-or-coll)
+      (set item-or-coll)
+      #{item-or-coll})))

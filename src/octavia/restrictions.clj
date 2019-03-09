@@ -63,8 +63,6 @@
 (defn restrict-dirs
   "restricts and unlocks dirs using a predicate on directory name"
   [allow-name]
-  (root-755 c/user-projects)
-  (root-755 c/user-programs)
   (let [report (s/process-report)]
     (do
       (doseq [dir (list-files c/user-projects)]

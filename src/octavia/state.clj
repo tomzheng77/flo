@@ -1,4 +1,5 @@
 (ns octavia.state
+  (:use [octavia.utils])
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [octavia.constants :as c]
@@ -7,8 +8,8 @@
              :refer [log trace debug info warn error fatal report
                      logf tracef debugf infof warnf errorf fatalf reportf
                      spy get-env]]
-            [octavia.utils :as u]
-            [octavia.proxy :as proxy])
+            [octavia.proxy :as proxy]
+            [clojure.set :as set])
   (:import (java.io PushbackReader)
            (org.apache.commons.io FileUtils)
            (java.time LocalDateTime)))
@@ -19,16 +20,24 @@
 
 (def example-state
   {:next     [{:time     (LocalDateTime/of 2019 3 9 10 0 0)
-               :projects #{"server365" "google-chrome" "idea"}
-               :proxy    proxy/example-settings}
-              {:time     (LocalDateTime/of 2019 3 9 12 0 0)
-               :projects #{"server365" "google-chrome"}
-               :proxy    proxy/example-settings}
-              {:time (LocalDateTime/of 2019 3 9 13 30 0)}]
+               :settings {:projects #{"google-chrome"}
+                          :proxy    proxy/example-settings}}
+              {:time     (LocalDateTime/of 2019 3 9 11 0 0)
+               :settings {:projects #{"server365" "google-chrome" "idea"}
+                          :proxy    proxy/example-settings}}
+              {:time (LocalDateTime/of 2019 3 9 12 0 0)}]
 
    :previous {:time     (LocalDateTime/of 2019 3 9 8 0 0)
-              :projects #{"google-chrome"}
-              :proxy    proxy/example-settings}})
+              :settings {:projects #{"server365" "idea"}
+                         :proxy    proxy/example-settings}}})
+
+(defn satisfy-both [settings-one settings-two]
+  {:projects (set/intersection (:projects settings-one) (:projects settings-two))
+   :proxy    (proxy/satisfy-both (:proxy settings-one) (:proxy settings-two))})
+
+(defn request-between
+  [start-time end-time settings]
+  )
 
 (defn is-idle
   [state]
@@ -49,7 +58,7 @@
 
 (defn write-state
   [state]
-  (u/mkdirs c/home)
+  (mkdirs c/home)
   (FileUtils/writeStringToFile
     (io/file c/primary-db)
     (pr-str state)
