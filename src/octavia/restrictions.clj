@@ -37,17 +37,13 @@
 (defn add-wheel [] (change-groups (fn [groups] (conj groups "wheel"))))
 (defn remove-wheel [] (change-groups (fn [groups] (disj groups "wheel"))))
 
-(defn user-755 [file]
-  (s/call "chown" (str c/user ":" c/user) (canonical-path file))
-  (s/call "chmod" "755" (canonical-path file)))
+(defn ch [file user perm]
+  (s/call "chown" (str user ":" user) (canonical-path file))
+  (s/call "chmod" perm (canonical-path file)))
 
-(defn root-755 [file]
-  (s/call "chown" "root:root" (canonical-path file))
-  (s/call "chmod" "755" (canonical-path file)))
-
-(defn root-700 [file]
-  (s/call "chown" "root:root" (canonical-path file))
-  (s/call "chmod" "700" (canonical-path file)))
+(defn user-755 [file] (ch file c/user "755"))
+(defn root-755 [file] (ch file "root" "755"))
+(defn root-700 [file] (ch file "root" "700"))
 
 (defn disable-login [] (s/call "passwd" "-l" c/user))
 (defn enable-login [] (s/call "passwd" "-l" c/user))
