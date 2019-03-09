@@ -20,24 +20,25 @@
 
 (def example-state
   {:next     [{:time     (LocalDateTime/of 2019 3 9 10 0 0)
-               :settings {:projects #{"google-chrome"}
-                          :proxy    proxy/example-settings}}
+               :settings {:allow #{"google-chrome"}
+                          :proxy proxy/example-settings}}
               {:time     (LocalDateTime/of 2019 3 9 11 0 0)
-               :settings {:projects #{"server365" "google-chrome" "idea"}
-                          :proxy    proxy/example-settings}}
+               :settings {:allow #{"server365" "google-chrome" "idea"}
+                          :proxy proxy/example-settings}}
               {:time (LocalDateTime/of 2019 3 9 12 0 0)}]
 
    :previous {:time     (LocalDateTime/of 2019 3 9 8 0 0)
-              :settings {:projects #{"server365" "idea"}
-                         :proxy    proxy/example-settings}}})
+              :settings {:allow #{"server365" "idea"}
+                         :proxy proxy/example-settings}}})
 
 (defn satisfy-both [settings-one settings-two]
-  {:projects (set/intersection (:projects settings-one) (:projects settings-two))
-   :proxy    (proxy/satisfy-both (:proxy settings-one) (:proxy settings-two))})
+  {:allow (set/union (:allow settings-one) (:allow settings-two))
+   :proxy (proxy/satisfy-both (:proxy settings-one) (:proxy settings-two))})
 
 (defn request-between
-  [start-time end-time settings]
-  )
+  [state start-time end-time settings]
+  (assert (instance? LocalDateTime start-time))
+  (assert (instance? LocalDateTime end-time)))
 
 (defn is-idle
   [state]
@@ -46,7 +47,7 @@
 (defn proxy-settings
   [state]
   (or (-> state :previous :proxy)
-      (proxy/default-settings)))
+      proxy/default-settings))
 
 (defn read-state
   []

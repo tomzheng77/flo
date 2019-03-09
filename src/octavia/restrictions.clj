@@ -50,6 +50,8 @@
 
 (defn clear-all-restrictions []
   (enable-login)
+  (user-755 c/user-projects)
+  (user-755 c/user-programs)
   (doseq [dir (list-files c/user-projects)] (user-755 dir))
   (doseq [dir (list-files c/user-programs)] (root-755 dir)))
 
@@ -60,16 +62,19 @@
   (add-wheel)
   (clear-all-restrictions))
 
-(defn restrict-dirs
-  "restricts and unlocks dirs using a predicate on directory name"
+(defn restrict-container
+  "restricts and unlocks dirs inside a folder using a predicate on dir name"
+  [container-dir report allow-name unlock-dir]
+  (doseq [dir (list-files container-dir)]
+    (if (allow-name (.getName dir))
+      (unlock-dir dir)
+      (do (root-700 dir) (kill-within dir report)))))
+
+(defn restrict-all
+  "restricts and unlocks dirs using a predicate on dir name"
   [allow-name]
+  (root-755 c/user-projects)
+  (root-755 c/user-programs)
   (let [report (s/process-report)]
-    (do
-      (doseq [dir (list-files c/user-projects)]
-        (if (allow-name (.getName dir))
-          (user-755 dir)
-          (do (root-700 dir) (kill-within dir report))))
-      (doseq [dir (list-files c/user-programs)]
-        (if (allow-name (.getName dir))
-          (root-755 dir)
-          (do (root-700 dir) (kill-within dir report)))))))
+    (restrict-container c/user-projects report allow-name user-755)
+    (restrict-container c/user-programs report allow-name root-755)))

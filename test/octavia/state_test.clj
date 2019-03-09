@@ -4,7 +4,8 @@
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [octavia.utils :as util]
-            [octavia.state :as st])
+            [octavia.state :as st]
+            [octavia.proxy :as proxy])
   (:gen-class))
 
 (def sort-idempotent-prop
@@ -12,6 +13,12 @@
     [v (gen/vector gen/int)]
     (= (sort v)
        (sort (sort v)))))
+
+(testing "state"
+  (testing "should start as idle"
+    (is (= true (st/is-idle st/initial-state))))
+  (testing "should start with default proxy settings"
+    (is (= proxy/default-settings (st/proxy-settings st/initial-state)))))
 
 (testing "Arithmetic"
   (testing "with positive integers"
