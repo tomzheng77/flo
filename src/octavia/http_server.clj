@@ -8,7 +8,7 @@
 (defn between [args]
   (:start-time args)
   (:end-time args)
-  (:restrict args)
+  (:block args)
   (:proxy args))
 
 (defn status
@@ -17,12 +17,12 @@
 
 (defn add-wheel
   [args]
-  (if (-> args :state st/is-idle)
+  (if (-> args :state st/is-superuser?)
     (do (r/add-wheel) "user has been added to the wheel group")))
 
 (defn remove-wheel
   [args]
-  (if (-> args :state st/is-idle)
+  (if (-> args :state st/is-superuser?)
     (do (r/remove-wheel) "user has been removed from the wheel group")))
 
 (defn restart-proxy

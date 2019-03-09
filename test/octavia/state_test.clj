@@ -19,21 +19,19 @@
     (is (= true (proxy/no-restrictions? proxy/default-settings)))))
 
 (testing "state"
-  (testing "should start as idle"
-    (is (= true (st/is-idle st/initial-state))))
+  (testing "should start as superuser and with no restrictions"
+    (is (= true (st/is-superuser? st/initial-state)))
+    (is (= true (st/no-restrictions? st/initial-state))))
   (testing "should start with default proxy settings"
     (is (= proxy/default-settings (st/proxy-settings st/initial-state))))
   (testing "should intersect nil with nil"
-    (is (= {:restrict #{}
-            :proxy    {:not-contain-ctype #{},
-                       :not-contain       #{}}}
-           (st/intersect nil nil))))
+    (is (= true (st/no-restrictions? (st/intersect nil nil)))))
   (testing "should intersect nil with anything else"
-    (is (= {:restrict #{}
-            :proxy    {:not-contain-ctype #{"B"},
+    (is (= {:block #{"A"}
+            :proxy {:not-contain-ctype #{"B"},
                        :not-contain       #{"E"}}}
-           (st/intersect nil {:restrict #{"A"}
-                              :proxy    {:not-contain-ctype #{"B"},
+           (st/intersect nil {:block #{"A"}
+                              :proxy {:not-contain-ctype #{"B"},
                                          :not-contain       #{"E"}}})))))
 
 (testing "Arithmetic"
