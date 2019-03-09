@@ -29,10 +29,10 @@
   (testing "should intersect nil with anything else"
     (is (= {:block #{"A"}
             :proxy {:not-contain-ctype #{"B"},
-                       :not-contain       #{"E"}}}
+                    :not-contain       #{"E"}}}
            (st/intersect nil {:block #{"A"}
                               :proxy {:not-contain-ctype #{"B"},
-                                         :not-contain       #{"E"}}})))))
+                                      :not-contain       #{"E"}}})))))
 
 (testing "Arithmetic"
   (testing "with positive integers"
