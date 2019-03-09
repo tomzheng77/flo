@@ -64,12 +64,12 @@
   ([url content-type settings _]
    (true?
      (and
-       (not-any? (fn [ctype] (str/includes? ctype content-type)) (u/set-of (:not-contain-ctype settings)))
-       (not-any? (partial str/includes? url) (u/set-of (:not-contain settings)))
+       (not-any? (fn [ctype] (str/includes? ctype content-type)) (u/to-set (:not-contain-ctype settings)))
+       (not-any? (partial str/includes? url) (u/to-set (:not-contain settings)))
        (or
          (and (nil? (:start-with settings)) (nil? (:contain settings)))
-         (some (partial str/starts-with? url) (u/set-of (:start-with settings)))
-         (some (partial str/includes? url) (u/set-of (:contain settings))))))))
+         (some (partial str/starts-with? url) (u/to-set (:start-with settings)))
+         (some (partial str/includes? url) (u/to-set (:contain settings))))))))
 
 (def server-lock (new Object))
 (def server-atom (atom nil))
@@ -144,8 +144,8 @@
       settings
       attr
       (combine
-        (u/set-of (attr settings))
-        (u/set-of rest)))))
+        (u/to-set (attr settings))
+        (u/to-set rest)))))
 
 (defn intersect
   [settings-one settings-two]

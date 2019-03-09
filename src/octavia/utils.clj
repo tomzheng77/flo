@@ -33,7 +33,7 @@
   (let [index (str/index-of str char)]
     (if (nil? index) str (subs str 0 index))))
 
-(defn set-of [item-or-coll]
+(defn to-set [item-or-coll]
   (if-not item-or-coll
     #{}
     (if (coll? item-or-coll)
