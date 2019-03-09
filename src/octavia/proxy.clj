@@ -17,10 +17,10 @@
                        :not-contain       #{"anime"}})
 
 (defn no-restrictions [settings]
-  (and (nil? (:not-contain-ctype settings))
-       (nil? (:start-with settings))
-       (nil? (:contain settings))
-       (nil? (:not-contain settings))))
+  (and (empty? (:not-contain-ctype settings))
+       (empty? (:start-with settings))
+       (empty? (:contain settings))
+       (empty? (:not-contain settings))))
 
 (defn file-exists [path]
   (let [file (io/file path)]
