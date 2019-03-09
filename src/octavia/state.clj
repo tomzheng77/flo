@@ -17,9 +17,18 @@
   {:next     []
    :previous nil})
 
-(def example-state {:time           (LocalDateTime/now)
-                    :proxy-settings proxy/default-settings
-                    :projects       #{"server365" "google-chrome"}})
+(def example-state
+  {:next     [{:time     (LocalDateTime/of 2019 3 9 10 0 0)
+               :projects #{"server365" "google-chrome" "idea"}
+               :proxy    proxy/example-settings}
+              {:time     (LocalDateTime/of 2019 3 9 12 0 0)
+               :projects #{"server365" "google-chrome"}
+               :proxy    proxy/example-settings}
+              {:time (LocalDateTime/of 2019 3 9 13 30 0)}]
+
+   :previous {:time     (LocalDateTime/of 2019 3 9 8 0 0)
+              :projects #{"google-chrome"}
+              :proxy    proxy/example-settings}})
 
 (defn is-idle
   [state]
@@ -27,7 +36,7 @@
 
 (defn proxy-settings
   [state]
-  (or (-> state :previous :proxy-settings)
+  (or (-> state :previous :proxy)
       (proxy/default-settings)))
 
 (defn read-state

@@ -41,12 +41,12 @@
       "restart-proxy" (restart-proxy args-ws))))
 
 (defn serve [req]
-  (let [signals (read-string (:body req))]
-    (for [s signals]
-      (apply run-script s)))
   {:status  200
    :headers {"Content-Type" "text/plain"}
-   :body    (str (t/time-now))})
+   :body    (pr-str
+              (let [signals (read-string (:body req))]
+                (for [s signals]
+                  (apply run-script s))))})
 
 (defn start-server []
   (run-server serve {:port 8080})
