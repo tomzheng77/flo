@@ -48,7 +48,7 @@
 
 (defn call
   "runs a command with the given arguments. waits until the execution
-  completes or an error is thrown"
+  completes or an error is thrown. returns :exit, :out and :err."
   ([cmd & args]
    (let [exec (first (find-executable cmd))]
      (if-not exec
