@@ -16,7 +16,7 @@
 
 (testing "proxy"
   (testing "should default to no restrictions"
-    (is (= true (proxy/no-restrictions proxy/default-settings)))))
+    (is (= true (proxy/no-restrictions? proxy/default-settings)))))
 
 (testing "state"
   (testing "should start as idle"

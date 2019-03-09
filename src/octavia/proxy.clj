@@ -14,7 +14,7 @@
 (def example-settings {:not-contain-ctype #{"text/css"}
                        :not-contain       #{"anime"}})
 
-(defn no-restrictions [settings]
+(defn no-restrictions? [settings]
   (and (empty? (:not-contain-ctype settings))
        (empty? (:not-contain settings))))
 
@@ -119,7 +119,7 @@
        (if @server-atom (.stop @server-atom))
        (reset! settings-atom settings)
        (reset! server-atom
-               (if (no-restrictions settings)
+               (if (no-restrictions? settings)
                  (start-server-mitm-off)
                  (start-server-mitm-on)))))))
 
