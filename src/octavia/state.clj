@@ -31,9 +31,9 @@
               :settings {:allow #{"server365" "idea"}
                          :proxy proxy/example-settings}}})
 
-(defn satisfy-both [settings-one settings-two]
+(defn intersect [settings-one settings-two]
   {:allow (set/union (:allow settings-one) (:allow settings-two))
-   :proxy (proxy/satisfy-both (:proxy settings-one) (:proxy settings-two))})
+   :proxy (proxy/intersect (:proxy settings-one) (:proxy settings-two))})
 
 (defn request-between
   [state start-time end-time settings]

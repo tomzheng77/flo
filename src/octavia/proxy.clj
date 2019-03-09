@@ -147,7 +147,7 @@
         (u/set-of (attr settings))
         (u/set-of rest)))))
 
-(defn satisfy-both
+(defn intersect
   [settings-one settings-two]
   (-> settings-one
       (inc-restrict :not-contain-ctype (:not-contain-ctype settings-two))
