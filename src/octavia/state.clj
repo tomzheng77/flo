@@ -32,7 +32,7 @@
                          :proxy proxy/example-settings}}})
 
 (defn intersect [settings-one settings-two]
-  {:allow (set/union (:allow settings-one) (:allow settings-two))
+  {:allow (set/intersection (:allow settings-one) (:allow settings-two))
    :proxy (proxy/intersect (:proxy settings-one) (:proxy settings-two))})
 
 (defn request-between
