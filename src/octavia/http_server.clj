@@ -1,9 +1,9 @@
-(ns sayaka.http-server
+(ns octavia.http-server
   (:require [org.httpkit.server :refer [run-server]]
             [clj-time.core :as t]
-            [sayaka.state :as st]
-            [sayaka.proxy :as proxy]
-            [sayaka.restrictions :as r]))
+            [octavia.state :as st]
+            [octavia.proxy :as proxy]
+            [octavia.restrictions :as r]))
 
 (defn between [args]
   (:start-time args)

@@ -1,4 +1,4 @@
-(sayaka.state-test
+(octavia.state-test
   (:require [clojure.test :refer :all]))
 
 (require '[clojure.test.check :as tc])

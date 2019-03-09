@@ -1,4 +1,4 @@
-(defproject sayaka "0.1.0-SNAPSHOT"
+(defproject octavia "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -20,5 +20,5 @@
                  [com.fzakaria/slf4j-timbre "0.3.12"]
                  [com.palletops/log-config "0.1.4"]
                  [criterium "0.4.4"]]
-  :main ^:skip-aot sayaka.core
+  :main ^:skip-aot octavia.core
   :profiles {:uberjar {:aot :all}})

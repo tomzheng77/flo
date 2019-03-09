@@ -1,12 +1,12 @@
-(ns sayaka.core
+(ns octavia.core
   (:require
-    [sayaka.constants :as c]
-    [sayaka.subprocess :as s]
-    [sayaka.state :as st]
-    [sayaka.proxy :as proxy]
-    [sayaka.http-server :as http]
-    [sayaka.restrictions :as r]
-    [sayaka.utils :as u]
+    [octavia.constants :as c]
+    [octavia.subprocess :as s]
+    [octavia.state :as st]
+    [octavia.proxy :as proxy]
+    [octavia.http-server :as http]
+    [octavia.restrictions :as r]
+    [octavia.utils :as u]
     [criterium.core :as crit]
     [taoensso.timbre :as timbre
      :refer [log trace debug info warn error fatal report
@@ -36,8 +36,8 @@
       (if (empty? (s/find-executable cmd))
         (str "executable '" cmd "' cannot be located")))))
 
-(defn sayaka-client [])
-(defn sayaka-server []
+(defn octavia-client [])
+(defn octavia-server []
   (info "S.A.Y.A.K.A starting")
   (let [errors (check-environment)]
     (if (not-empty errors)
@@ -51,12 +51,12 @@
   (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT")
   (info "S.A.Y.A.K.A started"))
 
-(defn sayaka-orbit [])
+(defn octavia-orbit [])
 
 (defn -main
-  ([] sayaka-client)
+  ([] octavia-client)
   ([mode]
    (case mode
-     "--server" (sayaka-server)
-     "--client" (sayaka-client)
-     "--orbit" (sayaka-orbit))))
+     "--server" (octavia-server)
+     "--client" (octavia-client)
+     "--orbit" (octavia-orbit))))

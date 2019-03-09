@@ -1,6 +1,6 @@
-(ns sayaka.core-test
+(ns octavia.core-test
   (:require [clojure.test :refer :all]
-            [sayaka.core :refer :all]))
+            [octavia.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

@@ -1,14 +1,14 @@
-(ns sayaka.state
+(ns octavia.state
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [sayaka.constants :as c]
-            [sayaka.restrictions :as r]
+            [octavia.constants :as c]
+            [octavia.restrictions :as r]
             [taoensso.timbre :as timbre
              :refer [log trace debug info warn error fatal report
                      logf tracef debugf infof warnf errorf fatalf reportf
                      spy get-env]]
-            [sayaka.utils :as u]
-            [sayaka.proxy :as proxy])
+            [octavia.utils :as u]
+            [octavia.proxy :as proxy])
   (:import (java.io PushbackReader)
            (org.apache.commons.io FileUtils)
            (java.time LocalDateTime)))

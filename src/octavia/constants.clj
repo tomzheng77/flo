@@ -1,4 +1,4 @@
-(ns sayaka.constants
+(ns octavia.constants
   (:require [clojure.string :as str])
   (:require [clojure.set :as set :refer [union]])
   (:import (java.io File)
@@ -35,9 +35,9 @@
 (def user-browsers (str "/home/" user "/Documents/Browsers"))
 (def processes-dir "/proc")
 
-(def home (str "/home/" user "/sayaka"))
-(def primary-log (str home "/sayaka.log"))
-(def primary-db (str home "/sayaka.edn"))
+(def home (str "/home/" user "/octavia"))
+(def primary-log (str home "/octavia.log"))
+(def primary-db (str home "/octavia.edn"))
 
 (def certificate-root (str home "/certs"))
 (def certificate (str certificate-root "/certificate.cer"))

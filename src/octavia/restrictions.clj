@@ -1,9 +1,9 @@
-(ns sayaka.restrictions
+(ns octavia.restrictions
   (:require [clojure.java.io :as io]
-            [sayaka.constants :as c]
-            [sayaka.subprocess :as s]
+            [octavia.constants :as c]
+            [octavia.subprocess :as s]
             [clojure.string :as str])
-  (:use [sayaka.utils]))
+  (:use [octavia.utils]))
 
 (defn force-logout []
   (s/call "killall" "-u" c/user "i3")
