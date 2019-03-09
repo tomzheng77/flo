@@ -8,11 +8,22 @@
             [octavia.proxy :as proxy])
   (:gen-class))
 
-(def sort-idempotent-prop
+(def string-set (gen/set gen/string-alphanumeric))
+
+(def intersect-identity
   (prop/for-all
-    [v (gen/vector gen/int)]
-    (= (sort v)
-       (sort (sort v)))))
+    [a string-set b string-set c string-set]
+    (let [settings {:block a :proxy {:not-contain-ctype b :not-contain c}}]
+      (= settings (st/intersect nil settings)))))
+
+(def intersect-commutative
+  (prop/for-all
+    [a string-set b string-set c string-set
+     d string-set e string-set f string-set]
+    (let [settings-one {:block a :proxy {:not-contain-ctype b :not-contain c}}
+          settings-two {:block d :proxy {:not-contain-ctype e :not-contain f}}]
+      (= (st/intersect settings-one settings-two)
+         (st/intersect settings-two settings-one)))))
 
 (testing "proxy"
   (testing "should default to no restrictions"
@@ -27,19 +38,5 @@
   (testing "should intersect nil with nil"
     (is (= true (st/no-restrictions? (st/intersect nil nil)))))
   (testing "should intersect nil with anything else"
-    (is (= {:block #{"A"}
-            :proxy {:not-contain-ctype #{"B"},
-                    :not-contain       #{"E"}}}
-           (st/intersect nil {:block #{"A"}
-                              :proxy {:not-contain-ctype #{"B"},
-                                      :not-contain       #{"E"}}})))))
-
-(testing "Arithmetic"
-  (testing "with positive integers"
-    (is (= 4 (+ 2 2)))
-    (is (= 7 (+ 3 4))))
-  (testing "with negative integers"
-    (is (= -4 (+ -2 -2)))
-    (is (= -1 (+ 3 -4)))))
-
-(tc/quick-check 100 sort-idempotent-prop)
+    (is (:pass? (tc/quick-check 20 intersect-identity)))
+    (is (:pass? (tc/quick-check 20 intersect-commutative)))))
