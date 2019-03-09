@@ -12,14 +12,10 @@
 
 (def default-settings {})
 (def example-settings {:not-contain-ctype #{"text/css"}
-                       :start-with        #{"www.mvnrepository.com"}
-                       :contain           "clojure"
                        :not-contain       #{"anime"}})
 
 (defn no-restrictions [settings]
   (and (empty? (:not-contain-ctype settings))
-       (empty? (:start-with settings))
-       (empty? (:contain settings))
        (empty? (:not-contain settings))))
 
 (defn file-exists [path]
@@ -65,11 +61,7 @@
    (true?
      (and
        (not-any? (fn [ctype] (str/includes? ctype content-type)) (u/to-set (:not-contain-ctype settings)))
-       (not-any? (partial str/includes? url) (u/to-set (:not-contain settings)))
-       (or
-         (and (empty? (:start-with settings)) (empty? (:contain settings)))
-         (some (partial str/starts-with? url) (u/to-set (:start-with settings)))
-         (some (partial str/includes? url) (u/to-set (:contain settings))))))))
+       (not-any? (partial str/includes? url) (u/to-set (:not-contain settings)))))))
 
 (def server-lock (new Object))
 (def server-atom (atom nil))
@@ -131,26 +123,19 @@
                  (start-server-mitm-off)
                  (start-server-mitm-on)))))))
 
-(defn inc-restrict
+(defn union-attr
   "increases restrictions for the specified attribute on a settings object
   by adding or removing elements from the corresponding set."
   [settings attr rest]
-  (let [combine (case attr
-                  :not-contain-ctype set/union
-                  :start-with set/intersection
-                  :contain set/intersection
-                  :not-contain set/union)]
-    (assoc
-      settings
-      attr
-      (combine
-        (u/to-set (attr settings))
-        (u/to-set rest)))))
+  (assoc
+    settings
+    attr
+    (set/union
+      (u/to-set (attr settings))
+      (u/to-set rest))))
 
-(defn intersect
+(defn union
   [settings-one settings-two]
   (-> settings-one
-      (inc-restrict :not-contain-ctype (:not-contain-ctype settings-two))
-      (inc-restrict :start-with (:start-with settings-two))
-      (inc-restrict :contain (:contain settings-two))
-      (inc-restrict :not-contain (:not-contain settings-two))))
+      (union-attr :not-contain-ctype (:not-contain-ctype settings-two))
+      (union-attr :not-contain (:not-contain settings-two))))

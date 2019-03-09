@@ -20,20 +20,20 @@
 
 (def example-state
   {:next     [{:time     (LocalDateTime/of 2019 3 9 10 0 0)
-               :settings {:allow #{"google-chrome"}
+               :settings {:block #{"google-chrome"}
                           :proxy proxy/example-settings}}
               {:time     (LocalDateTime/of 2019 3 9 11 0 0)
-               :settings {:allow #{"server365" "google-chrome" "idea"}
+               :settings {:block #{"server365" "google-chrome" "idea"}
                           :proxy proxy/example-settings}}
               {:time (LocalDateTime/of 2019 3 9 12 0 0)}]
 
    :previous {:time     (LocalDateTime/of 2019 3 9 8 0 0)
-              :settings {:allow #{"server365" "idea"}
+              :settings {:block #{"server365" "idea"}
                          :proxy proxy/example-settings}}})
 
 (defn intersect [settings-one settings-two]
-  {:allow (set/intersection (u/to-set (:allow settings-one)) (u/to-set (:allow settings-two)))
-   :proxy (proxy/intersect (:proxy settings-one) (:proxy settings-two))})
+  {:block (set/intersection (u/to-set (:block settings-one)) (u/to-set (:block settings-two)))
+   :proxy (proxy/union (:proxy settings-one) (:proxy settings-two))})
 
 (defn request-between
   [state start-time end-time settings]

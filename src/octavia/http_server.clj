@@ -8,7 +8,7 @@
 (defn between [args]
   (:start-time args)
   (:end-time args)
-  (:allow args)
+  (:block args)
   (:proxy args))
 
 (defn status

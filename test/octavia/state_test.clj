@@ -24,22 +24,16 @@
   (testing "should start with default proxy settings"
     (is (= proxy/default-settings (st/proxy-settings st/initial-state))))
   (testing "should intersect nil with nil"
-    (is (= {:allow #{}
+    (is (= {:block #{}
             :proxy {:not-contain-ctype #{},
-                    :start-with        #{},
-                    :contain           #{},
                     :not-contain       #{}}}
            (st/intersect nil nil))))
   (testing "should intersect nil with anything else"
-    (is (= {:allow #{}
+    (is (= {:block #{}
             :proxy {:not-contain-ctype #{"B"},
-                    :start-with        #{},
-                    :contain           #{},
                     :not-contain       #{"E"}}}
-           (st/intersect nil {:allow #{"A"}
+           (st/intersect nil {:block #{"A"}
                               :proxy {:not-contain-ctype #{"B"},
-                                      :start-with        #{"C"},
-                                      :contain           #{"D"},
                                       :not-contain       #{"E"}}})))))
 
 (testing "Arithmetic"
