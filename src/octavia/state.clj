@@ -34,7 +34,8 @@
 (defn intersect [settings-one settings-two]
   {:restrict  (set/union (u/to-set (:restrict settings-one))
                          (u/to-set (:restrict settings-two)))
-   :blacklist (proxy/union (:blacklist settings-one) (:blacklist settings-two))})
+   :blacklist (proxy/union (:blacklist settings-one)
+                           (:blacklist settings-two))})
 
 (defn request-between
   [state start-time end-time settings]
