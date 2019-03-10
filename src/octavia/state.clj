@@ -20,20 +20,21 @@
 
 (def example-state
   {:next     [{:time     (LocalDateTime/of 2019 3 9 10 0 0)
-               :settings {:block #{"google-chrome"}
-                          :proxy proxy/example-settings}}
+               :settings {:restrict  #{"google-chrome"}
+                          :blacklist proxy/example-settings}}
               {:time     (LocalDateTime/of 2019 3 9 11 0 0)
-               :settings {:block #{"server365" "google-chrome" "idea"}
-                          :proxy proxy/example-settings}}
+               :settings {:restrict  #{"server365" "google-chrome" "idea"}
+                          :blacklist proxy/example-settings}}
               {:time (LocalDateTime/of 2019 3 9 12 0 0)}]
 
    :previous {:time     (LocalDateTime/of 2019 3 9 8 0 0)
-              :settings {:block #{"server365" "idea"}
-                         :proxy proxy/example-settings}}})
+              :settings {:restrict  #{"server365" "idea"}
+                         :blacklist proxy/example-settings}}})
 
 (defn intersect [settings-one settings-two]
-  {:block (set/union (u/to-set (:block settings-one)) (u/to-set (:block settings-two)))
-   :proxy (proxy/union (:proxy settings-one) (:proxy settings-two))})
+  {:restrict  (set/union (u/to-set (:restrict settings-one))
+                         (u/to-set (:restrict settings-two)))
+   :blacklist (proxy/union (:blacklist settings-one) (:blacklist settings-two))})
 
 (defn request-between
   [state start-time end-time settings]
@@ -47,12 +48,12 @@
 (defn no-restrictions?
   [state]
   (let [settings (-> state :previous :settings)]
-    (and (empty? (:block settings))
-         (proxy/no-restrictions? (:proxy settings)))))
+    (and (empty? (:restrict settings))
+         (proxy/no-restrictions? (:blacklist settings)))))
 
 (defn proxy-settings
   [state]
-  (or (-> state :previous :proxy)
+  (or (-> state :previous :blacklist)
       proxy/default-settings))
 
 (defn read-state

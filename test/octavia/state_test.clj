@@ -13,15 +13,15 @@
 (def intersect-identity
   (prop/for-all
     [a string-set b string-set c string-set]
-    (let [settings {:block a :proxy {:not-contain-ctype b :not-contain c}}]
+    (let [settings {:restrict a :blacklist {:not-contain-ctype b :not-contain c}}]
       (= settings (st/intersect nil settings)))))
 
 (def intersect-commutative
   (prop/for-all
     [a string-set b string-set c string-set
      d string-set e string-set f string-set]
-    (let [settings-one {:block a :proxy {:not-contain-ctype b :not-contain c}}
-          settings-two {:block d :proxy {:not-contain-ctype e :not-contain f}}]
+    (let [settings-one {:restrict a :blacklist {:not-contain-ctype b :not-contain c}}
+          settings-two {:restrict d :blacklist {:not-contain-ctype e :not-contain f}}]
       (= (st/intersect settings-one settings-two)
          (st/intersect settings-two settings-one)))))
 
