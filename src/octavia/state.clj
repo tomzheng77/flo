@@ -15,21 +15,21 @@
            (java.time LocalDateTime)))
 
 (def initial-state
-  {:next     []
-   :previous nil})
+  {:next []
+   :prev nil})
 
 (def example-state
-  {:next     [{:time     (LocalDateTime/of 2019 3 9 10 0 0)
-               :settings {:restrict  #{"google-chrome"}
-                          :blacklist proxy/example-settings}}
-              {:time     (LocalDateTime/of 2019 3 9 11 0 0)
-               :settings {:restrict  #{"server365" "google-chrome" "idea"}
-                          :blacklist proxy/example-settings}}
-              {:time (LocalDateTime/of 2019 3 9 12 0 0)}]
+  {:next [{:time     (LocalDateTime/of 2019 3 9 10 0 0)
+           :settings {:restrict  #{"google-chrome"}
+                      :blacklist proxy/example-settings}}
+          {:time     (LocalDateTime/of 2019 3 9 11 0 0)
+           :settings {:restrict  #{"server365" "google-chrome" "idea"}
+                      :blacklist proxy/example-settings}}
+          {:time (LocalDateTime/of 2019 3 9 12 0 0)}]
 
-   :previous {:time     (LocalDateTime/of 2019 3 9 8 0 0)
-              :settings {:restrict  #{"server365" "idea"}
-                         :blacklist proxy/example-settings}}})
+   :prev {:time     (LocalDateTime/of 2019 3 9 8 0 0)
+          :settings {:restrict  #{"server365" "idea"}
+                     :blacklist proxy/example-settings}}})
 
 (defn intersect [settings-one settings-two]
   {:restrict  (set/union (u/to-set (:restrict settings-one))
@@ -48,13 +48,13 @@
 
 (defn no-restrictions?
   [state]
-  (let [settings (-> state :previous :settings)]
+  (let [settings (-> state :prev :settings)]
     (and (empty? (:restrict settings))
          (proxy/no-restrictions? (:blacklist settings)))))
 
 (defn proxy-settings
   [state]
-  (or (-> state :previous :blacklist)
+  (or (-> state :prev :blacklist)
       proxy/default-settings))
 
 (defn read-state
