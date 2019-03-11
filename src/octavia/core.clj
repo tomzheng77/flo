@@ -4,7 +4,7 @@
     [octavia.subprocess :as s]
     [octavia.state :as st]
     [octavia.proxy :as proxy]
-    [octavia.http-server :as http]
+    [octavia.interpreter :as http]
     [octavia.restrictions :as r]
     [octavia.utils :as u]
     [criterium.core :as crit]
