@@ -17,7 +17,7 @@
     "/usr/sbin"
     "/usr/local/bin"})
 
-(def raw-paths (set (split-with-string path-separator (System/getenv "PATH"))))
+(def raw-paths (set (split path-separator (System/getenv "PATH"))))
 (def global-paths (union custom-paths raw-paths))
 (def global-path (str/join path-separator global-paths))
 

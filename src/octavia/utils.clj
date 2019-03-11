@@ -9,7 +9,7 @@
 
 (defn re-quote [s] (Pattern/quote s))
 
-(defn split-with-string [separator string]
+(defn split [separator string]
   (str/split string (re-pattern (re-quote separator))))
 
 (defn is-executable-file
