@@ -3,13 +3,15 @@
             [clojure.string :as str]
             [octavia.utils :as u]))
 
-(def new-file {:type :file :content ""})
-(def new-dir {:type :dir :files {}})
+(def new-file {:content ""})
+(def new-dir {:files {}})
 (def initial-root new-dir)
 (def initial-groups #{c/user "wireshark"})
 
+(defn add-file [dir file])
+
 ; represents the root of the filesystem
-; each file can be {:type :dir :files {"name" ...}} or {:type :file :content ""}
+; each file can be {:files {"name" ...}} or {:content ""}
 (def root (atom initial-root))
 
 ; represents the group names of the user
@@ -27,3 +29,8 @@
       at
       (recur (assoc new-dir :files {(first list) at})
              (rest list)))))
+
+(defn sync
+  "syncs one file structure to another"
+  ([from to] (sync from to false))
+  ([from to replace]))
