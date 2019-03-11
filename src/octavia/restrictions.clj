@@ -78,3 +78,17 @@
   (let [report (s/process-report)]
     (restrict-container c/user-projects report allow-name user-755)
     (restrict-container c/user-programs report allow-name root-755)))
+
+(defn send-notify
+  "sends a notification to the user via the message bus.
+  dunst needs to be installed first"
+  ([title] (send-notify title ""))
+  ([title message]
+   (let [user-id (read-string (str/trim (:out (s/call "id" "-u" c/user))))]
+     (s/call "sudo" "-u" c/user "DISPLAY=${display:1:-1}"
+           (str "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" user-id "/bus")
+           "notify-send" title message))))
+
+(defn lock-i3
+  []
+  (s/call "sudo" "-u" "i3lock" "-n" "-c" "000000"))

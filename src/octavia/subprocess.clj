@@ -45,13 +45,3 @@
                                          {"PATH"        c/global-path
                                           "http_proxy"  ""
                                           "https_proxy" ""}])))))))
-
-(defn send-notify
-  "sends a notification to the user via the message bus.
-  dunst needs to be installed first"
-  ([title] (send-notify title ""))
-  ([title message]
-   (let [user-id (read-string (str/trim (:out (call "id" "-u" c/user))))]
-     (call "sudo" "-u" c/user "DISPLAY=${display:1:-1}"
-           (str "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" user-id "/bus")
-           "notify-send" title message))))
