@@ -3,19 +3,27 @@
             [clojure.string :as str]
             [octavia.utils :as u]))
 
-; represents the root of the filesystem
-; each file can be {:type :dir :files {}} or {:type :file :content ""}
-(def root (atom {:type :dir :files {}}))
-
-; represents the group names of the user
-(def groups (atom #{c/user "wireshark"}))
-
 (def new-file {:type :file :content ""})
 (def new-dir {:type :dir :files {}})
+(def initial-root new-dir)
+(def initial-groups #{c/user "wireshark"})
 
-(defn mkdirs
+; represents the root of the filesystem
+; each file can be {:type :dir :files {"name" ...}} or {:type :file :content ""}
+(def root (atom initial-root))
+
+; represents the group names of the user
+(def groups (atom initial-groups))
+
+; resets the system to it's initial state
+(defn reset
+  (reset! root initial-root)
+  (reset! groups initial-groups))
+
+(defn mkdir
   [path]
-  (let [path-list (u/split c/file-separator path)]
-    (swap! root
-      (fn [root]
-        (loop [at root, to-walk path-list])))))
+  (loop [at new-dir list (reverse (u/split c/file-separator path))]
+    (if (empty? list)
+      at
+      (recur (assoc new-dir :files {(first list) at})
+             (rest list)))))

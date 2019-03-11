@@ -9,7 +9,7 @@
 (def encoding "UTF-8")
 (def charset (Charset/forName encoding))
 
-(def file-separator (File/separatorChar))
+(def file-separator (File/separator))
 (def path-separator (File/pathSeparator))
 
 (def custom-paths
