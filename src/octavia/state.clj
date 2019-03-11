@@ -14,10 +14,7 @@
            (org.apache.commons.io FileUtils)
            (java.time LocalDateTime)))
 
-(def initial-state
-  {:next []
-   :prev nil})
-
+(def initial-state {:next [] :prev nil})
 (def example-state
   {:next [{:time     (LocalDateTime/of 2019 3 9 10 0 0)
            :settings {:restrict  #{"google-chrome"}
