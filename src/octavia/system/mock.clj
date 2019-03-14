@@ -10,15 +10,20 @@
 
 (defn dir [name & args])
 
-(def state (atom {:filesystem (dir "/" :chmod 755 :chown "root:root"
-                                   (dir "home" :chmod 755 :chown "root:root"
-                                        (dir "tomzheng" :chmod 755 :chown "tomzheng:tomzheng"
-                                             (dir "Documents" :chmod 755 :chown "tomzheng:tomzheng"
-                                                  (dir "Projects" :chmod 755 :chown "tomzheng:tomzheng")
-                                                  (dir "Programs" :chmod 755 :chown "tomzheng:tomzheng")
-                                                  (dir "Browsers" :chmod 755 :chown "tomzheng:tomzheng"))
-                                             (dir "octavia"))))
-                  :groups     #{c/user "wireshark"}}))
+(defn state-for
+  [user]
+  (let [user-chown (str user ":" user)]
+    {:groups     #{user "wireshark"}
+     :filesystem (dir "/" :chmod 755 :chown "root:root"
+                   (dir "home" :chmod 755 :chown "root:root"
+                     (dir "tomzheng" :chmod 755 :chown "tomzheng:tomzheng"
+                       (dir "Documents" :chmod 755 :chown "tomzheng:tomzheng"
+                         (dir "Projects" :chmod 755 :chown "tomzheng:tomzheng")
+                         (dir "Programs" :chmod 755 :chown "tomzheng:tomzheng")
+                         (dir "Browsers" :chmod 755 :chown "tomzheng:tomzheng"))
+                       (dir "octavia"))))}))
+
+(def state (atom (state-for c/user)))
 
 ; represents the root of the filesystem
 ; each file can be {:files {"name" ...}} or {:content ""}
