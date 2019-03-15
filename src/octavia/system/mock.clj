@@ -8,11 +8,15 @@
   (or (= (:type item) :folder)
       (= (:type item) :file)))
 
+(defn parse-chown
+  [args]
+  (if (some #(= :root %) args)
+    "root:root"
+    (str c/user ":" c/user)))
+
 (defn new-folder
   [name & args]
-  (let [chown (if (some #(= :root %) args)
-                "root:root"
-                (str c/user ":" c/user))]
+  (let [chown (parse-chown args)]
     {:name  name
      :type  :folder
      :chown chown
@@ -21,9 +25,7 @@
 
 (defn new-file
   [name & args]
-  (let [chown (if (some #(= :root %) args)
-                "root:root"
-                (str c/user ":" c/user))]
+  (let [chown (parse-chown args)]
     {:name  name
      :type  :file
      :chown chown
