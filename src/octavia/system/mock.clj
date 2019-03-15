@@ -3,49 +3,59 @@
             [clojure.string :as str]
             [octavia.utils :as u]))
 
-(def new-file {:content ""})
-(def new-dir {:files {}})
-(def initial-root new-dir)
-(def initial-groups #{c/user "wireshark"})
+(defn file?
+  [item]
+  (or (= (:type item) :folder)
+      (= (:type item) :file)))
 
-(defn dir [name & args])
+(defn new-folder
+  [name & args]
+  (let [chown (if (some #(= :root %) args)
+                "root:root"
+                (str c/user ":" c/user))]
+    {:name  name
+     :type  :folder
+     :chown chown
+     :chmod "755"
+     :files (filter file? args)}))
 
-(defn state-for
-  [user]
-  (let [user-chown (str user ":" user)]
-    {:groups     #{user "wireshark"}
-     :filesystem (dir "/" :chmod 755 :chown "root:root"
-                   (dir "home" :chmod 755 :chown "root:root"
-                     (dir "tomzheng" :chmod 755 :chown "tomzheng:tomzheng"
-                       (dir "Documents" :chmod 755 :chown "tomzheng:tomzheng"
-                         (dir "Projects" :chmod 755 :chown "tomzheng:tomzheng")
-                         (dir "Programs" :chmod 755 :chown "tomzheng:tomzheng")
-                         (dir "Browsers" :chmod 755 :chown "tomzheng:tomzheng"))
-                       (dir "octavia"))))}))
+(defn new-file
+  [name & args]
+  (let [chown (if (some #(= :root %) args)
+                "root:root"
+                (str c/user ":" c/user))]
+    {:name  name
+     :type  :file
+     :chown chown
+     :chmod "755"
+     :contents ""}))
 
-(def state (atom (state-for c/user)))
+(defn new-filesystem
+  (new-folder "/" :root
+    (new-folder "home" :root
+      (new-folder c/user
+        (new-folder "Documents"
+          (new-folder "Projects")
+          (new-folder "Programs")
+          (new-folder "Browsers"))
+        (new-folder "octavia"
+          (new-file "octavia.json")
+          (new-file "octavia.file"))))))
 
-; represents the root of the filesystem
-; each file can be {:files {"name" ...}} or {:content ""}
-(def root (atom initial-root))
+(def state (atom {:files         (new-filesystem)
+                  :groups        #{c/user "wireshark"}
+                  :can-login     true
+                  :has-login     false
+                  :screen-locked false}))
 
-; represents the group names of the user
-(def groups (atom initial-groups))
+(defn test-url
+  [url]
+  )
 
-; resets the system to it's initial state
-(defn reset
-  (reset! root initial-root)
-  (reset! groups initial-groups))
-
-(defn mkdir
-  [path]
-  (loop [at new-dir list (reverse (u/split c/file-separator path))]
-    (if (empty? list)
-      at
-      (recur (assoc new-dir :files {(first list) at})
-             (rest list)))))
-
-(defn sync
-  "syncs one file structure to another"
-  ([from to] (sync from to false))
-  ([from to replace]))
+;(defn mkdir
+;  [path]
+;  (loop [at new-dir list (reverse (u/split c/file-separator path))]
+;    (if (empty? list)
+;      at
+;      (recur (assoc new-dir :files {(first list) at})
+;             (rest list)))))
