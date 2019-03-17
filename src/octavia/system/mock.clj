@@ -89,6 +89,16 @@
         (if (not (nil? next-step))
           (chmod next-step (next path-seq) perm))))))
 
+(defn- chown
+  "changes the :chown property of a file at the specified path"
+  [at-file path owner]
+  (let [path-seq (to-path-seq path)]
+    (if (empty? path-seq)
+      (assoc at-file :chmod owner)
+      (let [next-step (some (name= (first path-seq)) (:files at-file))]
+        (if (not (nil? next-step))
+          (chmod next-step (next path-seq) owner))))))
+
 (defmacro call
   [channel & args])
 
@@ -108,6 +118,6 @@
           [:add-group group] (swap! state #(assoc % :groups (conj (get % :groups) group)))
           [:remove-group group] (swap! state #(assoc % :groups (disj (get % :groups) group)))
           [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (chmod (:filesystem %) path perm))))
-          [:chown path owner] (println "chown")))
+          [:chown path owner] (swap! state #(assoc % :filesystem (chmod (:filesystem %) path owner)))))
       (recur))
     messages))
