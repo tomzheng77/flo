@@ -97,12 +97,13 @@
                      :has-login     false
                      :screen-locked false})]
     (go-loop []
-      (match (<! messages)
-        [:read-string path return] (println "unknown")
-        [:mkdirs path] (swap! state #(mkdirs % path))
-        [:add-wheel] (swap! state #(assoc % :groups (conj (get % :groups) "wheel")))
-        [:remove-wheel] (swap! state #(assoc % :groups (disj (get % :groups) "wheel")))
-        [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (chmod (:filesystem %) path perm))))
-        [:chown path owner] (println "chown"))
+      (let [message (<! messages)]
+        (match message
+          [:read-string path return] (println "unknown")
+          [:mkdirs path] (swap! state #(mkdirs % path))
+          [:add-wheel] (swap! state #(assoc % :groups (conj (get % :groups) "wheel")))
+          [:remove-wheel] (swap! state #(assoc % :groups (disj (get % :groups) "wheel")))
+          [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (chmod (:filesystem %) path perm))))
+          [:chown path owner] (println "chown")))
       (recur))
     messages))
