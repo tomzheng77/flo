@@ -20,7 +20,7 @@
 
 (defn name= [name] (fn [file] (= name (:name file))))
 
-(defn new-folder
+(defn- new-folder
   [name & args]
   (let [chown (parse-chown args)]
     {:name  name
@@ -29,7 +29,7 @@
      :chmod "755"
      :files (filter file? args)}))
 
-(defn new-file
+(defn- new-file
   [name & args]
   (let [chown (parse-chown args)]
     {:name  name
@@ -38,7 +38,7 @@
      :chmod "755"
      :text  ""}))
 
-(defn new-link
+(defn- new-link
   [name target & args]
   (let [chown (parse-chown args)]
     {:name   name
@@ -47,7 +47,7 @@
      :chmod  "755"
      :target target}))
 
-(defn new-filesystem
+(defn- new-filesystem
   []
   (new-folder
     "/" :root
@@ -69,18 +69,18 @@
   [state path]
   (:files))
 
-(defn to-path-seq
+(defn- to-path-seq
   [path]
   (if (string? path)
     (let [trim-path (str/trim path)]
       (if (empty? trim-path) [] (str/split trim-path (Pattern/quote c/file-separator))))
     path))
 
-(defn valid-perm?
+(defn- valid-perm?
   [perm]
   (and (string? perm) (re-matches #"[0-7]{3}" perm)))
 
-(defn chmod
+(defn- chmod
   [at path perm]
   (let [path-seq (to-path-seq path)]
     (if (empty? path-seq)
