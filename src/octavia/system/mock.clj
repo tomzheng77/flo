@@ -4,7 +4,8 @@
             [octavia.utils :as u]
             [clojure.core.async :refer [go go-loop chan <! >! >!! <!!]]
             [clojure.core.match :refer [match]]
-            [clojure.string :as string]))
+            [clojure.string :as string])
+  (:import (java.util.regex Pattern)))
 
 (defn file?
   [item]
@@ -68,9 +69,16 @@
   [state path]
   (:files))
 
+(defn to-path-seq
+  [path]
+  (if (string? path)
+    (let [trim-path (str/trim path)]
+      (if (empty? trim-path) [] (str/split trim-path (Pattern/quote c/file-separator))))
+    path))
+
 (defn chmod
   [at path perm]
-  (let [path-seq (if (string? path) (string/split path #"/") path)]
+  (let [path-seq (to-path-seq path)]
     (if (empty? path-seq)
       (assoc at :chmod perm)
       (let [next-step (some (name= (first path-seq)) (:files at))]
