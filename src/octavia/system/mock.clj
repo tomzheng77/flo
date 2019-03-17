@@ -1,7 +1,9 @@
 (ns octavia.system.mock
   (:require [octavia.constants :as c]
             [clojure.string :as str]
-            [octavia.utils :as u]))
+            [octavia.utils :as u]
+            [clojure.core.async :refer [go go-loop chan <! >! >!! <!!]]
+            [clojure.core.match :refer [match]]))
 
 (defn file?
   [item]
@@ -30,34 +32,53 @@
      :type  :file
      :chown chown
      :chmod "755"
-     :contents ""}))
+     :text  ""}))
+
+(defn new-link
+  [name target & args]
+  (let [chown (parse-chown args)]
+    {:name   name
+     :type   :link
+     :chown  chown
+     :chmod  "755"
+     :target target}))
 
 (defn new-filesystem
-  (new-folder "/" :root
-    (new-folder "home" :root
-      (new-folder c/user
-        (new-folder "Documents"
+  []
+  (new-folder
+    "/" :root
+    (new-folder
+      "home" :root
+      (new-folder
+        c/user
+        (new-folder
+          "Documents"
           (new-folder "Projects")
           (new-folder "Programs")
           (new-folder "Browsers"))
-        (new-folder "octavia"
+        (new-folder
+          "octavia"
           (new-file "octavia.json")
           (new-file "octavia.file"))))))
 
-(def state (atom {:files         (new-filesystem)
+(def state (atom {:filesystem    (new-filesystem)
                   :groups        #{c/user "wireshark"}
                   :can-login     true
                   :has-login     false
                   :screen-locked false}))
 
-(defn test-url
-  [url]
-  )
+(defn mkdirs
+  [state path]
+  (:files))
 
-;(defn mkdir
-;  [path]
-;  (loop [at new-dir list (reverse (u/split c/file-separator path))]
-;    (if (empty? list)
-;      at
-;      (recur (assoc new-dir :files {(first list) at})
-;             (rest list)))))
+(def system
+  (let [messages (chan)]
+    (go-loop []
+      (match (<! messages)
+        [:mkdirs path] (swap! state #(mkdirs % path))
+        [:add-wheel] (println "add wheel")
+        [:remove-wheel] (println "remove wheel")
+        [:chmod] (println "chmod")
+        [:chown] (println "chown"))
+      (recur))
+    messages))

@@ -19,6 +19,8 @@
                  [org.slf4j/jcl-over-slf4j "1.7.14"]
                  [com.fzakaria/slf4j-timbre "0.3.12"]
                  [com.palletops/log-config "0.1.4"]
-                 [criterium "0.4.4"]]
+                 [criterium "0.4.4"]
+                 [org.clojure/core.async "0.4.490"]
+                 [org.clojure/core.match "0.3.0-alpha5"]]
   :main ^:skip-aot octavia.core
   :profiles {:uberjar {:aot :all}})
