@@ -7,18 +7,18 @@
             [clojure.string :as string])
   (:import (java.util.regex Pattern)))
 
-(defn file?
+(defn- file?
   [item]
   (or (= (:type item) :folder)
       (= (:type item) :file)))
 
-(defn parse-chown
+(defn- parse-chown
   [args]
-  (if (some #(= :root %) args)
+  (if (some #(= :root-owned %) args)
     "root:root"
     (str c/user ":" c/user)))
 
-(defn name= [name] (fn [file] (= name (:name file))))
+(defn- name= [name] (fn [file] (= name (:name file))))
 
 (defn- new-folder
   [name & args]
@@ -50,9 +50,9 @@
 (defn- new-filesystem
   []
   (new-folder
-    "/" :root
+    "/" :root-owned
     (new-folder
-      "home" :root
+      "home" :root-owned
       (new-folder
         c/user
         (new-folder
@@ -65,15 +65,14 @@
           (new-file "octavia.json")
           (new-file "octavia.file"))))))
 
-(defn mkdirs
-  [state path]
-  (:files))
-
 (defn- to-path-seq
   [path]
   (if (string? path)
     (let [trim-path (str/trim path)]
-      (if (empty? trim-path) [] (str/split trim-path (Pattern/quote c/file-separator))))
+      (->> c/file-separator
+           (Pattern/quote)
+           (str/split trim-path)
+           (filter not-empty)))
     path))
 
 (defn- valid-perm?
@@ -81,13 +80,17 @@
   (and (string? perm) (re-matches #"[0-7]{3}" perm)))
 
 (defn- chmod
-  [at path perm]
+  "changes the :chmod property of a file at the specified path"
+  [at-file path perm]
   (let [path-seq (to-path-seq path)]
     (if (empty? path-seq)
-      (assoc at :chmod perm)
-      (let [next-step (some (name= (first path-seq)) (:files at))]
+      (assoc at-file :chmod perm)
+      (let [next-step (some (name= (first path-seq)) (:files at-file))]
         (if (not (nil? next-step))
           (chmod next-step (next path-seq) perm))))))
+
+(defmacro call
+  [channel & args])
 
 (def system
   (let [messages (chan 1000)
@@ -99,10 +102,11 @@
     (go-loop []
       (let [message (<! messages)]
         (match message
-          [:read-string path return] (println "unknown")
-          [:mkdirs path] (swap! state #(mkdirs % path))
-          [:add-wheel] (swap! state #(assoc % :groups (conj (get % :groups) "wheel")))
-          [:remove-wheel] (swap! state #(assoc % :groups (disj (get % :groups) "wheel")))
+          [:state return] (>!! return state)
+          [:read-string path return] (println "read-string")
+          [:mkdirs path] (println "mkdirs")
+          [:add-group group] (swap! state #(assoc % :groups (conj (get % :groups) group)))
+          [:remove-group group] (swap! state #(assoc % :groups (disj (get % :groups) group)))
           [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (chmod (:filesystem %) path perm))))
           [:chown path owner] (println "chown")))
       (recur))
