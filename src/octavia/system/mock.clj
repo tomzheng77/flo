@@ -79,7 +79,7 @@
   [perm]
   (and (string? perm) (re-matches #"[0-7]{3}" perm)))
 
-(defn- change-chmod
+(defn- update-chmod
   "changes the :chmod property of a file at the specified path"
   [at-file path perm]
   (let [path-seq (to-path-seq path)]
@@ -87,9 +87,9 @@
       (assoc at-file :chmod perm)
       (let [next-step (some (name= (first path-seq)) (:files at-file))]
         (if (not (nil? next-step))
-          (change-chmod next-step (next path-seq) perm))))))
+          (update-chmod next-step (next path-seq) perm))))))
 
-(defn- change-chown
+(defn- update-chown
   "changes the :chown property of a file at the specified path"
   [at-file path owner]
   (let [path-seq (to-path-seq path)]
@@ -97,7 +97,7 @@
       (assoc at-file :chmod owner)
       (let [next-step (some (name= (first path-seq)) (:files at-file))]
         (if (not (nil? next-step))
-          (change-chown next-step (next path-seq) owner))))))
+          (update-chown next-step (next path-seq) owner))))))
 
 (defmacro call
   [channel & args])
@@ -117,7 +117,7 @@
           [:mkdirs path] (println "mkdirs")
           [:add-group group] (swap! state #(assoc % :groups (conj (get % :groups) group)))
           [:remove-group group] (swap! state #(assoc % :groups (disj (get % :groups) group)))
-          [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (change-chmod (:filesystem %) path perm))))
-          [:chown path owner] (swap! state #(assoc % :filesystem (change-chown (:filesystem %) path owner)))))
+          [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (update-chmod (:filesystem %) path perm))))
+          [:chown path owner] (swap! state #(assoc % :filesystem (update-chown (:filesystem %) path owner)))))
       (recur))
     messages))
