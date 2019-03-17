@@ -79,7 +79,7 @@
   [perm]
   (and (string? perm) (re-matches #"[0-7]{3}" perm)))
 
-(defn- chmod
+(defn- change-chmod
   "changes the :chmod property of a file at the specified path"
   [at-file path perm]
   (let [path-seq (to-path-seq path)]
@@ -87,9 +87,9 @@
       (assoc at-file :chmod perm)
       (let [next-step (some (name= (first path-seq)) (:files at-file))]
         (if (not (nil? next-step))
-          (chmod next-step (next path-seq) perm))))))
+          (change-chmod next-step (next path-seq) perm))))))
 
-(defn- chown
+(defn- change-chown
   "changes the :chown property of a file at the specified path"
   [at-file path owner]
   (let [path-seq (to-path-seq path)]
@@ -97,7 +97,7 @@
       (assoc at-file :chmod owner)
       (let [next-step (some (name= (first path-seq)) (:files at-file))]
         (if (not (nil? next-step))
-          (chmod next-step (next path-seq) owner))))))
+          (change-chown next-step (next path-seq) owner))))))
 
 (defmacro call
   [channel & args])
