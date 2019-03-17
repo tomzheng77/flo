@@ -3,7 +3,8 @@
             [clojure.string :as str]
             [octavia.utils :as u]
             [clojure.core.async :refer [go go-loop chan <! >! >!! <!!]]
-            [clojure.core.match :refer [match]]))
+            [clojure.core.match :refer [match]]
+            [clojure.string :as string]))
 
 (defn file?
   [item]
@@ -15,6 +16,8 @@
   (if (some #(= :root %) args)
     "root:root"
     (str c/user ":" c/user)))
+
+(defn name= [name] (fn [file] (= name (:name file))))
 
 (defn new-folder
   [name & args]
@@ -61,24 +64,33 @@
           (new-file "octavia.json")
           (new-file "octavia.file"))))))
 
-(def state (atom {:filesystem    (new-filesystem)
-                  :groups        #{c/user "wireshark"}
-                  :can-login     true
-                  :has-login     false
-                  :screen-locked false}))
-
 (defn mkdirs
   [state path]
   (:files))
 
+(defn chmod
+  [at path perm]
+  (let [path-seq (if (string? path) (string/split path #"/") path)]
+    (if (empty? path-seq)
+      (assoc at :chmod perm)
+      (let [next-step (some (name= (first path-seq)) (:files at))]
+        (if (not (nil? next-step))
+          (chmod next-step (next path-seq) perm))))))
+
 (def system
-  (let [messages (chan)]
+  (let [messages (chan)
+        state (atom {:filesystem    (new-filesystem)
+                     :groups        #{c/user "wireshark"}
+                     :can-login     true
+                     :has-login     false
+                     :screen-locked false})]
     (go-loop []
       (match (<! messages)
+        [:read-string path return] (println "unknown")
         [:mkdirs path] (swap! state #(mkdirs % path))
-        [:add-wheel] (println "add wheel")
-        [:remove-wheel] (println "remove wheel")
-        [:chmod] (println "chmod")
-        [:chown] (println "chown"))
+        [:add-wheel] (swap! state #(assoc % :groups (conj (get % :groups) "wheel")))
+        [:remove-wheel] (swap! state #(assoc % :groups (disj (get % :groups) "wheel")))
+        [:chmod path perm] (swap! state #(chmod (:filesystem %) path perm))
+        [:chown path owner] (println "chown"))
       (recur))
     messages))
