@@ -76,6 +76,10 @@
       (if (empty? trim-path) [] (str/split trim-path (Pattern/quote c/file-separator))))
     path))
 
+(defn valid-perm?
+  [perm]
+  (and (string? perm) (re-matches #"[0-7]{3}" perm)))
+
 (defn chmod
   [at path perm]
   (let [path-seq (to-path-seq path)]
@@ -86,7 +90,7 @@
           (chmod next-step (next path-seq) perm))))))
 
 (def system
-  (let [messages (chan)
+  (let [messages (chan 1000)
         state (atom {:filesystem    (new-filesystem)
                      :groups        #{c/user "wireshark"}
                      :can-login     true
@@ -98,7 +102,7 @@
         [:mkdirs path] (swap! state #(mkdirs % path))
         [:add-wheel] (swap! state #(assoc % :groups (conj (get % :groups) "wheel")))
         [:remove-wheel] (swap! state #(assoc % :groups (disj (get % :groups) "wheel")))
-        [:chmod path perm] (swap! state #(chmod (:filesystem %) path perm))
+        [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (chmod (:filesystem %) path perm))))
         [:chown path owner] (println "chown"))
       (recur))
     messages))
