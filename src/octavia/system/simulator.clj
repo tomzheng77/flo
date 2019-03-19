@@ -105,7 +105,7 @@
 (def system
   (let [messages (chan 1000)
         state (atom {:filesystem    (new-filesystem)
-                     :groups        #{c/user "wireshark"}
+                     :user-groups   #{c/user "wireshark"}
                      :can-login     true
                      :has-login     false
                      :screen-locked false})]
@@ -115,8 +115,8 @@
           [:state return] (>!! return state)
           [:read-string path return] (println "read-string")
           [:mkdirs path] (println "mkdirs")
-          [:add-group group] (swap! state #(assoc % :groups (conj (get % :groups) group)))
-          [:remove-group group] (swap! state #(assoc % :groups (disj (get % :groups) group)))
+          [:add-group group] (swap! state #(assoc % :user-groups (conj (get % :user-groups) group)))
+          [:remove-group group] (swap! state #(assoc % :user-groups (disj (get % :user-groups) group)))
           [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (update-chmod (:filesystem %) path perm))))
           [:chown path owner] (swap! state #(assoc % :filesystem (update-chown (:filesystem %) path owner)))))
       (recur))
