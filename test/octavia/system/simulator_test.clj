@@ -5,12 +5,13 @@
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]))
 
-(def write-and-read
+(def write-and-read-basic
   (prop/for-all
     [filename gen/string-alphanumeric
      content gen/string-ascii]
+    (sim/run :reset)
     (sim/run :write-string filename content)
     (= content (sim/run :read-string filename))))
 
 (testing "should read the same contents as what was written"
-  (is (:pass? (tc/quick-check 20 write-and-read))))
+  (is (:pass? (tc/quick-check 20 write-and-read-basic))))

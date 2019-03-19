@@ -99,15 +99,18 @@
         (if (not (nil? next-step))
           (update-chown next-step (next path-seq) owner))))))
 
-(def state (atom {:filesystem    (new-filesystem)
-                   :user-groups   #{c/user "wireshark"}
-                   :can-login     true
-                   :has-login     false
-                   :screen-locked false}))
+(def initial-state {:filesystem    (new-filesystem)
+                    :user-groups   #{c/user "wireshark"}
+                    :can-login     true
+                    :has-login     false
+                    :screen-locked false})
+
+(def state (atom initial-state))
 
 (defn run [& args]
   (match (vec args)
-    [:state return] @state
+    [:reset] (reset! state initial-state)
+    [:state] @state
     [:write-string path content] (swap! state #(assoc % path content))
     [:read-string path] (get @state path)
     [:mkdirs path] (println "mkdirs")
