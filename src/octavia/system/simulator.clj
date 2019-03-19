@@ -106,9 +106,10 @@
                    :screen-locked false}))
 
 (defn run [& args]
-  (match args
+  (match (vec args)
     [:state return] @state
-    [:read-string path] (println "read-string")
+    [:write-string path content] (swap! state #(assoc % path content))
+    [:read-string path] (get @state path)
     [:mkdirs path] (println "mkdirs")
     [:add-group group] (swap! state #(assoc % :user-groups (conj (get % :user-groups) group)))
     [:remove-group group] (swap! state #(assoc % :user-groups (disj (get % :user-groups) group)))
