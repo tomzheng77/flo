@@ -99,25 +99,18 @@
         (if (not (nil? next-step))
           (update-chown next-step (next path-seq) owner))))))
 
-(defmacro call
-  [channel & args])
+(def state (atom {:filesystem    (new-filesystem)
+                   :user-groups   #{c/user "wireshark"}
+                   :can-login     true
+                   :has-login     false
+                   :screen-locked false}))
 
-(def system
-  (let [messages (chan 1000)
-        state (atom {:filesystem    (new-filesystem)
-                     :user-groups   #{c/user "wireshark"}
-                     :can-login     true
-                     :has-login     false
-                     :screen-locked false})]
-    (go-loop []
-      (let [message (<! messages)]
-        (match message
-          [:state return] (>!! return state)
-          [:read-string path return] (println "read-string")
-          [:mkdirs path] (println "mkdirs")
-          [:add-group group] (swap! state #(assoc % :user-groups (conj (get % :user-groups) group)))
-          [:remove-group group] (swap! state #(assoc % :user-groups (disj (get % :user-groups) group)))
-          [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (update-chmod (:filesystem %) path perm))))
-          [:chown path owner] (swap! state #(assoc % :filesystem (update-chown (:filesystem %) path owner)))))
-      (recur))
-    messages))
+(defn run [& args]
+  (match args
+    [:state return] @state
+    [:read-string path] (println "read-string")
+    [:mkdirs path] (println "mkdirs")
+    [:add-group group] (swap! state #(assoc % :user-groups (conj (get % :user-groups) group)))
+    [:remove-group group] (swap! state #(assoc % :user-groups (disj (get % :user-groups) group)))
+    [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (update-chmod (:filesystem %) path perm))))
+    [:chown path owner] (swap! state #(assoc % :filesystem (update-chown (:filesystem %) path owner)))))
