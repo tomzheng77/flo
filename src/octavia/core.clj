@@ -8,7 +8,7 @@
 ; block-project - blocks any projects which matches the name precisely (defaults to none)
 {:time          (LocalDateTime/now)
  :block-login   false
- :block-website #{"www.google.com" "anime" "manga"}
+ :block-host    #{"www.google.com" "anime" "manga"}
  :block-project #{"clojure365"}}
 
 ; the previous and next limiters
@@ -16,9 +16,9 @@
 {:prev nil
  :next [{:time          (LocalDateTime/now)
          :block-login   false
-         :block-website #{"www.google.com" "anime" "manga"}
+         :block-host    #{"www.google.com" "anime" "manga"}
          :block-project #{"clojure365"}}
         {:time          (LocalDateTime/now)
          :block-login   false
-         :block-website #{"www.google.com" "anime" "manga"}
+         :block-host    #{"www.google.com" "anime" "manga"}
          :block-project #{"clojure365"}}]}
