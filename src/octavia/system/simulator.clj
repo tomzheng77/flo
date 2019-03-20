@@ -116,5 +116,6 @@
     [:mkdirs path] (println "mkdirs")
     [:add-group group] (swap! state #(assoc % :user-groups (conj (get % :user-groups) group)))
     [:remove-group group] (swap! state #(assoc % :user-groups (disj (get % :user-groups) group)))
+    [:groups] (get @state :user-groups)
     [:chmod path perm] (if (valid-perm? perm) (swap! state #(assoc % :filesystem (update-chmod (:filesystem %) path perm))))
     [:chown path owner] (swap! state #(assoc % :filesystem (update-chown (:filesystem %) path owner)))))
