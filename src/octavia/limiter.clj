@@ -75,6 +75,3 @@
   "finds the limiter which should be effective at {time}"
   [limiters time]
   (first (sort-limiters (remove-before limiters time))))
-
-(defn mins [x] (.plusMinutes (LocalDateTime/now) x))
-(defn arbitrary [mins])
