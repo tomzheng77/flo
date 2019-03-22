@@ -67,4 +67,13 @@
         limiter-list-upd (apply-limits-to-list limiter-list start end limits)]
     {:next limiter-list-upd}))
 
+(defn move-to-asap [limiters time-now]
+  (let [removed (filter #(.isBefore (:time %) time-now) (:next limiters))
+        remaining (filter #(not (.isBefore (:time %) time-now)) (:next limiters))
+        asap (last removed)]
+    {:asap asap
+     :prev asap
+     :next remaining}))
+
 (defn mins [x] (.plusMinutes (LocalDateTime/now) x))
+(defn arbitrary [mins])
