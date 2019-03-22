@@ -13,6 +13,7 @@
  :block-host    #{"www.google.com" "anime" "manga"}
  :block-project #{"clojure365"}}
 
+; object limiters
 ; asap - a limiter which should be applied as soon as possible
 ; prev - the last limiter which was applied
 ; next - the next limiters, the last item will always be treated as an unlock
@@ -28,27 +29,42 @@
          :block-project #{"clojure365"}}
         {:time (LocalDateTime/now)}]}
 
-(defn both [limiter-a limiter-b]
-  {:time          (:time limiter-a)
-   :block-login   (or (:block-login limiter-a) (:block-login limiter-b))
-   :block-host    (set/union (:block-host limiter-a) (:block-host limiter-b))
-   :block-project (set/union (:block-project limiter-a) (:block-project limiter-b))})
+(defn add-limits-to-limiter
+  "increase the limits of the limiter by the given limits"
+  [limiter limits]
+  {:time          (:time limiter)
+   :block-login   (or (:block-login limiter) (:block-login limits))
+   :block-host    (set/union (:block-host limiter) (:block-host limits))
+   :block-project (set/union (:block-project limiter) (:block-project limits))})
 
-(defn add-limiter [limiters start end limiter]
-  (if (empty? (:next limiters))
-    (assoc limiters :next [(assoc limiter :time start) {:time end}])))
+(defn remove-nil [list]
+  (filter #(not (nil? %)) list))
 
 (defn between?
+  "checks if time is between start and end"
   [time start end]
   (and
     (not (.isBefore time start))
     (not (.isAfter time end))))
 
-(defn add-limiter-to-list
-  [limiter-list start end limiter]
+(defn apply-limits-to-list
+  "applies the limits to a list of limiters such that
+  the effects of the limit will be respected between {start} and {end}"
+  [limiter-list start end limits]
   (let [before (filter #(.isBefore (:time %) start) limiter-list)
         between (filter #(between? (:time %) start end) limiter-list)
-        after (filter #(.isAfter (:time %) end) limiter-list)]
-    (concat before [limiter]
-            (map #(both % limiter) between)
-            [limiter] after)))
+        after (filter #(.isAfter (:time %) end) limiter-list)
+        before-end (last (filter #(.isBefore (:time %) end) limiter-list))]
+    (concat
+      before [(assoc limits :time start)]
+      (map #(add-limits-to-limiter % limits) between)
+      [(assoc before-end :time end)] after)))
+
+(defn add-limits
+  "adds a limiter to the limiters object"
+  [limiters start end limits]
+  (let [limiter-list (remove-nil (concat [(:prev limiters)] (:next limiters)))
+        limiter-list-upd (apply-limits-to-list limiter-list start end limits)]
+    {:next limiter-list-upd}))
+
+(defn mins [x] (.plusMinutes (LocalDateTime/now) x))
