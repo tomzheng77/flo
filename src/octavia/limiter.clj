@@ -25,20 +25,27 @@
   :block-project #{"clojure365"}}
  {:time (LocalDateTime/now)}]
 
+(defn boolean?
+  [x]
+  (instance? Boolean x))
+
+(defn union [val-1 val-2]
+  (cond
+    (and (set? val-1) (set? val-2)) (set/union val-1 val-2)
+    true (or val-1 val-2)))
+
 (defn extend-limiter
-  "increase the limits of the limiter by the given limits"
-  [limiter limits]
-  {:time          (:time limiter)
-   :block-login   (or (:block-login limiter) (:block-login limits))
-   :block-host    (set/union (:block-host limiter) (:block-host limits))
-   :block-project (set/union (:block-project limiter) (:block-project limits))})
+  "extends the limiter with one or more limits"
+  [limiter & limits]
+  (loop [updated-limiter limiter remaining limits]
+    (if (empty? remaining)
+      updated-limiter
+      (recur (merge-with union updated-limiter (first remaining))
+             (next remaining)))))
 
 (defn sort-limiters
   [limiters]
   (sort-by #(.toEpochSecond (:time %) (ZoneOffset/UTC)) limiters))
-
-(defn remove-nil [list]
-  (filter #(not (nil? %)) list))
 
 (defn between?
   "checks if time is between start and end"
@@ -64,6 +71,11 @@
   ([pred] (filter #(not (pred %))))
   ([pred coll] (filter #(not (pred %)) coll)))
 
+(defn extend-collide
+  "extends any two limiters that collide into one limiter"
+  [limiters]
+  (map #(apply extend-limiter %) (group-by :time limiters)))
+
 (defn remove-before
   "removes all limiters before time EXCEPT the last one"
   [limiters time]
@@ -74,4 +86,6 @@
 (defn limiter-at
   "finds the limiter which should be effective at {time}"
   [limiters time]
-  (first (sort-limiters (remove-before limiters time))))
+  (let [remain (sort-limiters (remove-before limiters time))]
+    (assoc (first remain)
+      :is-last (<= (count remain) 1))))
