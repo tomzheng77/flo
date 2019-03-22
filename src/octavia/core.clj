@@ -1,5 +1,6 @@
 (ns octavia.core
-  (:require [clojure.core.match :refer [match]])
+  (:require [clojure.core.match :refer [match]]
+            [clojure.set :as set])
   (:import (java.time LocalDateTime)))
 
 ; a single limiter, a limiter updates the profile of the user
@@ -27,6 +28,27 @@
          :block-project #{"clojure365"}}
         {:time (LocalDateTime/now)}]}
 
+(defn both [limiter-a limiter-b]
+  {:time          (:time limiter-a)
+   :block-login   (or (:block-login limiter-a) (:block-login limiter-b))
+   :block-host    (set/union (:block-host limiter-a) (:block-host limiter-b))
+   :block-project (set/union (:block-project limiter-a) (:block-project limiter-b))})
+
 (defn add-limiter [limiters start end limiter]
   (if (empty? (:next limiters))
     (assoc limiters :next [(assoc limiter :time start) {:time end}])))
+
+(defn between?
+  [time start end]
+  (and
+    (not (.isBefore time start))
+    (not (.isAfter time end))))
+
+(defn add-limiter-to-list
+  [limiter-list start end limiter]
+  (let [before (filter #(.isBefore (:time %) start) limiter-list)
+        between (filter #(between? (:time %) start end) limiter-list)
+        after (filter #(.isAfter (:time %) end) limiter-list)]
+    (concat before [limiter]
+            (map #(both % limiter) between)
+            [limiter] after)))
