@@ -25,7 +25,7 @@
   :block-project #{"clojure365"}}
  {:time (LocalDateTime/now)}]
 
-(defn add-limits-to-limiter
+(defn extend-limiter
   "increase the limits of the limiter by the given limits"
   [limiter limits]
   {:time          (:time limiter)
@@ -57,7 +57,7 @@
         before-end (last (filter #(.isBefore (:time %) end) limiters))]
     (concat
       before [(assoc limits :time start)]
-      (map #(add-limits-to-limiter % limits) between)
+      (map #(extend-limiter % limits) between)
       [(assoc before-end :time end)] after)))
 
 (defn filter-not
