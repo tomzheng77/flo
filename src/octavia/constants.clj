@@ -33,15 +33,3 @@
 (def home (str "/home/" user "/octavia"))
 (def primary-log (str home "/octavia.log"))
 (def primary-db (str home "/octavia.edn"))
-
-(def commands
-  #{"id"
-    "groups"
-    "passwd"
-    "chmod"
-    "chown"
-    "iptables"
-    "usermod"
-    "groupadd"
-    "killall"
-    "kill"})
