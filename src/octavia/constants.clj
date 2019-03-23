@@ -21,7 +21,7 @@
 (def global-path (str/join path-separator global-paths))
 
 (def proxy-port 9003)
-(def interpreter-port 9004)
+(def server-port 9004)
 (def orbit-address "103.29.84.69")
 (def orbit-port 9005)
 
