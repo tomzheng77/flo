@@ -90,7 +90,7 @@
   ([pred] (filter #(not (pred %))))
   ([pred coll] (filter #(not (pred %)) coll)))
 
-(defn remove-before
+(defn drop-before
   "removes all limiters before time EXCEPT the last one"
   [limiters time]
   (let [removed (filter #(.isBefore (:time %) time) (:next limiters))
@@ -100,6 +100,6 @@
 (defn limiter-at
   "finds the limiter which should be effective at {time}"
   [limiters time]
-  (let [remain (sort-by-time (remove-before limiters time))]
+  (let [remain (sort-by-time (drop-before limiters time))]
     (assoc (first remain)
       :is-last (<= (count remain) 1))))
