@@ -25,10 +25,6 @@
   :block-project #{"clojure365"}}
  {:time (LocalDateTime/now)}]
 
-(defn boolean?
-  [x]
-  (instance? Boolean x))
-
 (defn union [val-1 val-2]
   (cond
     (and (set? val-1) (set? val-2)) (set/union val-1 val-2)
