@@ -32,4 +32,4 @@
   []
   (locking server-lock
     (if @server (.stop @server))
-    (reset! server start-transparent)))
+    (reset! server (start-transparent))))
