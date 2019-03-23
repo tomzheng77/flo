@@ -43,12 +43,28 @@
   [limiters]
   (sort-by #(.toEpochSecond (:time %) (ZoneOffset/UTC)) limiters))
 
+(defn boolean? [x] (instance? Boolean x))
+(defn nil-or [f x] (or (nil? x) (f x)))
+
+(defn valid?
+  [limiter]
+  (and
+    (instance? LocalDateTime (:time limiter))
+    (nil-or boolean? (:block-login limiter))
+    (nil-or set? (:block-host limiter))
+    (nil-or set? (:block-project limiter))))
+
 (defn between?
   "checks if time is between start and end"
   [time start end]
   (and
     (not (.isBefore time start))
     (not (.isAfter time end))))
+
+(defn merge-collisions
+  "extends any two limiters that collide into one limiter"
+  [limiters]
+  (map #(apply extend-limiter %) (group-by :time limiters)))
 
 (defn apply-limits
   "applies the limits to a list of limiters such that
@@ -58,19 +74,15 @@
         between (filter #(between? (:time %) start end) limiters)
         after (filter #(.isAfter (:time %) end) limiters)
         before-end (last (filter #(.isBefore (:time %) end) limiters))]
-    (concat
-      before [(assoc limits :time start)]
-      (map #(extend-limiter % limits) between)
-      [(assoc before-end :time end)] after)))
+    (merge-collisions
+      (filter valid? (concat
+                       before [(assoc limits :time start)]
+                       (map #(extend-limiter % limits) between)
+                       [(assoc before-end :time end)] after)))))
 
 (defn filter-not
   ([pred] (filter #(not (pred %))))
   ([pred coll] (filter #(not (pred %)) coll)))
-
-(defn extend-collide
-  "extends any two limiters that collide into one limiter"
-  [limiters]
-  (map #(apply extend-limiter %) (group-by :time limiters)))
 
 (defn remove-before
   "removes all limiters before time EXCEPT the last one"
