@@ -64,7 +64,7 @@
       (unlock-dir dir)
       (do (root-700 dir) (kill-exe-in dir report)))))
 
-(defn block-project
+(defn block-folder
   "restricts and unlocks dirs using a predicate on dir name"
   [allow-name]
   (root-755 c/user-projects)

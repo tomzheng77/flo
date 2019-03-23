@@ -3,7 +3,7 @@
             [clojure.set :as set]
             [org.httpkit.server :as ks]
             [octavia.proxy :as proxy]
-            [octavia.warden :refer [lock-screen disable-login block-project resign]]
+            [octavia.warden :refer [lock-screen disable-login block-folder resign]]
             [octavia.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre]
             [octavia.constants :as c])
@@ -16,8 +16,8 @@
   (when (:block-login limiter)
     (lock-screen)
     (disable-login))
-  (block-project
-    #(not-any? #{%} (:block-project limiter))))
+  (block-folder
+    #(not-any? #{%} (:block-folder limiter))))
 
 ; the last limiter that was activated
 (def prev-limiter (atom nil))
@@ -38,7 +38,20 @@
            (catch Throwable _ (resign))))))
 
 (defn start-server []
-  (ks/run-server #(println %) {:port c/server-port}))
+  (ks/run-server
+    (fn [request]
+      (let [body (str (:body request))]
+        (try (let [edn (read-string body)
+                   start (:start edn)
+                   end (:end edn)
+                   block-login (:block-login edn)
+                   block-host (:block-host edn)
+                   block-folder (:block-folder edn)])
+             (catch Throwable e
+               {:status  400
+                :headers {"Content-Type" "text/plain"}
+                :body    (.getMessage e)}))))
+    {:port c/server-port}))
 
 (defn -main [& args]
   (println "starting octavia")

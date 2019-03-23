@@ -8,22 +8,22 @@
 ; time - the time for this limiter to occur
 ; block-login - whether the user should be barred from login entirely (defaults to false)
 ; block-website - blocks any hosts which matches one of the strings (defaults to none)
-; block-project - blocks any projects which matches the name precisely (defaults to none)
+; block-folder - blocks any projects which matches the name precisely (defaults to none)
 {:time          (LocalDateTime/now)
  :block-login   false
  :block-host    #{"www.google.com" "anime" "manga"}
- :block-project #{"clojure365"}}
+ :block-folder #{"clojure365"}}
 
 ; object limiters
 ; the next limiters, the last item will always be treated as an unlock
 [{:time          (LocalDateTime/now)
   :block-login   false
   :block-host    #{"www.google.com" "anime" "manga"}
-  :block-project #{"clojure365"}}
+  :block-folder #{"clojure365"}}
  {:time          (LocalDateTime/now)
   :block-login   false
   :block-host    #{"www.google.com" "anime" "manga"}
-  :block-project #{"clojure365"}}
+  :block-folder #{"clojure365"}}
  {:time (LocalDateTime/now)}]
 
 (defn stringify [limiters] (pr-str limiters))
@@ -50,13 +50,15 @@
 (defn boolean? [x] (instance? Boolean x))
 (defn nil-or [f x] (or (nil? x) (f x)))
 
+(defn date-time? [x] (instance? LocalDateTime x))
+
 (defn valid?
   [limiter]
   (and
     (instance? LocalDateTime (:time limiter))
     (nil-or boolean? (:block-login limiter))
     (nil-or set? (:block-host limiter))
-    (nil-or set? (:block-project limiter))))
+    (nil-or set? (:block-folder limiter))))
 
 (defn between?
   "checks if time is between start and end"
