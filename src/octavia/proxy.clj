@@ -24,7 +24,7 @@
       (.withPort c/proxy-port)
       (.withAllowLocalOnly true)
       (.withTransparent true)
-      (.withFiltersSource (filters-source #(do (println "----------") (println %1 %2) %2)))
+      (.withFiltersSource (filters-source #(do (println "----------") (println (.get (.headers %1) "Host")) %2)))
       (.start)))
 
 (defn start-server

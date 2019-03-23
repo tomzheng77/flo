@@ -19,6 +19,8 @@
                  [org.slf4j/jcl-over-slf4j "1.7.14"]
                  [com.fzakaria/slf4j-timbre "0.3.12"]
                  [com.palletops/log-config "0.1.4"]
+                 [cheshire "5.8.1"]
+                 [java-time-literals "2018-04-06"]
                  [criterium "0.4.4"]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.match "0.3.0-alpha5"]]

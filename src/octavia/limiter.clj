@@ -1,6 +1,7 @@
 (ns octavia.limiter
   (:require [clojure.core.match :refer [match]]
-            [clojure.set :as set])
+            [clojure.set :as set]
+            [java-time-literals.core])
   (:import (java.time LocalDateTime ZoneOffset)))
 
 ; a single limiter, a limiter updates the profile of the user
@@ -24,6 +25,9 @@
   :block-host    #{"www.google.com" "anime" "manga"}
   :block-project #{"clojure365"}}
  {:time (LocalDateTime/now)}]
+
+(defn serialize [limiters] (pr-str limiters))
+(defn deserialize [edn] (read-string edn))
 
 (defn union [val-1 val-2]
   (cond
@@ -75,10 +79,12 @@
         after (filter #(.isAfter (:time %) end) limiters)
         before-end (last (filter #(.isBefore (:time %) end) limiters))]
     (merge-collisions
-      (filter valid? (concat
-                       before [(assoc limits :time start)]
-                       (map #(extend-limiter % limits) between)
-                       [(assoc before-end :time end)] after)))))
+      (filter
+        valid?
+        (concat
+          before [(assoc limits :time start)]
+          (map #(extend-limiter % limits) between)
+          [(assoc before-end :time end)] after)))))
 
 (defn filter-not
   ([pred] (filter #(not (pred %))))
