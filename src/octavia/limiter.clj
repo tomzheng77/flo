@@ -26,8 +26,8 @@
   :block-project #{"clojure365"}}
  {:time (LocalDateTime/now)}]
 
-(defn serialize [limiters] (pr-str limiters))
-(defn deserialize [edn] (read-string edn))
+(defn stringify [limiters] (pr-str limiters))
+(defn parse [edn] (read-string edn))
 
 (defn union [val-1 val-2]
   (cond
