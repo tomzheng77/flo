@@ -51,6 +51,7 @@
   "grants the user all access in order to recover
   from a catastrophic failure"
   []
+  (println "emergency resign")
   (add-wheel)
   (clear-all-restrictions)
   (System/exit 0))
