@@ -39,7 +39,7 @@
       (recur (merge-with union updated-limiter (first remaining))
              (next remaining)))))
 
-(defn sort-limiters
+(defn sort-by-time
   [limiters]
   (sort-by #(.toEpochSecond (:time %) (ZoneOffset/UTC)) limiters))
 
@@ -89,11 +89,11 @@
   [limiters time]
   (let [removed (filter #(.isBefore (:time %) time) (:next limiters))
         remaining (filter-not #(.isBefore (:time %) time) (:next limiters))]
-    (concat [(last (sort-limiters removed))] remaining)))
+    (concat [(last (sort-by-time removed))] remaining)))
 
 (defn limiter-at
   "finds the limiter which should be effective at {time}"
   [limiters time]
-  (let [remain (sort-limiters (remove-before limiters time))]
+  (let [remain (sort-by-time (remove-before limiters time))]
     (assoc (first remain)
       :is-last (<= (count remain) 1))))
