@@ -1,6 +1,7 @@
 (ns octavia.core
   (:require [clojure.core.match :refer [match]]
             [clojure.set :as set]
+            [org.httpkit.server :as ks]
             [octavia.proxy :as proxy]
             [octavia.warden :refer [lock-screen disable-login block-project resign]]
             [octavia.limiter :as limiter :refer [limiter-at drop-before]]
@@ -23,6 +24,7 @@
 
 ; this method should be called once per second
 (defn on-enter-second []
+  (println "run each second")
   (let [now (LocalDateTime/now)
         limiters (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign)))
         limiter (limiter-at limiters now)
@@ -35,8 +37,8 @@
       (try (spit c/primary-db (limiter/stringify limiters-optimized))
            (catch Throwable _ (resign))))))
 
-(defn start-server
-  (org.httpkit.server/run-server #(println %) {:port c/server-port}))
+(defn start-server []
+  (ks/run-server #(println %) {:port c/server-port}))
 
 (defn -main [& args]
   (proxy/start-server)
