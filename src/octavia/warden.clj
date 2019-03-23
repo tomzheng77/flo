@@ -2,7 +2,6 @@
   (:require [clojure.java.io :as io]
             [octavia.constants :as c]
             [octavia.subprocess :as s]
-            [octavia.utils :as u]
             [clojure.string :as str]))
 
 (defn- ls [path] (vec (.listFiles (io/file path))))
