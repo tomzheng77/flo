@@ -8,9 +8,10 @@
 
 (def server (atom nil))
 (def block-host (atom #{}))
-(def unauthorized (new DefaultFullHttpResponse
-                       (HttpVersion/HTTP_1_1)
-                       (HttpResponseStatus/UNAUTHORIZED)))
+
+(defn unauthorized [] (new DefaultFullHttpResponse
+                           (HttpVersion/HTTP_1_1)
+                           (HttpResponseStatus/UNAUTHORIZED)))
 
 (defn filters-source
   "wraps a (HttpRequest, HttpObject) => HttpObject filter inside
@@ -34,7 +35,7 @@
           (fn [request response]
             (let [host (.get (.headers request) "Host")]
               (if (not-any? #(str/includes? host %) @block-host)
-                unauthorized response)))))
+                (unauthorized) response)))))
       (.start)))
 
 (defn start-server

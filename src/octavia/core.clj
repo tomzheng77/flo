@@ -41,6 +41,7 @@
   (ks/run-server #(println %) {:port c/server-port}))
 
 (defn -main [& args]
+  (println "starting octavia")
   (proxy/start-server)
   (start-server)
   (let [timer (new Timer)]
