@@ -1,9 +1,5 @@
 (ns octavia.proxy
-  (:require [octavia.constants :as c]
-            [octavia.utils :as u]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [clojure.set :as set])
+  (:require [octavia.constants :as c])
   (:import (org.littleshoot.proxy.impl DefaultHttpProxyServer)
            (org.littleshoot.proxy HttpFiltersSourceAdapter HttpFiltersAdapter)))
 
@@ -21,23 +17,19 @@
         (serverToProxyResponse [response]
           (filter request response))))))
 
-(defn start-server-mitm-off []
+(defn start-transparent []
   "starts a HttpProxyServer instance with mitm filter disabled
   the instance is returned at the end"
   (-> (DefaultHttpProxyServer/bootstrap)
       (.withPort c/proxy-port)
       (.withAllowLocalOnly true)
       (.withTransparent true)
-      (.withFiltersSource
-        (filters-source
-          (fn [request response]
-            (println request response)
-            response)))
+      (.withFiltersSource (filters-source #(do (println %1 %2) %2)))
       (.start)))
 
 (defn start-server
-  "starts or restarts the server with the given settings"
+  "starts or restarts the server"
   []
   (locking server-lock
     (if @server (.stop @server))
-    (reset! server start-server-mitm-off)))
+    (reset! server start-transparent)))
