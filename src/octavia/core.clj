@@ -4,4 +4,3 @@
             [taoensso.timbre :as timbre])
   (:import (java.time LocalDateTime ZoneOffset)))
 
-(timbre/set-level! :fatal)

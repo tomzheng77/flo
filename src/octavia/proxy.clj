@@ -1,11 +1,16 @@
 (ns octavia.proxy
-  (:require [octavia.constants :as c])
+  (:require [octavia.constants :as c]
+            [taoensso.timbre :as timbre]
+            [clojure.string :as str])
   (:import (org.littleshoot.proxy.impl DefaultHttpProxyServer)
-           (org.littleshoot.proxy HttpFiltersSourceAdapter HttpFiltersAdapter)))
+           (org.littleshoot.proxy HttpFiltersSourceAdapter HttpFiltersAdapter)
+           (io.netty.handler.codec.http DefaultFullHttpResponse HttpVersion HttpResponseStatus)))
 
-(def server-lock (new Object))
 (def server (atom nil))
-(def settings (atom {}))
+(def block-host (atom #{}))
+(def unauthorized (new DefaultFullHttpResponse
+                       (HttpVersion/HTTP_1_1)
+                       (HttpResponseStatus/UNAUTHORIZED)))
 
 (defn filters-source
   "wraps a (HttpRequest, HttpObject) => HttpObject filter inside
@@ -24,12 +29,17 @@
       (.withPort c/proxy-port)
       (.withAllowLocalOnly true)
       (.withTransparent true)
-      (.withFiltersSource (filters-source #(do (println "----------") (println (.get (.headers %1) "Host")) %2)))
+      (.withFiltersSource
+        (filters-source
+          (fn [request response]
+            (let [host (.get (.headers request) "Host")]
+              (if (not-any? #(str/includes? host %) @block-host)
+                unauthorized response)))))
       (.start)))
 
 (defn start-server
   "starts or restarts the server"
   []
-  (locking server-lock
+  (locking server
     (if @server (.stop @server))
     (reset! server (start-transparent))))
