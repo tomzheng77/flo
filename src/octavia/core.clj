@@ -4,7 +4,7 @@
             [org.httpkit.server :as ks]
             [octavia.proxy :as proxy]
             [octavia.warden :refer [lock-screen disable-login block-folder resign]]
-            [octavia.limiter :as limiter :refer [limiter-at drop-before]]
+            [octavia.limiter :as limiter :refer [limiter-at drop-before boolean?]]
             [taoensso.timbre :as timbre]
             [octavia.constants :as c])
   (:import (java.time LocalDateTime)
@@ -22,11 +22,19 @@
 ; the last limiter that was activated
 (def prev-limiter (atom nil))
 
+(defn read-limiters []
+  (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign))))
+
+(defn write-limiters
+  [limiters]
+  (try (spit c/primary-db (limiter/stringify limiters))
+       (catch Throwable _ (resign))))
+
 ; this method should be called once per second
 (defn on-enter-second []
   (println "run each second")
   (let [now (LocalDateTime/now)
-        limiters (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign)))
+        limiters (read-limiters)
         limiter (limiter-at limiters now)
         limiters-optimized (drop-before limiters now)]
     (locking prev-limiter
@@ -34,24 +42,29 @@
         (reset! prev-limiter limiter)
         (activate-limiter limiter)))
     (when (not (= limiters-optimized limiters))
-      (try (spit c/primary-db (limiter/stringify limiters-optimized))
-           (catch Throwable _ (resign))))))
+      (write-limiters limiters-optimized))))
+
+(defn handle-request
+  [request]
+  (let [body (str (:body request))]
+    (try (let [edn (read-string body)
+               start (:start edn)
+               end (:end edn)]
+           (assert (limiter/date-time? start))
+           (assert (limiter/date-time? end))
+           (assert (limiter/valid-limits? edn))
+           (with-local-vars [limiters (read-limiters)]
+             (var-set limiters (limiter/apply-limits limiters start end edn))
+             (write-limiters limiters))
+           {:status  200
+            :headers {"Content-Type" "text/plain"}})
+         (catch Throwable e
+           {:status  400
+            :headers {"Content-Type" "text/plain"}
+            :body    (.getMessage e)}))))
 
 (defn start-server []
-  (ks/run-server
-    (fn [request]
-      (let [body (str (:body request))]
-        (try (let [edn (read-string body)
-                   start (:start edn)
-                   end (:end edn)
-                   block-login (:block-login edn)
-                   block-host (:block-host edn)
-                   block-folder (:block-folder edn)])
-             (catch Throwable e
-               {:status  400
-                :headers {"Content-Type" "text/plain"}
-                :body    (.getMessage e)}))))
-    {:port c/server-port}))
+  (ks/run-server handle-request {:port c/server-port}))
 
 (defn -main [& args]
   (println "starting octavia")

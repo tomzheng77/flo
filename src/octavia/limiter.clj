@@ -60,6 +60,13 @@
     (nil-or set? (:block-host limiter))
     (nil-or set? (:block-folder limiter))))
 
+(defn valid-limits?
+  [limits]
+  (and
+    (nil-or boolean? (:block-login limits))
+    (nil-or set? (:block-host limits))
+    (nil-or set? (:block-folder limits))))
+
 (defn between?
   "checks if time is between start and end"
   [time start end]
