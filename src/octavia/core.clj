@@ -24,7 +24,7 @@
   (if (:is-last limiter)
     (clear-all-restrictions)
     (do (remove-wheel)
-        (reset! proxy/block-host (:block-host limiter))
+        (reset! proxy/block-host (into #{} (:block-host limiter)))
         (when (:block-login limiter)
           (lock-screen)
           (disable-login))
