@@ -25,6 +25,7 @@
                  [criterium "0.4.4"]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.match "0.3.0-alpha5"]
-                 [org.javassist/javassist "3.24.1-GA"]]
+                 [org.javassist/javassist "3.24.1-GA"]
+                 [org.clojure/clojurescript "1.10.516"]]
   :main ^:skip-aot octavia.core
   :profiles {:uberjar {:aot :all}})

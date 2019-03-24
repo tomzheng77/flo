@@ -93,7 +93,7 @@
   [limiters]
   (map #(apply extend-limiter (val %)) (group-by :time limiters)))
 
-(defn apply-limits
+(defn add-limiter
   "applies the limits to a list of limiters such that
   the effects of the limit will be respected between {start} and {end}"
   [limiters start end limits]
