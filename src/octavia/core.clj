@@ -47,10 +47,12 @@
 
 (defn handle-request
   [request]
-  (let [body (str (:body request))]
+  (let [body (slurp (.bytes (:body request)) :encoding "UTF-8")]
     (try (let [edn (read-string body)
                start (:start edn)
                end (:end edn)]
+           (println body)
+           (println edn)
            (assert (limiter/date-time? start))
            (assert (limiter/date-time? end))
            (assert (limiter/valid-limits? edn))
