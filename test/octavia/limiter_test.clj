@@ -54,4 +54,16 @@
           {:time (t 20) :block-host #{"C" "B" "A"}}
           {:time (t 30) :block-host #{"C" "B"}}
           {:time (t 40) :block-host #{"C"}}
+          {:time (t 50)}]))
+  (is (= (-> nil
+             (add-limiter (t 20) (t 30) {:block-host #{"A"}})
+             (add-limiter (t 10) (t 40) {:block-host #{"B"}})
+             (add-limiter (t 10) (t 40) {:block-host #{"B"}})
+             (add-limiter (t 10) (t 40) {:block-host #{"B"}})
+             (add-limiter (t 0) (t 50) {:block-host #{"C"}})
+             (add-limiter (t 0) (t 50) {:block-host #{"C"}})
+             (drop-before (t 30)))
+         [{:time (t 20) :block-host #{"C" "B" "A"}}
+          {:time (t 30) :block-host #{"C" "B"}}
+          {:time (t 40) :block-host #{"C"}}
           {:time (t 50)}])))
