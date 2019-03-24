@@ -11,6 +11,14 @@
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
 
+(defn read-limiters []
+  (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign))))
+
+(defn write-limiters
+  [limiters]
+  (try (spit c/primary-db (limiter/stringify limiters))
+       (catch Throwable _ (resign))))
+
 (defn activate-limiter
   [limiter]
   (if (:is-last limiter)
@@ -25,14 +33,6 @@
 
 ; the last limiter that was activated
 (def prev-limiter (atom nil))
-
-(defn read-limiters []
-  (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign))))
-
-(defn write-limiters
-  [limiters]
-  (try (spit c/primary-db (limiter/stringify limiters))
-       (catch Throwable _ (resign))))
 
 ; this method should be called once per second
 (defn on-enter-second []
