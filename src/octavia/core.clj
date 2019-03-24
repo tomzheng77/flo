@@ -3,13 +3,19 @@
             [clojure.set :as set]
             [org.httpkit.server :as ks]
             [octavia.proxy :as proxy]
-            [octavia.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions remove-wheel]]
+            [octavia.warden :refer [lock-screen disable-login
+                                    block-folder resign clear-all-restrictions
+                                    remove-wheel add-firewall-rules]]
             [octavia.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre]
+            [taoensso.timbre.appenders.core :as appenders]
             [octavia.constants :as c]
             [java-time-literals.core])
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
+
+(timbre/merge-config!
+  {:appenders {:spit (appenders/spit-appender {:fname c/primary-log})}})
 
 (defn read-limiters []
   (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign))))
@@ -25,11 +31,12 @@
     (clear-all-restrictions)
     (do (remove-wheel)
         (reset! proxy/block-host (into #{} (:block-host limiter)))
+        (when (not-empty :block-host) (add-firewall-rules))
         (when (:block-login limiter)
           (lock-screen)
           (disable-login))
         (block-folder
-          #(not-any? #{%} (:block-folder limiter))))))
+          #(not (contains? (:block-folder limiter) %))))))
 
 ; the last limiter that was activated
 (def prev-limiter (atom nil))

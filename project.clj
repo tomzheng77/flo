@@ -26,6 +26,8 @@
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.match "0.3.0-alpha5"]
                  [org.javassist/javassist "3.24.1-GA"]
-                 [org.clojure/clojurescript "1.10.516"]]
+                 [org.clojure/clojurescript "1.10.516"]
+                 [com.google.errorprone/error_prone_annotations "2.1.3"]
+                 [org.codehaus.mojo/animal-sniffer-annotations "1.14"]]
   :main ^:skip-aot octavia.core
   :profiles {:uberjar {:aot :all}})
