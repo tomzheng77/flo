@@ -47,9 +47,7 @@
   [limiters]
   (sort-by #(.toEpochSecond (:time %) (ZoneOffset/UTC)) limiters))
 
-(defn boolean? [x] (instance? Boolean x))
 (defn nil-or [f x] (or (nil? x) (f x)))
-
 (defn date-time? [x] (instance? LocalDateTime x))
 
 (defn valid?
