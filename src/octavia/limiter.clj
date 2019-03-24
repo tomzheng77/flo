@@ -87,7 +87,7 @@
 (defn remove-duplicate
   "removes any limiter which has the same limits as the previous"
   [limiters]
-  (loop [in limiters out []]
+  (loop [in (sort-by-time limiters) out []]
     (if (empty? in)
       out
       (if (and (not= 1 (count in))
