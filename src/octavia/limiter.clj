@@ -2,7 +2,8 @@
   (:require [clojure.core.match :refer [match]]
             [clojure.set :as set]
             [java-time-literals.core])
-  (:import (java.time LocalDateTime ZoneOffset)))
+  (:import (java.time LocalDateTime ZoneOffset)
+           (java.util.regex Pattern)))
 
 ; a single limiter, a limiter updates the profile of the user
 ; time - the time for this limiter to occur
@@ -49,21 +50,23 @@
 
 (defn nil-or [f x] (or (nil? x) (f x)))
 (defn date-time? [x] (instance? LocalDateTime x))
+(defn string-or-regex? [x] (or (string? x) (instance? Pattern x)))
+(defn set-of? [f] (fn [x] (and (set? x) (every? f x))))
 
 (defn valid?
   [limiter]
   (and
     (instance? LocalDateTime (:time limiter))
     (nil-or boolean? (:block-login limiter))
-    (nil-or set? (:block-host limiter))
-    (nil-or set? (:block-folder limiter))))
+    (nil-or (set-of? string?) (:block-host limiter))
+    (nil-or (set-of? string?) (:block-folder limiter))))
 
 (defn valid-limits?
   [limits]
   (and
     (nil-or boolean? (:block-login limits))
-    (nil-or set? (:block-host limits))
-    (nil-or set? (:block-folder limits))))
+    (nil-or (set-of? string?) (:block-host limits))
+    (nil-or (set-of? string?) (:block-folder limits))))
 
 (defn between?
   "checks if time is between start and end"
@@ -105,6 +108,10 @@
   "applies the limits to a list of limiters such that
   the effects of the limit will be respected between {start} and {end}"
   [limiters start end limits]
+  (assert (valid-limits? limits))
+  (assert (date-time? start))
+  (assert (date-time? end))
+  (assert (.isBefore start end))
   (let [before (filter #(.isBefore (:time %) start) limiters)
         between (filter #(between? (:time %) start end) limiters)
         after (filter #(.isAfter (:time %) end) limiters)
