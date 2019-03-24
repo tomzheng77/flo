@@ -23,6 +23,7 @@
           {:time (t 3)}])))
 
 (testing "add-limiter"
+  (is (= {:is-last true} (limiter-at nil (t 10))))
   (is (= (add-limiter [] (t 0) (t 10) nil)
          [{:time (t 0)} {:time (t 10)}]))
   (is (= (-> nil
@@ -63,7 +64,14 @@
              (add-limiter (t 0) (t 50) {:block-host #{"C"}})
              (add-limiter (t 0) (t 50) {:block-host #{"C"}})
              (drop-before (t 30)))
-         [{:time (t 20) :block-host #{"C" "B" "A"}}
-          {:time (t 30) :block-host #{"C" "B"}}
+         [{:time (t 30) :block-host #{"C" "B"}}
           {:time (t 40) :block-host #{"C"}}
-          {:time (t 50)}])))
+          {:time (t 50)}]))
+  (let [example (-> nil
+                    (add-limiter (t 20) (t 30) {:block-host #{"A"}})
+                    (add-limiter (t 10) (t 40) {:block-host #{"B"}})
+                    (add-limiter (t 0) (t 50) {:block-host #{"C"}}))]
+    (is (= {:time (t 0) :block-host #{"C"} :is-last false} (limiter-at example (t 5))))
+    (is (= {:time (t 10) :block-host #{"B" "C"} :is-last false} (limiter-at example (t 10))))
+    (is (= {:time (t 20) :block-host #{"A" "B" "C"} :is-last false} (limiter-at example (t 20))))
+    (is (= {:time (t 50) :is-last true} (limiter-at example (t 60))))))
