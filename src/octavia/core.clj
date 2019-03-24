@@ -48,21 +48,25 @@
     (when (not (= limiters-optimized limiters))
       (write-limiters limiters-optimized))))
 
+(defn handle-request-edn
+  [edn]
+  (when (= :limiter (:type edn))
+    (let [start (:start edn)
+          end (:end edn)]
+      (assert (limiter/date-time? start))
+      (assert (limiter/date-time? end))
+      (assert (.isBefore start end))
+      (assert (limiter/valid-limits? edn))
+      (with-local-vars [limiters (read-limiters)]
+        (var-set limiters (limiter/add-limiter limiters start end edn))
+        (write-limiters limiters))
+      {:status  200
+       :headers {"Content-Type" "text/plain"}})))
+
 (defn handle-request
   [request]
   (let [body (slurp (.bytes (:body request)) :encoding "UTF-8")]
-    (try (let [edn (read-string body)
-               start (:start edn)
-               end (:end edn)]
-           (assert (limiter/date-time? start))
-           (assert (limiter/date-time? end))
-           (assert (.isBefore start end))
-           (assert (limiter/valid-limits? edn))
-           (with-local-vars [limiters (read-limiters)]
-             (var-set limiters (limiter/add-limiter limiters start end edn))
-             (write-limiters limiters))
-           {:status  200
-            :headers {"Content-Type" "text/plain"}})
+    (try (let [edn (read-string body)] (handle-request-edn edn))
          (catch Throwable e
            {:status  400
             :headers {"Content-Type" "text/plain"}
