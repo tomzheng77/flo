@@ -40,12 +40,13 @@
   (s/call "sudo" "-u" c/user "i3lock" "-n" "-c" "000000")
   (s/call "sudo" "-u" c/user "xdg-screensaver" "lock"))
 
-(defn add-firewall-rules []
-  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
-  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT"))
-
 (defn remove-firewall-rules []
   (s/call "iptables" "iptables" "-F" "OUTPUT"))
+
+(defn add-firewall-rules []
+  (remove-firewall-rules)
+  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
+  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT"))
 
 (defn clear-all-restrictions []
   (enable-login)
