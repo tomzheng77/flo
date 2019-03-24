@@ -78,13 +78,15 @@
        (= (into #{} (:block-host a)) (into #{} (:block-host b)))
        (= (into #{} (:block-folder a)) (into #{} (:block-folder b)))))
 
-(defn remove-same-as-prev
+(defn remove-duplicate
   "removes any limiter which has the same limits as the previous"
   [limiters]
   (loop [in limiters out []]
     (if (empty? in)
       out
-      (if-not (and (not-empty out) (equiv? (first in) (last out)))
+      (if (and (not= 1 (count in))
+                   (not-empty out)
+                   (equiv? (first in) (last out)))
         (recur (next in) out)
         (recur (next in) (conj out (first in)))))))
 
@@ -101,7 +103,7 @@
         between (filter #(between? (:time %) start end) limiters)
         after (filter #(.isAfter (:time %) end) limiters)
         before-end (last (filter #(.isBefore (:time %) end) limiters))]
-    (remove-same-as-prev
+    (remove-duplicate
       (merge-same-time
         (filter
           valid?
