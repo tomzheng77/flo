@@ -5,7 +5,6 @@
 
 (def t0 (LocalDateTime/of 2018 11 19 0 0 0))
 (defn t [x] (.plusMinutes t0 x))
-(println (add-limiter [] (t 0) (t 10) {}))
 
 (testing "remove-duplicate"
   (is (= (remove-duplicate [{:time (t 0)} {:time (t 10)} {:time (t 20)}]) [{:time (t 0)} {:time (t 20)}]))
@@ -25,4 +24,21 @@
 
 (testing "add-limiter"
   (is (= (add-limiter [] (t 0) (t 10) nil)
-         [{:time (t 0)} {:time (t 10)}])))
+         [{:time (t 0)} {:time (t 10)}]))
+  (is (= (-> nil
+             (add-limiter (t 10) (t 20) {:block-host #{"A"}})
+             (add-limiter (t 0) (t 30) {:block-host #{"B"}}))
+         [{:time (t 0) :block-host #{"B"}}
+          {:time (t 10) :block-host #{"A" "B"}}
+          {:time (t 20) :block-host #{"B"}}
+          {:time (t 30)}]))
+  (is (= (-> nil
+             (add-limiter (t 20) (t 30) {:block-host #{"A"}})
+             (add-limiter (t 10) (t 40) {:block-host #{"B"}})
+             (add-limiter (t 0) (t 50) {:block-host #{"C"}}))
+         [{:time (t 0) :block-host #{"C"}}
+          {:time (t 10) :block-host #{"C" "B"}}
+          {:time (t 20) :block-host #{"C" "B" "A"}}
+          {:time (t 30) :block-host #{"C" "B"}}
+          {:time (t 40) :block-host #{"C"}}
+          {:time (t 50)}])))
