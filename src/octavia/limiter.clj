@@ -50,7 +50,6 @@
 
 (defn nil-or [f x] (or (nil? x) (f x)))
 (defn date-time? [x] (instance? LocalDateTime x))
-(defn string-or-regex? [x] (or (string? x) (instance? Pattern x)))
 (defn set-of? [f] (fn [x] (and (set? x) (every? f x))))
 
 (defn valid?
