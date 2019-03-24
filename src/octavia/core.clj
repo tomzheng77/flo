@@ -51,8 +51,6 @@
     (try (let [edn (read-string body)
                start (:start edn)
                end (:end edn)]
-           (println body)
-           (println edn)
            (assert (limiter/date-time? start))
            (assert (limiter/date-time? end))
            (assert (limiter/valid-limits? edn))
