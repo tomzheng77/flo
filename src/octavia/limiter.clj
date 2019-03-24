@@ -78,6 +78,12 @@
        (= (into #{} (:block-host a)) (into #{} (:block-host b)))
        (= (into #{} (:block-folder a)) (into #{} (:block-folder b)))))
 
+(defn remove-last-limits
+  [limiters]
+  (if (empty? limiters)
+    limiters
+    (concat (butlast limiters) [{:time (:time (last limiters))}])))
+
 (defn remove-duplicate
   "removes any limiter which has the same limits as the previous"
   [limiters]
@@ -85,8 +91,8 @@
     (if (empty? in)
       out
       (if (and (not= 1 (count in))
-                   (not-empty out)
-                   (equiv? (first in) (last out)))
+               (not-empty out)
+               (equiv? (first in) (last out)))
         (recur (next in) out)
         (recur (next in) (conj out (first in)))))))
 
@@ -103,14 +109,15 @@
         between (filter #(between? (:time %) start end) limiters)
         after (filter #(.isAfter (:time %) end) limiters)
         before-end (last (filter #(.isBefore (:time %) end) limiters))]
-    (remove-duplicate
-      (merge-same-time
-        (filter
-          valid?
-          (concat
-            before [(assoc limits :time start)]
-            (map #(extend-limiter % limits) between)
-            [(assoc before-end :time end)] after))))))
+    (remove-last-limits
+      (remove-duplicate
+        (merge-same-time
+          (filter
+            valid?
+            (concat
+              before [(assoc limits :time start)]
+              (map #(extend-limiter % limits) between)
+              [(assoc before-end :time end)] after)))))))
 
 (defn filter-not
   ([pred] (filter #(not (pred %))))
