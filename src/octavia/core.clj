@@ -4,7 +4,7 @@
             [org.httpkit.server :as ks]
             [octavia.proxy :as proxy]
             [octavia.warden :refer [lock-screen disable-login block-folder resign]]
-            [octavia.limiter :as limiter :refer [limiter-at drop-before boolean?]]
+            [octavia.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre]
             [octavia.constants :as c]
             [java-time-literals.core])

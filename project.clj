@@ -11,6 +11,7 @@
                  [net.lightbody.bmp/mitm "2.1.5"]
                  [org.clojure/test.check "0.10.0-alpha3"]
                  [commons-io/commons-io "2.6"]
+                 [lock-key "1.5.0"]
                  [http-kit "2.3.0"]
                  [clj-time "0.15.0"]
                  [compojure "1.6.1"]

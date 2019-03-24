@@ -9,20 +9,20 @@
 ; block-login - whether the user should be barred from login entirely (defaults to false)
 ; block-website - blocks any hosts which matches one of the strings (defaults to none)
 ; block-folder - blocks any projects which matches the name precisely (defaults to none)
-{:time          (LocalDateTime/now)
- :block-login   false
- :block-host    #{"www.google.com" "anime" "manga"}
+{:time         (LocalDateTime/now)
+ :block-login  false
+ :block-host   #{"www.google.com" "anime" "manga"}
  :block-folder #{"clojure365"}}
 
 ; object limiters
 ; the next limiters, the last item will always be treated as an unlock
-[{:time          (LocalDateTime/now)
-  :block-login   false
-  :block-host    #{"www.google.com" "anime" "manga"}
+[{:time         (LocalDateTime/now)
+  :block-login  false
+  :block-host   #{"www.google.com" "anime" "manga"}
   :block-folder #{"clojure365"}}
- {:time          (LocalDateTime/now)
-  :block-login   false
-  :block-host    #{"www.google.com" "anime" "manga"}
+ {:time         (LocalDateTime/now)
+  :block-login  false
+  :block-host   #{"www.google.com" "anime" "manga"}
   :block-folder #{"clojure365"}}
  {:time (LocalDateTime/now)}]
 
@@ -72,10 +72,26 @@
     (not (.isBefore time start))
     (not (.isAfter time end))))
 
-(defn merge-collisions
+(defn equiv?
+  [a b]
+  (and (= (true? (:block-login a)) (true? (:block-login b)))
+       (= (into #{} (:block-host a)) (into #{} (:block-host b)))
+       (= (into #{} (:block-folder a)) (into #{} (:block-folder b)))))
+
+(defn remove-same-as-prev
+  "removes any limiter which has the same limits as the previous"
+  [limiters]
+  (loop [in limiters out []]
+    (if (empty? in)
+      out
+      (if-not (and (not-empty out) (equiv? (first in) (last out)))
+        (recur (next in) out)
+        (recur (next in) (conj out (first in)))))))
+
+(defn merge-same-time
   "extends any two limiters that collide into one limiter"
   [limiters]
-  (map #(apply extend-limiter %) (group-by :time limiters)))
+  (map #(apply extend-limiter (val %)) (group-by :time limiters)))
 
 (defn apply-limits
   "applies the limits to a list of limiters such that
@@ -85,13 +101,14 @@
         between (filter #(between? (:time %) start end) limiters)
         after (filter #(.isAfter (:time %) end) limiters)
         before-end (last (filter #(.isBefore (:time %) end) limiters))]
-    (merge-collisions
-      (filter
-        valid?
-        (concat
-          before [(assoc limits :time start)]
-          (map #(extend-limiter % limits) between)
-          [(assoc before-end :time end)] after)))))
+    (remove-same-as-prev
+      (merge-same-time
+        (filter
+          valid?
+          (concat
+            before [(assoc limits :time start)]
+            (map #(extend-limiter % limits) between)
+            [(assoc before-end :time end)] after))))))
 
 (defn filter-not
   ([pred] (filter #(not (pred %))))

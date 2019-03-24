@@ -8,6 +8,7 @@
 (def encoding "UTF-8")
 (def charset (Charset/forName encoding))
 
+(def secret-key "z&YwCvso;>MTt0ll&lfL)h^mps{]*Q{+")
 (def file-separator (File/separator))
 (def path-separator (File/pathSeparator))
 
