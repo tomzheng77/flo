@@ -109,15 +109,15 @@
         between (filter #(between? (:time %) start end) limiters)
         after (filter #(.isAfter (:time %) end) limiters)
         before-end (last (filter #(.isBefore (:time %) end) limiters))]
-    (remove-last-limits
-      (remove-duplicate
-        (merge-same-time
-          (filter
-            valid?
-            (concat
-              before [(assoc limits :time start)]
-              (map #(extend-limiter % limits) between)
-              [(assoc before-end :time end)] after)))))))
+    (->> after
+         (concat [(assoc before-end :time end)])
+         (concat (map #(extend-limiter % limits) between))
+         (concat [(assoc limits :time start)])
+         (concat before)
+         (filter valid?)
+         (merge-same-time)
+         (remove-duplicate)
+         (remove-last-limits))))
 
 (defn filter-not
   ([pred] (filter #(not (pred %))))
