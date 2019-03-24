@@ -3,7 +3,7 @@
             [clojure.set :as set]
             [org.httpkit.server :as ks]
             [octavia.proxy :as proxy]
-            [octavia.warden :refer [lock-screen disable-login block-folder resign]]
+            [octavia.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions remove-wheel]]
             [octavia.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre]
             [octavia.constants :as c]
@@ -13,12 +13,15 @@
 
 (defn activate-limiter
   [limiter]
-  (reset! proxy/block-host (:block-host limiter))
-  (when (:block-login limiter)
-    (lock-screen)
-    (disable-login))
-  (block-folder
-    #(not-any? #{%} (:block-folder limiter))))
+  (if (:is-last limiter)
+    (clear-all-restrictions)
+    (do (remove-wheel)
+        (reset! proxy/block-host (:block-host limiter))
+        (when (:block-login limiter)
+          (lock-screen)
+          (disable-login))
+        (block-folder
+          #(not-any? #{%} (:block-folder limiter))))))
 
 ; the last limiter that was activated
 (def prev-limiter (atom nil))

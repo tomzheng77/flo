@@ -42,6 +42,7 @@
 
 (defn clear-all-restrictions []
   (enable-login)
+  (add-wheel)
   (user-755 c/user-projects)
   (user-755 c/user-programs)
   (doseq [dir (ls c/user-projects)] (user-755 dir))
@@ -52,7 +53,6 @@
   from a catastrophic failure"
   []
   (println "emergency resign")
-  (add-wheel)
   (clear-all-restrictions)
   (System/exit 0))
 
