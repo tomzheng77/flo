@@ -10,12 +10,32 @@
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders.core :as appenders]
             [octavia.constants :as c]
-            [java-time-literals.core])
+            [java-time-literals.core]
+            [taoensso.encore :as enc])
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
 
+
+(defn ns-filter [f] (-> f enc/compile-ns-filter enc/memoize_))
+(defn log-by-ns-pattern
+  [ns-patterns & [{:keys [?ns-str config level] :as opts}]]
+  (let [ns
+        (or (some->> ns-patterns
+                     keys
+                     (filter #(and (string? %) ((ns-filter %) ?ns-str)))
+                     not-empty
+                     (apply max-key count))
+            :all)
+        loglevel (get ns-patterns ns (get config :level))]
+    (when (and (timbre/may-log? loglevel ns)
+               (timbre/level>= level loglevel)) opts)))
+
 (timbre/merge-config!
-  {:appenders {:spit (appenders/spit-appender {:fname c/primary-log})}})
+  {:appenders  {:spit (appenders/spit-appender {:fname c/primary-log})}
+   :middleware [(partial log-by-ns-pattern
+                         {"my.beloved.ns.i.work.on.*" :debug
+                          "i.need.to.trace.this"      :trace
+                          :all                        :error})]})
 
 (defn read-limiters []
   (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign))))
