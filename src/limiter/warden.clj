@@ -50,6 +50,9 @@
         (s/call "kill" (:pid proc)))
       (lock-screen))))
 
+(defn remove-locks []
+  (s/call "killall" "i3lock"))
+
 (defn remove-firewall-rules []
   (s/call "iptables" "iptables" "-F" "OUTPUT"))
 
