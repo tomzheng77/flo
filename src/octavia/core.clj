@@ -60,17 +60,16 @@
 ; this method should be called once per second
 (defn on-enter-second []
   (debug "on-enter-second")
-  (try (let [now (LocalDateTime/now)
-             limiters (read-limiters)
-             limiter (limiter-at limiters now)
-             limiters-optimized (drop-before limiters now)]
-         (locking prev-limiter
-           (when (not (= @prev-limiter limiter))
-             (reset! prev-limiter limiter)
-             (activate-limiter limiter)))
-         (when (not (= limiters-optimized limiters))
-           (write-limiters limiters-optimized)))
-       (catch Throwable _ (resign))))
+  (let [now (LocalDateTime/now)
+        limiters (read-limiters)
+        limiter (limiter-at limiters now)
+        limiters-optimized (drop-before limiters now)]
+    (locking prev-limiter
+      (when (not (= @prev-limiter limiter))
+        (reset! prev-limiter limiter)
+        (activate-limiter limiter)))
+    (when (not (= limiters-optimized limiters))
+      (write-limiters limiters-optimized))))
 
 (defn handle-request-edn
   [edn]
@@ -99,12 +98,18 @@
 (defn start-server []
   (ks/run-server handle-request {:port c/server-port}))
 
+(defmacro try-or-resign
+  [& body]
+  `(try (do ~@body) (catch Throwable _ (resign))))
+
 (defn -main [& args]
   (info "starting octavia")
-  (proxy/start-server)
-  (start-server)
+  (try-or-resign
+    (proxy/start-server)
+    (start-server))
   (let [timer (new Timer)]
     (.schedule
       timer
       (proxy [TimerTask] []
-        (run [] (on-enter-second))) 0 1000)))
+        (run [] (try-or-resign (on-enter-second))))
+      0 1000)))
