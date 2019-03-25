@@ -59,4 +59,5 @@
                              (concat [exec] args [:env]
                                      [{"PATH" c/global-path "http_proxy" "" "https_proxy" ""}]))]
            (when-not (= 0 (:exit result))
-             (error cmd args result))))))))
+             (error cmd args result))
+           result))))))
