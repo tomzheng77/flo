@@ -30,7 +30,8 @@
 
 (defn process-report
   "reads all process information in /proc. for each process,
-  it returns it's pid and executable location"
+  it returns it's pid and executable location
+  [{:pid 4299 :exe \"/opt/google/chrome/chrome\"}, ...]"
   []
   (->> c/processes-dir
        (io/file)

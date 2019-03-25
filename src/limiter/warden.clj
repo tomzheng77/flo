@@ -41,6 +41,15 @@
   (s/call "sudo" "-u" c/user "DISPLAY=:1" "i3lock" "-n" "-c" "000000")
   (s/call "sudo" "-u" c/user "DISPLAY=:1" "xdg-screensaver" "lock"))
 
+(defn restart-i3lock-if-present []
+  (let [report (s/process-report)
+        locations (into #{} (s/find-executable "i3lock"))
+        i3-ins (filter #(locations (:exe %)) report)]
+    (when (not-empty i3-ins)
+      (doseq [proc i3-ins]
+        (s/call "kill" (:pid proc)))
+      (lock-screen))))
+
 (defn remove-firewall-rules []
   (s/call "iptables" "iptables" "-F" "OUTPUT"))
 
