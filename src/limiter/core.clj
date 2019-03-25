@@ -1,16 +1,13 @@
 (ns limiter.core
-  (:require [clojure.core.match :refer [match]]
-            [clojure.set :as set]
-            [org.httpkit.server :as ks]
-            [limiter.proxy :as proxy]
-            [limiter.warden :refer [lock-screen disable-login
-                                    block-folder resign clear-all-restrictions
+  (:require [limiter.proxy :as proxy]
+            [limiter.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions
                                     remove-wheel add-firewall-rules]]
             [limiter.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [limiter.constants :as c]
             [limiter.http :refer [start-http-server]]
+            [limiter.orbit :as orbit]
             [java-time-literals.core]
             [taoensso.encore :as enc]
             [clojure.java.io :as io])
@@ -97,7 +94,7 @@
   [& body]
   `(try (do ~@body) (catch Throwable e# (resign e#))))
 
-(defn -main [& args]
+(defn run []
   (info "starting limiter")
   (try-or-resign
     (proxy/start-server)
@@ -108,3 +105,8 @@
       (proxy [TimerTask] []
         (run [] (try-or-resign (on-enter-second))))
       0 1000)))
+
+(defn -main [& args]
+  (case (first args)
+    "server" (run)
+    "orbit" (orbit/run)))
