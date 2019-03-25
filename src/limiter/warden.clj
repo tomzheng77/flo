@@ -63,6 +63,7 @@
 
 (defn clear-all-restrictions []
   (enable-login)
+  (remove-locks)
   (add-wheel)
   (remove-firewall-rules)
   (user-755 c/user-projects)
