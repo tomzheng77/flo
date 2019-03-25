@@ -22,24 +22,19 @@
 (defn handle-request [edn]
   (when (= :add-note (:type edn))
     (let [note (:note edn)]
-      (add-note note)
-      {:status  200
-       :headers {"Content-Type" "text/plain"}}))
+      (add-note note)))
   (when (= :add-verification (:type edn))
     (locking verifications
       (let [name (:name edn)
             time (:time edn)]
         (assert (not-any? #(= name (:name %)) @verifications))
         (assert (instance? LocalDateTime time))
-        (add-verification name time)
-        {:status  200
-         :headers {"Content-Type" "text/plain"}})))
+        (add-verification name time))))
   (when (= :status (:type edn))
     (locking verifications
       (if (not-empty @verifications)
-        {:status 200
-         :headers {"Content-Type" "text/plain"}
-         :body (pr-str {:verifications @verifications})}))))
+        {:verifications @verifications}
+        {:notes @notes}))))
 
 (defn run []
   (start-http-server c/orbit-port handle-request))

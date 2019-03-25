@@ -9,7 +9,10 @@
   (ks/run-server
     (fn [request]
       (let [body (slurp (.bytes (:body request)) :encoding "UTF-8")]
-        (try (let [edn (read-string body)] (handler edn))
+        (try (let [edn (read-string body)]
+               {:status  200
+                :headers {"Content-Type" "text/plain"}
+                :body    (pr-str (handler edn))})
              (catch Throwable e
                {:status  400
                 :headers {"Content-Type" "text/plain"}
