@@ -10,12 +10,12 @@
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [limiter.constants :as c]
+            [limiter.http :refer [start-http-server]]
             [java-time-literals.core]
             [taoensso.encore :as enc]
             [clojure.java.io :as io])
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
-
 
 (defn ns-filter [f] (-> f enc/compile-ns-filter enc/memoize_))
 (defn log-by-ns-pattern
@@ -95,18 +95,6 @@
       {:status  200
        :headers {"Content-Type" "text/plain"}})))
 
-(defn start-server
-  [port handler]
-  (ks/run-server
-    (fn [request]
-      (let [body (slurp (.bytes (:body request)) :encoding "UTF-8")]
-        (try (let [edn (read-string body)] (handler edn))
-             (catch Throwable e
-               {:status  400
-                :headers {"Content-Type" "text/plain"}
-                :body    (.getMessage e)}))))
-    {:port port}))
-
 (defmacro try-or-resign
   [& body]
   `(try (do ~@body) (catch Throwable e# (resign e#))))
@@ -115,7 +103,7 @@
   (info "starting limiter")
   (try-or-resign
     (proxy/start-server)
-    (start-server c/server-port handle-request))
+    (start-http-server c/server-port handle-request))
   (let [timer (new Timer)]
     (.schedule
       timer
