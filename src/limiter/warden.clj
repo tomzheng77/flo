@@ -41,9 +41,9 @@
   (s/call "sudo" "-u" c/user "DISPLAY=:1" "i3lock" "-n" "-c" "000000")
   (s/call "sudo" "-u" c/user "DISPLAY=:1" "xdg-screensaver" "lock"))
 
-(defn restart-i3lock-if-present []
+(defn restart-lock-if-present []
   (let [report (s/process-report)
-        locations (into #{} (s/find-executable "i3lock"))
+        locations (into #{} (concat (s/find-executable "xdg-screensaver") (s/find-executable "i3lock")))
         i3-ins (filter #(locations (:exe %)) report)]
     (when (not-empty i3-ins)
       (doseq [proc i3-ins]
@@ -100,5 +100,5 @@
   ([title message]
    (let [user-id (read-string (str/trim (:out (s/call "id" "-u" c/user))))]
      (s/call "sudo" "-u" c/user "DISPLAY=${display:1:-1}"
-           (str "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" user-id "/bus")
-           "notify-send" title message))))
+             (str "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/" user-id "/bus")
+             "notify-send" title message))))

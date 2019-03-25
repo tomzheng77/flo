@@ -2,7 +2,7 @@
   (:gen-class)
   (:require [limiter.proxy :as proxy]
             [limiter.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions
-                                    remove-wheel add-firewall-rules enable-login restart-i3lock-if-present]]
+                                    remove-wheel add-firewall-rules enable-login restart-lock-if-present]]
             [limiter.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
@@ -58,7 +58,7 @@
           (do (disable-login)
               (lock-screen))
           (do (enable-login)
-              (restart-i3lock-if-present)))
+              (restart-lock-if-present)))
         (block-folder
           #(not (contains? (:block-folder limiter) %))))))
 
