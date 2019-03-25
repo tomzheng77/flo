@@ -38,8 +38,8 @@
 (defn enable-login [] (s/call "passwd" "-u" c/user))
 
 (defn lock-screen []
-  (s/call "sudo" "-u" c/user "DISPLAY=:1" "i3lock" "-c" "000000")
-  (s/call "sudo" "-u" c/user "DISPLAY=:1" "xdg-screensaver" "lock"))
+  (future (s/call "sudo" "-u" c/user "DISPLAY=:1" "i3lock" "-c" "000000"))
+  (future (s/call "sudo" "-u" c/user "DISPLAY=:1" "xdg-screensaver" "lock")))
 
 (defn restart-lock-if-present []
   (let [report (s/process-report)
