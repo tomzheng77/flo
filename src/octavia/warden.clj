@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [octavia.constants :as c]
             [octavia.subprocess :as s]
-            [taoensso.timbre :as timbre :refer [trace debug info]]
+            [taoensso.timbre :as timbre :refer [trace debug info error]]
             [clojure.string :as str]))
 
 (defn- ls [path] (vec (.listFiles (io/file path))))
@@ -61,8 +61,9 @@
 (defn resign
   "grants the user all access in order to recover
   from a catastrophic failure"
-  []
-  (info "RESIGN")
+  [exception]
+  (error exception)
+  (error "RESIGN")
   (clear-all-restrictions)
   (System/exit 0))
 

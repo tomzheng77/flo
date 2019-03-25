@@ -100,7 +100,7 @@
 
 (defmacro try-or-resign
   [& body]
-  `(try (do ~@body) (catch Throwable _ (resign))))
+  `(try (do ~@body) (catch Throwable e (resign e))))
 
 (defn -main [& args]
   (info "starting octavia")
