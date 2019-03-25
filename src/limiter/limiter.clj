@@ -1,4 +1,4 @@
-(ns octavia.limiter
+(ns limiter.limiter
   (:require [clojure.core.match :refer [match]]
             [clojure.set :as set]
             [java-time-literals.core])

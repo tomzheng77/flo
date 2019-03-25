@@ -1,4 +1,4 @@
-(ns octavia.constants
+(ns limiter.constants
   (:require [clojure.string :as str])
   (:require [clojure.set :as set :refer [union]])
   (:import (java.io File)
@@ -31,6 +31,6 @@
 (def user-programs (str "/home/" user "/Documents/Programs"))
 (def processes-dir "/proc")
 
-(def home (str "/home/" user "/octavia"))
-(def primary-log (str home "/octavia.log"))
-(def primary-db (str home "/octavia.edn"))
+(def home (str "/home/" user "/limiter"))
+(def primary-log (str home "/limiter.log"))
+(def primary-db (str home "/limiter.edn"))

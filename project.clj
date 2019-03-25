@@ -1,4 +1,4 @@
-(defproject octavia "0.1.0-SNAPSHOT"
+(defproject limiter "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -29,5 +29,5 @@
                  [org.clojure/clojurescript "1.10.516"]
                  [com.google.errorprone/error_prone_annotations "2.1.3"]
                  [org.codehaus.mojo/animal-sniffer-annotations "1.14"]]
-  :main ^:skip-aot octavia.core
+  :main ^:skip-aot limiter.core
   :profiles {:uberjar {:aot :all}})

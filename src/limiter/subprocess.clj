@@ -1,6 +1,6 @@
-(ns octavia.subprocess
+(ns limiter.subprocess
   (:require
-    [octavia.constants :as c]
+    [limiter.constants :as c]
     [taoensso.timbre :as timbre
      :refer [log trace debug info warn error fatal report
              logf tracef debugf infof warnf errorf fatalf reportf

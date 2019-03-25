@@ -1,5 +1,5 @@
-(ns octavia.proxy
-  (:require [octavia.constants :as c]
+(ns limiter.proxy
+  (:require [limiter.constants :as c]
             [taoensso.timbre :as timbre]
             [clojure.string :as str])
   (:import (org.littleshoot.proxy.impl DefaultHttpProxyServer)

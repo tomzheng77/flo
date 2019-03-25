@@ -1,6 +1,6 @@
-(ns octavia.limiter-test
+(ns limiter.limiter-test
   (:require [clojure.test :refer :all])
-  (:require [octavia.limiter :refer :all])
+  (:require [limiter.limiter :refer :all])
   (:import (java.time LocalDateTime)))
 
 (def t0 (LocalDateTime/of 2018 11 19 0 0 0))

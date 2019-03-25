@@ -1,15 +1,15 @@
-(ns octavia.core
+(ns limiter.core
   (:require [clojure.core.match :refer [match]]
             [clojure.set :as set]
             [org.httpkit.server :as ks]
-            [octavia.proxy :as proxy]
-            [octavia.warden :refer [lock-screen disable-login
+            [limiter.proxy :as proxy]
+            [limiter.warden :refer [lock-screen disable-login
                                     block-folder resign clear-all-restrictions
                                     remove-wheel add-firewall-rules]]
-            [octavia.limiter :as limiter :refer [limiter-at drop-before]]
+            [limiter.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
-            [octavia.constants :as c]
+            [limiter.constants :as c]
             [java-time-literals.core]
             [taoensso.encore :as enc])
   (:import (java.time LocalDateTime)
@@ -103,7 +103,7 @@
   `(try (do ~@body) (catch Throwable e# (resign e#))))
 
 (defn -main [& args]
-  (info "starting octavia")
+  (info "starting limiter")
   (try-or-resign
     (proxy/start-server)
     (start-server))

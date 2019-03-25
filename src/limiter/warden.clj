@@ -1,7 +1,7 @@
-(ns octavia.warden
+(ns limiter.warden
   (:require [clojure.java.io :as io]
-            [octavia.constants :as c]
-            [octavia.subprocess :as s]
+            [limiter.constants :as c]
+            [limiter.subprocess :as s]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [clojure.string :as str]))
 
