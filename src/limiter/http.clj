@@ -23,7 +23,7 @@
 
 (defn send-server
   [edn]
-  (let [path (str "http://127.0.0.1:" c/orbit-port)]
+  (let [path (str "http://127.0.0.1:" c/server-port)]
     (kc/post path {:body (c/encrypt (pr-str edn))})))
 
 (defn send-orbit
