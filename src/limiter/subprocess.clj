@@ -55,5 +55,8 @@
        (error "the command" cmd "is not found")
        (do
          (debug "run:" cmd "=>" exec args)
-         (apply sh/sh (concat [exec] args [:env]
-                              [{"PATH" c/global-path "http_proxy" "" "https_proxy" ""}])))))))
+         (let [result (apply sh/sh
+                             (concat [exec] args [:env]
+                                     [{"PATH" c/global-path "http_proxy" "" "https_proxy" ""}]))]
+           (when-not (= 0 (:exit result))
+             (error cmd args result))))))))
