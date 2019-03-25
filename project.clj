@@ -26,5 +26,6 @@
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.match "0.3.0-alpha5"]
                  [org.javassist/javassist "3.24.1-GA"]]
+  :uberjar-name "limiter.jar"
   :main ^:skip-aot limiter.core
   :profiles {:uberjar {:aot :all}})
