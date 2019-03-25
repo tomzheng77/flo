@@ -1,4 +1,5 @@
 (ns limiter.core
+  (:gen-class)
   (:require [limiter.proxy :as proxy]
             [limiter.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions
                                     remove-wheel add-firewall-rules]]
