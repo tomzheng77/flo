@@ -62,12 +62,12 @@
   (s/call "killall" "i3lock"))
 
 (defn remove-firewall-rules []
-  (s/call "iptables" "iptables" "-F" "OUTPUT"))
+  (s/call "iptables" "-F" "OUTPUT"))
 
 (defn add-firewall-rules []
   (remove-firewall-rules)
-  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
-  (s/call "iptables" "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT"))
+  (s/call "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "80" "-j" "REJECT")
+  (s/call "iptables" "-w" "10" "-A" "OUTPUT" "-p" "tcp" "-m" "owner" "--uid-owner" c/user "--dport" "443" "-j" "REJECT"))
 
 (defn clear-all-restrictions []
   (enable-login)

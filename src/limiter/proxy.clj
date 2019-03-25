@@ -16,12 +16,16 @@
 (defn filters-source
   "wraps a (HttpRequest, HttpObject) => HttpObject filter inside
   a HttpFiltersSource instance"
-  [filter]
+  [filter-allow]
   (proxy [HttpFiltersSourceAdapter] []
     (filterRequest [request ctx]
-      (proxy [HttpFiltersAdapter] [request]
-        (serverToProxyResponse [response]
-          (filter request response))))))
+      (if (filter-allow request)
+        (proxy [HttpFiltersAdapter] [request]
+          (clientToProxyRequest [_] nil)
+          (proxyToServerRequest [_] nil))
+        (proxy [HttpFiltersAdapter] [request]
+          (clientToProxyRequest [_] (unauthorized))
+          (proxyToServerRequest [_] (unauthorized)))))))
 
 (defn start-transparent []
   "starts a HttpProxyServer instance with mitm filter disabled
@@ -32,10 +36,9 @@
       (.withTransparent true)
       (.withFiltersSource
         (filters-source
-          (fn [request response]
+          (fn [request]
             (let [host (.get (.headers request) "Host")]
-              (if (not-any? #(str/includes? host %) @block-host)
-                (unauthorized) response)))))
+              (not-any? #(str/includes? host %) @block-host)))))
       (.start)))
 
 (defn start-server
