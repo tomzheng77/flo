@@ -22,8 +22,11 @@
                                              :stack (map str (.getStackTrace e))}))}))))
     {:port port}))
 
-(defn unwrap [response]
-  (read-string (c/decrypt (:body @response))))
+(defn unwrap [connection]
+  (let [response @connection]
+    (if (:body response)
+      (read-string (c/decrypt (:body response)))
+      response)))
 
 (defn send-server
   [edn]
