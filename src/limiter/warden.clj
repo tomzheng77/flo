@@ -35,7 +35,7 @@
 (defn add-wheel [] (change-groups #(conj % "wheel")))
 
 (defn disable-login [] (s/call "passwd" "-l" c/user))
-(defn enable-login [] (s/call "passwd" "-l" c/user))
+(defn enable-login [] (s/call "passwd" "-u" c/user))
 
 (defn lock-screen []
   (s/call "sudo" "-u" c/user "i3lock" "-n" "-c" "000000")
