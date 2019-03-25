@@ -54,7 +54,7 @@
 
 (defn prune
   [limiter]
-  (select-keys limiter #[:time :block-login :block-host :block-folder]))
+  (select-keys limiter [:time :block-login :block-host :block-folder]))
 
 (defn valid?
   [limiter]
