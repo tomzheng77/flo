@@ -135,7 +135,7 @@
   (let [valid-limiters (filter valid? limiters)
         removed (filter-not #(.isAfter (:time %) time) valid-limiters)
         remaining (filter #(.isAfter (:time %) time) valid-limiters)]
-    (concat [(last (sort-by-time removed))] remaining)))
+    (filter valid? (concat [(last (sort-by-time removed))] remaining))))
 
 (defn limiter-at
   "finds the limiter which should be effective at {time}"
