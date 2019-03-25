@@ -18,15 +18,21 @@
              (catch Throwable e
                {:status  400
                 :headers {"Content-Type" "text/plain"}
-                :body    (c/encrypt (.getMessage e))}))))
+                :body    (c/encrypt (pr-str {:error (.getMessage e)
+                                             :stack (map str (.getStackTrace e))}))}))))
     {:port port}))
+
+(defn resolve [response]
+  (read-string (c/decrypt (:body @response))))
 
 (defn send-server
   [edn]
   (let [path (str "http://127.0.0.1:" c/server-port)]
-    (kc/post path {:body (c/encrypt (pr-str edn))})))
+    (resolve
+      (kc/post path {:body (c/encrypt (pr-str edn))}))))
 
 (defn send-orbit
   [edn]
   (let [path (str "http://" c/orbit-address ":" c/orbit-port)]
-    (kc/post path {:body (c/encrypt (pr-str edn))})))
+    (resolve
+      (kc/post path {:body (c/encrypt (pr-str edn))}))))
