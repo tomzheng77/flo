@@ -15,6 +15,14 @@
      (if (str/starts-with? (:exe process) (canonical-path dir))
        (s/call "kill" (:pid process))))))
 
+(defn lock-home []
+  (s/call "chown" "-R" "root:root" c/home)
+  (s/call "chmod" "-R" "755" c/home))
+
+(defn unlock-home []
+  (s/call "chown" "-R" (str c/user ":" c/user) c/home)
+  (s/call "chmod" "-R" "755" c/home))
+
 (defn- change-groups
   "changes the secondary groups of the user with a function"
   [update]
@@ -65,6 +73,7 @@
   (enable-login)
   (remove-locks)
   (add-wheel)
+  (unlock-home)
   (remove-firewall-rules)
   (user-755 c/user-projects)
   (user-755 c/user-programs)

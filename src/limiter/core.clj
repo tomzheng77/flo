@@ -2,7 +2,7 @@
   (:gen-class)
   (:require [limiter.proxy :as proxy]
             [limiter.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions
-                                    remove-wheel add-firewall-rules enable-login restart-lock-if-present
+                                    remove-wheel add-firewall-rules enable-login restart-lock-if-present lock-home
                                     remove-locks send-notify]]
             [limiter.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
@@ -53,6 +53,7 @@
   (if (:is-last limiter)
     (clear-all-restrictions)
     (do (remove-wheel)
+        (lock-home)
         (reset! proxy/block-host (into #{} (:block-host limiter)))
         (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (if (:block-login limiter)
