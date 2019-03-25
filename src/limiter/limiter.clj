@@ -52,6 +52,10 @@
 (defn date-time? [x] (instance? LocalDateTime x))
 (defn set-of? [f] (fn [x] (and (set? x) (every? f x))))
 
+(defn prune
+  [limiter]
+  (filter-key key #{:time :block-login :block-host :block-folder} limiter))
+
 (defn valid?
   [limiter]
   (and
@@ -121,6 +125,7 @@
          (concat [(assoc limits :time start)])
          (concat before)
          (filter valid?)
+         (map prune)
          (merge-same-time)
          (remove-duplicate)
          (remove-last-limits))))
