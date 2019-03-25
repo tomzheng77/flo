@@ -88,7 +88,7 @@
       (assert (limiter/valid-limits? edn))
       (with-local-vars [limiters (read-limiters)]
         (var-set limiters (limiter/add-limiter @limiters start end edn))
-        (write-limiters limiters)))))
+        (write-limiters @limiters)))))
 
 (defmacro try-or-resign
   [& body]
