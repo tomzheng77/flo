@@ -22,17 +22,17 @@
                                              :stack (map str (.getStackTrace e))}))}))))
     {:port port}))
 
-(defn resolve [response]
+(defn unwrap [response]
   (read-string (c/decrypt (:body @response))))
 
 (defn send-server
   [edn]
   (let [path (str "http://127.0.0.1:" c/server-port)]
-    (resolve
+    (unwrap
       (kc/post path {:body (c/encrypt (pr-str edn))}))))
 
 (defn send-orbit
   [edn]
   (let [path (str "http://" c/orbit-address ":" c/orbit-port)]
-    (resolve
+    (unwrap
       (kc/post path {:body (c/encrypt (pr-str edn))}))))
