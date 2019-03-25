@@ -38,8 +38,8 @@
 (defn enable-login [] (s/call "passwd" "-u" c/user))
 
 (defn lock-screen []
-  (s/call "sudo" "-u" c/user "i3lock" "-n" "-c" "000000")
-  (s/call "sudo" "-u" c/user "xdg-screensaver" "lock"))
+  (s/call "sudo" "-u" c/user "DISPLAY=:1" "i3lock" "-n" "-c" "000000")
+  (s/call "sudo" "-u" c/user "DISPLAY=:1" "xdg-screensaver" "lock"))
 
 (defn remove-firewall-rules []
   (s/call "iptables" "iptables" "-F" "OUTPUT"))
