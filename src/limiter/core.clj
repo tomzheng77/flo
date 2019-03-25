@@ -55,8 +55,8 @@
         (reset! proxy/block-host (into #{} (:block-host limiter)))
         (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (when (:block-login limiter)
-          (lock-screen)
-          (disable-login))
+          (disable-login)
+          (lock-screen))
         (block-folder
           #(not (contains? (:block-folder limiter) %))))))
 
