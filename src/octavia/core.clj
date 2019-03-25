@@ -35,12 +35,11 @@
                                             :all                :debug})]})
 
 (defn read-limiters []
-  (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign))))
+  (limiter/parse (slurp c/primary-db)))
 
 (defn write-limiters
   [limiters]
-  (try (spit c/primary-db (limiter/stringify limiters))
-       (catch Throwable _ (resign))))
+  (spit c/primary-db (limiter/stringify limiters)))
 
 (defn activate-limiter
   [limiter]
@@ -60,17 +59,18 @@
 
 ; this method should be called once per second
 (defn on-enter-second []
-  (println "run each second")
-  (let [now (LocalDateTime/now)
-        limiters (read-limiters)
-        limiter (limiter-at limiters now)
-        limiters-optimized (drop-before limiters now)]
-    (locking prev-limiter
-      (when (not (= @prev-limiter limiter))
-        (reset! prev-limiter limiter)
-        (activate-limiter limiter)))
-    (when (not (= limiters-optimized limiters))
-      (write-limiters limiters-optimized))))
+  (debug "on-enter-second")
+  (try (let [now (LocalDateTime/now)
+             limiters (read-limiters)
+             limiter (limiter-at limiters now)
+             limiters-optimized (drop-before limiters now)]
+         (locking prev-limiter
+           (when (not (= @prev-limiter limiter))
+             (reset! prev-limiter limiter)
+             (activate-limiter limiter)))
+         (when (not (= limiters-optimized limiters))
+           (write-limiters limiters-optimized)))
+       (catch Throwable _ (resign))))
 
 (defn handle-request-edn
   [edn]

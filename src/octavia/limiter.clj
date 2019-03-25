@@ -132,8 +132,9 @@
 (defn drop-before
   "removes all limiters before time EXCEPT the last one"
   [limiters time]
-  (let [removed (filter-not #(.isAfter (:time %) time) limiters)
-        remaining (filter #(.isAfter (:time %) time) limiters)]
+  (let [valid-limiters (filter valid? limiters)
+        removed (filter-not #(.isAfter (:time %) time) valid-limiters)
+        remaining (filter #(.isAfter (:time %) time) valid-limiters)]
     (concat [(last (sort-by-time removed))] remaining)))
 
 (defn limiter-at
