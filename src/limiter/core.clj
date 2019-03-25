@@ -11,7 +11,8 @@
             [taoensso.timbre.appenders.core :as appenders]
             [limiter.constants :as c]
             [java-time-literals.core]
-            [taoensso.encore :as enc])
+            [taoensso.encore :as enc]
+            [clojure.java.io :as io])
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
 
@@ -33,6 +34,13 @@
    :middleware [(partial log-by-ns-pattern {"io.netty.*"        :info
                                             "org.littleshoot.*" :info
                                             :all                :debug})]})
+
+(defn create-limiter-edn-if-not-found []
+  (let [edn-file (io/file c/primary-edn)]
+    (when-not (.exists edn-file)
+      (let [parent-folder (.getParentFile edn-file)]
+        (.mkdirs parent-folder)
+        (spit edn-file (pr-str nil))))))
 
 (defn read-limiters []
   (limiter/parse (slurp c/primary-edn)))
@@ -60,6 +68,7 @@
 ; this method should be called once per second
 (defn on-enter-second []
   (debug "on-enter-second")
+  (create-limiter-edn-if-not-found)
   (let [now (LocalDateTime/now)
         limiters (read-limiters)
         limiter (limiter-at limiters now)
