@@ -33,4 +33,4 @@
 
 (def home (str "/home/" user "/limiter"))
 (def primary-log (str home "/limiter.log"))
-(def primary-db (str home "/limiter.edn"))
+(def primary-edn (str home "/limiter.edn"))

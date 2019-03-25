@@ -35,11 +35,11 @@
                                             :all                :debug})]})
 
 (defn read-limiters []
-  (limiter/parse (slurp c/primary-db)))
+  (limiter/parse (slurp c/primary-edn)))
 
 (defn write-limiters
   [limiters]
-  (spit c/primary-db (limiter/stringify limiters)))
+  (spit c/primary-edn (limiter/stringify limiters)))
 
 (defn activate-limiter
   [limiter]
