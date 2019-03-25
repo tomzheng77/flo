@@ -25,6 +25,7 @@
 (testing "add-limiter"
   (is (= {:is-last true} (limiter-at nil (t 10))))
   (is (= [] (drop-before nil (t 0))))
+  (is (= [] (drop-before [nil] (t 0))))
   (is (= (add-limiter [] (t 0) (t 10) nil)
          [{:time (t 0)} {:time (t 10)}]))
   (is (= (-> nil
