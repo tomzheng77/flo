@@ -70,7 +70,6 @@
 
 ; this method should be called once per second
 (defn on-enter-second []
-  (debug "on-enter-second")
   (create-limiter-edn-if-not-found)
   (let [now (LocalDateTime/now)
         limiters (read-limiters)
