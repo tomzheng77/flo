@@ -7,7 +7,7 @@
                                     block-folder resign clear-all-restrictions
                                     remove-wheel add-firewall-rules]]
             [octavia.limiter :as limiter :refer [limiter-at drop-before]]
-            [taoensso.timbre :as timbre :refer [trace debug info]]
+            [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [octavia.constants :as c]
             [java-time-literals.core]
@@ -100,7 +100,7 @@
 
 (defmacro try-or-resign
   [& body]
-  `(try (do ~@body) (catch Throwable e (resign e))))
+  `(try (do ~@body) (catch Throwable e# (resign e#))))
 
 (defn -main [& args]
   (info "starting octavia")
