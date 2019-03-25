@@ -1,6 +1,7 @@
 (ns limiter.constants
-  (:require [clojure.string :as str])
-  (:require [clojure.set :as set :refer [union]])
+  (:require [clojure.string :as str]
+            [clojure.set :refer [union]]
+            [lock-key.core :as lock])
   (:import (java.io File)
            (java.util.regex Pattern)
            (java.nio.charset Charset)))
@@ -34,3 +35,6 @@
 (def home (str "/home/" user "/limiter"))
 (def primary-log (str home "/limiter.log"))
 (def primary-edn (str home "/limiter.edn"))
+
+(defn encrypt [string] (lock/encrypt-as-base64 string secret-key))
+(defn decrypt [base64] (lock/decrypt-from-base64 base64 secret-key))

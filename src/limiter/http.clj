@@ -1,6 +1,8 @@
 (ns limiter.http
   (:require [org.httpkit.server :as ks]
-            [java-time-literals.core]))
+            [java-time-literals.core]
+            [org.httpkit.client :as kc]
+            [limiter.constants :as c]))
 
 (defn start-http-server
   "starts a generic HTTP server at the given port using the provided handler
@@ -8,13 +10,23 @@
   [port handler]
   (ks/run-server
     (fn [request]
-      (let [body (slurp (.bytes (:body request)) :encoding "UTF-8")]
+      (let [body (c/decrypt (slurp (.bytes (:body request)) :encoding "UTF-8"))]
         (try (let [edn (read-string body)]
                {:status  200
                 :headers {"Content-Type" "text/plain"}
-                :body    (pr-str (handler edn))})
+                :body    (c/encrypt (pr-str (handler edn)))})
              (catch Throwable e
                {:status  400
                 :headers {"Content-Type" "text/plain"}
-                :body    (.getMessage e)}))))
+                :body    (c/encrypt (.getMessage e))}))))
     {:port port}))
+
+(defn send-server
+  [edn]
+  (let [path (str "http://127.0.0.1:" c/orbit-port)]
+    (kc/post path {:body (c/encrypt (pr-str edn))})))
+
+(defn send-orbit
+  [edn]
+  (let [path (str "http://" c/orbit-address ":" c/orbit-port)]
+    (kc/post path {:body (c/encrypt (pr-str edn))})))
