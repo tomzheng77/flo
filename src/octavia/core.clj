@@ -7,7 +7,7 @@
                                     block-folder resign clear-all-restrictions
                                     remove-wheel add-firewall-rules]]
             [octavia.limiter :as limiter :refer [limiter-at drop-before]]
-            [taoensso.timbre :as timbre]
+            [taoensso.timbre :as timbre :refer [trace debug info]]
             [taoensso.timbre.appenders.core :as appenders]
             [octavia.constants :as c]
             [java-time-literals.core]
@@ -19,23 +19,20 @@
 (defn ns-filter [f] (-> f enc/compile-ns-filter enc/memoize_))
 (defn log-by-ns-pattern
   [ns-patterns & [{:keys [?ns-str config level] :as opts}]]
-  (let [ns
-        (or (some->> ns-patterns
-                     keys
-                     (filter #(and (string? %) ((ns-filter %) ?ns-str)))
-                     not-empty
-                     (apply max-key count))
-            :all)
-        loglevel (get ns-patterns ns (get config :level))]
-    (when (and (timbre/may-log? loglevel ns)
-               (timbre/level>= level loglevel)) opts)))
+  (let [ns (or (some->> ns-patterns
+                        (keys)
+                        (filter #(and (string? %) ((ns-filter %) ?ns-str)))
+                        (not-empty)
+                        (apply max-key count)) :all)
+        allow-level (get ns-patterns ns (get config :level))]
+    (if (timbre/level>= level allow-level) opts)))
 
 (timbre/merge-config!
-  {:appenders  {:spit (appenders/spit-appender {:fname c/primary-log})}
-   :middleware [(partial log-by-ns-pattern
-                         {"my.beloved.ns.i.work.on.*" :debug
-                          "i.need.to.trace.this"      :trace
-                          :all                        :error})]})
+  {:level      :trace
+   :appenders  {:spit (appenders/spit-appender {:fname c/primary-log})}
+   :middleware [(partial log-by-ns-pattern {"io.netty.*"        :info
+                                            "org.littleshoot.*" :info
+                                            :all                :debug})]})
 
 (defn read-limiters []
   (try (limiter/parse (slurp c/primary-db)) (catch Throwable _ (resign))))
@@ -103,7 +100,7 @@
   (ks/run-server handle-request {:port c/server-port}))
 
 (defn -main [& args]
-  (println "starting octavia")
+  (info "starting octavia")
   (proxy/start-server)
   (start-server)
   (let [timer (new Timer)]
