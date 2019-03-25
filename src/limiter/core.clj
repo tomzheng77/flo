@@ -52,7 +52,7 @@
     (clear-all-restrictions)
     (do (remove-wheel)
         (reset! proxy/block-host (into #{} (:block-host limiter)))
-        (when (not-empty :block-host) (add-firewall-rules))
+        (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (when (:block-login limiter)
           (lock-screen)
           (disable-login))
