@@ -2,7 +2,8 @@
   (:gen-class)
   (:require [limiter.proxy :as proxy]
             [limiter.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions
-                                    remove-wheel add-firewall-rules enable-login restart-lock-if-present remove-locks]]
+                                    remove-wheel add-firewall-rules enable-login restart-lock-if-present
+                                    remove-locks send-notify]]
             [limiter.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
@@ -64,6 +65,7 @@
 
 ; the last limiter that was activated
 (def prev-limiter (atom nil))
+(def notified (atom #{}))
 
 ; this method should be called once per second
 (defn on-enter-second []
@@ -72,7 +74,12 @@
   (let [now (LocalDateTime/now)
         limiters (read-limiters)
         limiter (limiter-at limiters now)
+        in-1-minute (limiter-at limiters (.plusMinutes now 1))
         limiters-optimized (drop-before limiters now)]
+    (locking notified
+      (when-not (@notified in-1-minute)
+        (send-notify "in 1 minute" (pr-str in-1-minute))
+        (swap! notified #(conj % in-1-minute))))
     (locking prev-limiter
       (when (not (= @prev-limiter limiter))
         (reset! prev-limiter limiter)
