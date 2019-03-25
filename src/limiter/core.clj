@@ -80,7 +80,7 @@
     (when (not (= limiters-optimized limiters))
       (write-limiters limiters-optimized))))
 
-(defn handle-request-edn
+(defn handle-request
   [edn]
   (when (= :limiter (:type edn))
     (let [start (:start edn)
@@ -95,17 +95,17 @@
       {:status  200
        :headers {"Content-Type" "text/plain"}})))
 
-(defn handle-request
-  [request]
-  (let [body (slurp (.bytes (:body request)) :encoding "UTF-8")]
-    (try (let [edn (read-string body)] (handle-request-edn edn))
-         (catch Throwable e
-           {:status  400
-            :headers {"Content-Type" "text/plain"}
-            :body    (.getMessage e)}))))
-
-(defn start-server []
-  (ks/run-server handle-request {:port c/server-port}))
+(defn start-server
+  [port handler]
+  (ks/run-server
+    (fn [request]
+      (let [body (slurp (.bytes (:body request)) :encoding "UTF-8")]
+        (try (let [edn (read-string body)] (handler edn))
+             (catch Throwable e
+               {:status  400
+                :headers {"Content-Type" "text/plain"}
+                :body    (.getMessage e)}))))
+    {:port port}))
 
 (defmacro try-or-resign
   [& body]
@@ -115,7 +115,7 @@
   (info "starting limiter")
   (try-or-resign
     (proxy/start-server)
-    (start-server))
+    (start-server c/server-port handle-request))
   (let [timer (new Timer)]
     (.schedule
       timer
