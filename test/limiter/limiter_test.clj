@@ -1,6 +1,9 @@
 (ns limiter.limiter-test
-  (:require [clojure.test :refer :all])
-  (:require [limiter.limiter :refer :all])
+  (:require [clojure.test :refer :all]
+            [limiter.limiter :refer :all]
+            [clojure.test.check :as tc]
+            [clojure.test.check.generators :as gen]
+            [clojure.test.check.properties :as prop])
   (:import (java.time LocalDateTime)))
 
 (def t0 (LocalDateTime/of 2018 11 19 0 0 0))
@@ -21,6 +24,40 @@
          [{:time (t 1) :block-host #{"A"}}
           {:time (t 2) :block-host #{"B"}}
           {:time (t 3)}])))
+
+(def gen-limits
+  (gen/fmap (fn [[t0 t1 block-login block-host block-folder]]
+              {:start        (t t0)
+               :end          (t (+ t0 t1))
+               :block-login  block-login
+               :block-host   block-host
+               :block-folder block-folder})
+            (gen/tuple
+              (gen/choose 1 1000)
+              (gen/choose 1 1000)
+              gen/boolean
+              (gen/set gen/string-alphanumeric {:max-elements 5})
+              (gen/set gen/string-alphanumeric {:max-elements 5}))))
+
+(def gen-limits-vec (gen/vector gen-limits))
+(defn with-limits [limits-vec]
+  (loop [limiters nil list limits-vec]
+    (if (empty? list)
+      limiters
+      (let [limits (first limits-vec)]
+        (recur (add-limiter limiters (:start limits) (:end limits) limits) (next list))))))
+
+(def double-limits-prop
+  (prop/for-all
+    [limits-vec gen-limits-vec]
+    (= (with-limits limits-vec)
+       (with-limits
+         (concat limits-vec limits-vec)))))
+
+(def always-end-prop
+  (prop/for-all
+    [limits-vec gen-limits-vec]
+    (= true (:is-last (limiter-at (with-limits limits-vec) (t 2005))))))
 
 (testing "add-limiter"
   (is (= {:is-last true} (limiter-at nil (t 10))))
@@ -118,4 +155,6 @@
             {:time (t 210)}
             {:time (t 300) :block-login true}
             {:time (t 310)}
-            {:time (t 400)}]))))
+            {:time (t 400)}])))
+  (is (= true (:result (tc/quick-check 100 double-limits-prop))))
+  (is (= true (:result (tc/quick-check 100 always-end-prop)))))
