@@ -76,4 +76,13 @@
     (is (= {:time (t 0) :block-host #{"C"} :is-last false} (limiter-at example (t 5))))
     (is (= {:time (t 10) :block-host #{"B" "C"} :is-last false} (limiter-at example (t 10))))
     (is (= {:time (t 20) :block-host #{"A" "B" "C"} :is-last false} (limiter-at example (t 20))))
-    (is (= {:time (t 50) :is-last true} (limiter-at example (t 60))))))
+    (is (= {:time (t 50) :is-last true} (limiter-at example (t 60)))))
+  (let [example (-> nil
+                    (add-limiter (t 0) (t 400) nil)
+                    (add-limiter (t 100) (t 110) {:block-login true})
+                    (add-limiter (t 200) (t 210) {:block-login true})
+                    (add-limiter (t 300) (t 310) {:block-login true}))]
+    (is (= true (:block-login (limiter-at example (t 105)))))
+    (is (= true (:block-login (limiter-at example (t 205)))))
+    (is (= true (:block-login (limiter-at example (t 305)))))
+    (is (= false (true? (:block-login (limiter-at example (t 350))))))))
