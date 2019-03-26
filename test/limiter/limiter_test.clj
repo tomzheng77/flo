@@ -91,4 +91,31 @@
             {:time (t 210)}
             {:time (t 300) :block-login true}
             {:time (t 310)}
+            {:time (t 400)}])))
+  (let [example (-> nil
+                    (add-limiter (t 0) (t 400) nil)
+                    (add-limiter (t 100) (t 110) {:block-login true})
+                    (add-limiter (t 200) (t 210) {:block-login true})
+                    (add-limiter (t 300) (t 310) {:block-login true})
+                    (add-limiter (t 100) (t 110) {:block-login true})
+                    (add-limiter (t 200) (t 210) {:block-login true})
+                    (add-limiter (t 300) (t 310) {:block-login true}))]
+    (is (= true (:block-login (limiter-at example (t 105)))))
+    (is (= true (:block-login (limiter-at example (t 205)))))
+    (is (= true (:block-login (limiter-at example (t 305)))))
+    (is (= false (true? (:block-login (limiter-at example (t 350))))))
+    (is (= (drop-before example (t 205))
+           [{:time (t 200) :block-login true}
+            {:time (t 210)}
+            {:time (t 300) :block-login true}
+            {:time (t 310)}
+            {:time (t 400)}]))
+    (is (= example
+           [{:time (t 0)}
+            {:time (t 100) :block-login true}
+            {:time (t 110)}
+            {:time (t 200) :block-login true}
+            {:time (t 210)}
+            {:time (t 300) :block-login true}
+            {:time (t 310)}
             {:time (t 400)}]))))

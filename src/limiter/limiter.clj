@@ -72,11 +72,11 @@
     (nil-or (set-of? string?) (:block-folder limits))))
 
 (defn between?
-  "checks if time is between start and end"
+  "checks if time is between start (inclusive) and end (exclusive)"
   [time start end]
   (and
     (not (.isBefore time start))
-    (not (.isAfter time end))))
+    (.isBefore time end)))
 
 (defn equiv?
   [a b]
@@ -117,10 +117,10 @@
   (assert (.isBefore start end))
   (let [before (filter #(.isBefore (:time %) start) limiters)
         between (filter #(between? (:time %) start end) limiters)
-        after (filter #(.isAfter (:time %) end) limiters)
-        before-end (last (filter #(.isBefore (:time %) end) limiters))]
+        after (filter #(not (.isBefore (:time %) end)) limiters)
+        before-or-at-end (last (filter #(not (.isAfter (:time %) end)) limiters))]
     (->> after
-         (concat [(assoc before-end :time end)])
+         (concat [(assoc before-or-at-end :time end)])
          (concat (map #(extend-limiter % limits) between))
          (concat [(assoc limits :time start)])
          (concat before)
