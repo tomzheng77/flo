@@ -81,17 +81,14 @@
     [limits-vec gen-limits-vec]
     (test-encapsulate limits-vec)))
 
-(def fail-case (read-string "[{:start #time/ldt \"2018-11-19T05:49\", :end #time/ldt \"2018-11-19T16:53\", :block-login true,
-:block-host #{\"\" \"S7VL\" \"y6\" \"Q9HI\"},
-:block-folder #{}
-} {:start #time/ldt \"2018-11-19T12:17\", :end #time/ldt \"2018-11-19T21:59\", :block-login false,
-:block-host #{\"PuNW\" \"y0\" \"N\" \"Qq\"},
-:block-folder #{\"Y2m\"}}]"))
-
 (def always-end-prop
   (prop/for-all
     [limits-vec gen-limits-vec]
     (= true (:is-last (limiter-at (with-limits limits-vec) (t 2005))))))
+
+(testing "every-minute"
+  (is (= 100 (count (every-minute (t 100) (t 200)))))
+  (is (= 27 (count (every-minute (t 27) (t 54))))))
 
 (testing "add-limiter"
   (is (= {:is-last true} (limiter-at nil (t 10))))
