@@ -130,6 +130,9 @@
          (remove-duplicate)
          (remove-last-limits))))
 
+(defn includes? [limiter limits]
+  (= limiter (union limiter limits)))
+
 (defn filter-not
   ([pred] (filter #(not (pred %))))
   ([pred coll] (filter #(not (pred %)) coll)))

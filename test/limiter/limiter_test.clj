@@ -47,12 +47,32 @@
       (let [limits (first limits-vec)]
         (recur (add-limiter limiters (:start limits) (:end limits) limits) (next list))))))
 
+(defmacro forall [seq-exprs body-expr]
+  `(let [result# (for ~seq-exprs ~body-expr)]
+     (every? identity result#)))
+
+(defn every-minute [start end]
+  (loop [at start out []]
+    (if-not (.isBefore at end)
+      out
+      (recur (.plusMinutes at 1)
+             (conj out at)))))
+
 (def double-limits-prop
   (prop/for-all
     [limits-vec gen-limits-vec]
     (= (with-limits limits-vec)
        (with-limits
          (concat limits-vec limits-vec)))))
+
+(def encapsulate-prop
+  (prop/for-all
+    [limits-vec gen-limits-vec]
+    (let [limiters (with-limits limits-vec)]
+      (forall [limits limits-vec]
+        (let [start (:start limits) end (:end limits)]
+          (forall [at (every-minute start end)]
+            (includes? (limiter-at limiters at) limits)))))))
 
 (def always-end-prop
   (prop/for-all
@@ -156,5 +176,6 @@
             {:time (t 300) :block-login true}
             {:time (t 310)}
             {:time (t 400)}])))
-  (is (= true (:result (tc/quick-check 100 double-limits-prop))))
-  (is (= true (:result (tc/quick-check 100 always-end-prop)))))
+  (is (= true (:result (tc/quick-check 50 double-limits-prop))))
+  (is (= true (:result (tc/quick-check 50 always-end-prop))))
+  (is (= true (:result (tc/quick-check 50 encapsulate-prop)))))
