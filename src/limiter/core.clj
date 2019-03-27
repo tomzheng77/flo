@@ -54,6 +54,7 @@
     (clear-all-restrictions)
     (do (remove-wheel)
         (lock-home)
+        (info "changing proxy rules to" (into #{} (:block-host limiter)))
         (reset! proxy/block-host (into #{} (:block-host limiter)))
         (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (if (:block-login limiter)
