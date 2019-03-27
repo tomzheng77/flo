@@ -89,6 +89,8 @@
 
 (defn handle-request
   [edn]
+  (when (= :restart-proxy (:type edn))
+    (future (proxy/start-server)))
   (when (= :limiter (:type edn))
     (let [start (:start edn)
           end (:end edn)
