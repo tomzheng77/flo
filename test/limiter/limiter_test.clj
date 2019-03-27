@@ -36,12 +36,16 @@
   `(let [result# (for ~seq-exprs ~body-expr)]
      (every? identity result#)))
 
-(defn every-minute [start end]
-  (loop [at start out []]
-    (if-not (.isBefore at end)
-      out
-      (recur (.plusMinutes at 1)
-             (conj out at)))))
+(defn every-step
+  ([start end] (every-step start end 1))
+  ([start end step]
+   (assert (integer? step))
+   (assert (< 0 step))
+   (loop [at start out []]
+     (if-not (.isBefore at end)
+       out
+       (recur (.plusMinutes at step)
+              (conj out at))))))
 
 (def prop-add-limiters-twice
   (prop/for-all
@@ -59,7 +63,7 @@
               item (-> limits
                        (dissoc :start)
                        (dissoc :end))]
-          (forall [at (every-minute start end)]
+          (forall [at (every-step start end 10)]
             (includes? (limiter-at limiters at) item)))))))
 
 ; regardless what limits are added, :is-last should always be true
@@ -86,8 +90,8 @@
           {:time (t 3)}])))
 
 (testing "every-minute"
-  (is (= 100 (count (every-minute (t 100) (t 200)))))
-  (is (= 27 (count (every-minute (t 27) (t 54))))))
+  (is (= 100 (count (every-step (t 100) (t 200)))))
+  (is (= 27 (count (every-step (t 27) (t 54))))))
 
 (testing "add-limiter"
   (is (= {:is-last true} (limiter-at nil (t 10))))
