@@ -2,8 +2,7 @@
   (:require [clojure.core.match :refer [match]]
             [clojure.set :as set]
             [java-time-literals.core])
-  (:import (java.time LocalDateTime ZoneOffset)
-           (java.util.regex Pattern)))
+  (:import (java.time LocalDateTime ZoneOffset)))
 
 ; a single limiter, a limiter updates the profile of the user
 ; time - the time for this limiter to occur
@@ -131,7 +130,7 @@
          (remove-last-limits))))
 
 (defn includes? [limiter limits]
-  (= limiter (union limiter limits)))
+  (= limiter (extend-limiter limiter limits)))
 
 (defn filter-not
   ([pred] (filter #(not (pred %))))
