@@ -22,7 +22,7 @@
 (def global-paths (union custom-paths raw-paths))
 (def global-path (str/join path-separator global-paths))
 
-(def proxy-port 9000)
+(def proxy-port 9003)
 (def server-port 9001)
 (def orbit-address "103.29.84.69")
 (def orbit-port 9002)
