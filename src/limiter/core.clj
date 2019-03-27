@@ -51,10 +51,10 @@
 (defn activate-limiter
   [limiter]
   (if (:is-last limiter)
-    (clear-all-restrictions)
+    (do (clear-all-restrictions)
+        (reset! proxy/block-host #{}))
     (do (remove-wheel)
         (lock-home)
-        (info "changing proxy rules to" (into #{} (:block-host limiter)))
         (reset! proxy/block-host (into #{} (:block-host limiter)))
         (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (if (:block-login limiter)
