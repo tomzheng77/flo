@@ -88,40 +88,10 @@
 :block-host #{\"PuNW\" \"y0\" \"N\" \"Qq\"},
 :block-folder #{\"Y2m\"}}]"))
 
-;(pprint fail-case)
-;(println)
-;(pprint (with-limits (take 1 fail-case)))
-;(println)
-;(pprint (with-limits fail-case))
-;(println (test-encapsulate fail-case))
-;(println (tc/quick-check 50 (prop/for-all [string gen-limits-vec] (do (println (pr-str string)) true))))
-
 (def always-end-prop
   (prop/for-all
     [limits-vec gen-limits-vec]
     (= true (:is-last (limiter-at (with-limits limits-vec) (t 2005))))))
-
-(is (= [{:time         (LocalDateTime/parse "2018-11-19T05:49")
-         :block-login  true,
-         :block-host   #{"" "S7VL" "y6" "Q9HI"},
-         :block-folder #{}}
-        {:time         (LocalDateTime/parse "2018-11-19T12:17")
-         :block-login  true,
-         :block-host   #{"" "S7VL" "y6" "Q9HI" "PuNW" "y0" "N" "Qq"},
-         :block-folder #{"Y2m"}}
-        {:block-login  false,
-         :block-host   #{"PuNW" "y0" "N" "Qq"},
-         :block-folder #{"Y2m"}}
-        {:time (LocalDateTime/parse "2018-11-19T21:59")}]
-       (-> nil
-           (add-limiter (LocalDateTime/parse "2018-11-19T05:49") (LocalDateTime/parse "2018-11-19T16:53")
-                        {:block-login  true,
-                         :block-host   #{"" "S7VL" "y6" "Q9HI"},
-                         :block-folder #{}})
-           (add-limiter (LocalDateTime/parse "2018-11-19T12:17") (LocalDateTime/parse "2018-11-19T21:59")
-                        {:block-login  false,
-                         :block-host   #{"PuNW" "y0" "N" "Qq"},
-                         :block-folder #{"Y2m"}}))))
 
 (testing "add-limiter"
   (is (= {:is-last true} (limiter-at nil (t 10))))
@@ -220,6 +190,28 @@
             {:time (t 300) :block-login true}
             {:time (t 310)}
             {:time (t 400)}])))
+  (is (= [{:time         (LocalDateTime/parse "2018-11-19T05:49")
+           :block-login  true,
+           :block-host   #{"" "S7VL" "y6" "Q9HI"},
+           :block-folder #{}}
+          {:time         (LocalDateTime/parse "2018-11-19T12:17")
+           :block-login  true,
+           :block-host   #{"" "S7VL" "y6" "Q9HI" "PuNW" "y0" "N" "Qq"},
+           :block-folder #{"Y2m"}}
+          {:time         (LocalDateTime/parse "2018-11-19T16:53")
+           :block-login  false,
+           :block-host   #{"PuNW" "y0" "N" "Qq"},
+           :block-folder #{"Y2m"}}
+          {:time (LocalDateTime/parse "2018-11-19T21:59")}]
+         (-> nil
+             (add-limiter (LocalDateTime/parse "2018-11-19T05:49") (LocalDateTime/parse "2018-11-19T16:53")
+                          {:block-login  true,
+                           :block-host   #{"" "S7VL" "y6" "Q9HI"},
+                           :block-folder #{}})
+             (add-limiter (LocalDateTime/parse "2018-11-19T12:17") (LocalDateTime/parse "2018-11-19T21:59")
+                          {:block-login  false,
+                           :block-host   #{"PuNW" "y0" "N" "Qq"},
+                           :block-folder #{"Y2m"}}))))
   (is (= true (:result (tc/quick-check 50 double-limits-prop))))
   (is (= true (:result (tc/quick-check 50 always-end-prop))))
-  (is (= true (:result (tc/quick-check 50 encapsulate-prop)))))
+  (is (= true (:result (tc/quick-check 20 encapsulate-prop)))))

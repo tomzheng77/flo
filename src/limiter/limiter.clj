@@ -121,7 +121,7 @@
     (->> after
          (concat [(assoc before-or-at-end :time end)])
          (concat (map #(extend-limiter % limits) between))
-         (concat [(assoc limits :time start)])
+         (concat [(extend-limiter (assoc limits :time start) (last before))])
          (concat before)
          (filter valid?)
          (map prune)
