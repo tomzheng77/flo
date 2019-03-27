@@ -91,13 +91,16 @@
   [edn]
   (when (= :limiter (:type edn))
     (let [start (:start edn)
-          end (:end edn)]
+          end (:end edn)
+          now (LocalDateTime/now)]
       (assert (limiter/date-time? start))
       (assert (limiter/date-time? end))
       (assert (.isBefore start end))
       (assert (limiter/valid-limits? edn))
       (with-local-vars [limiters (read-limiters)]
-        (var-set limiters (limiter/add-limiter @limiters start end edn))
+        (var-set limiters (-> @limiters
+                              (limiter/add-limiter start end edn)
+                              (limiter/drop-before now)))
         (write-limiters @limiters)))))
 
 (defmacro try-or-resign
