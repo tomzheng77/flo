@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [limiter.limiter :refer :all]
             [clojure.test.check :as tc]
+            [clojure.pprint :refer [pprint]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop])
   (:import (java.time LocalDateTime)))
@@ -44,7 +45,7 @@
   (loop [limiters nil list limits-vec]
     (if (empty? list)
       limiters
-      (let [limits (first limits-vec)]
+      (let [limits (first list)]
         (recur (add-limiter limiters (:start limits) (:end limits) limits) (next list))))))
 
 (defmacro forall [seq-exprs body-expr]
@@ -65,19 +66,62 @@
        (with-limits
          (concat limits-vec limits-vec)))))
 
+(defn test-encapsulate [limits-vec]
+  (let [limiters (with-limits limits-vec)]
+    (forall [limits limits-vec]
+      (let [start (:start limits) end (:end limits)
+            item (-> limits
+                     (dissoc :start)
+                     (dissoc :end))]
+        (forall [at (every-minute start end)]
+          (includes? (limiter-at limiters at) item))))))
+
 (def encapsulate-prop
   (prop/for-all
     [limits-vec gen-limits-vec]
-    (let [limiters (with-limits limits-vec)]
-      (forall [limits limits-vec]
-        (let [start (:start limits) end (:end limits)]
-          (forall [at (every-minute start end)]
-            (includes? (limiter-at limiters at) limits)))))))
+    (test-encapsulate limits-vec)))
+
+(def fail-case (read-string "[{:start #time/ldt \"2018-11-19T05:49\", :end #time/ldt \"2018-11-19T16:53\", :block-login true,
+:block-host #{\"\" \"S7VL\" \"y6\" \"Q9HI\"},
+:block-folder #{}
+} {:start #time/ldt \"2018-11-19T12:17\", :end #time/ldt \"2018-11-19T21:59\", :block-login false,
+:block-host #{\"PuNW\" \"y0\" \"N\" \"Qq\"},
+:block-folder #{\"Y2m\"}}]"))
+
+;(pprint fail-case)
+;(println)
+;(pprint (with-limits (take 1 fail-case)))
+;(println)
+;(pprint (with-limits fail-case))
+;(println (test-encapsulate fail-case))
+;(println (tc/quick-check 50 (prop/for-all [string gen-limits-vec] (do (println (pr-str string)) true))))
 
 (def always-end-prop
   (prop/for-all
     [limits-vec gen-limits-vec]
     (= true (:is-last (limiter-at (with-limits limits-vec) (t 2005))))))
+
+(is (= [{:time         (LocalDateTime/parse "2018-11-19T05:49")
+         :block-login  true,
+         :block-host   #{"" "S7VL" "y6" "Q9HI"},
+         :block-folder #{}}
+        {:time         (LocalDateTime/parse "2018-11-19T12:17")
+         :block-login  true,
+         :block-host   #{"" "S7VL" "y6" "Q9HI" "PuNW" "y0" "N" "Qq"},
+         :block-folder #{"Y2m"}}
+        {:block-login  false,
+         :block-host   #{"PuNW" "y0" "N" "Qq"},
+         :block-folder #{"Y2m"}}
+        {:time (LocalDateTime/parse "2018-11-19T21:59")}]
+       (-> nil
+           (add-limiter (LocalDateTime/parse "2018-11-19T05:49") (LocalDateTime/parse "2018-11-19T16:53")
+                        {:block-login  true,
+                         :block-host   #{"" "S7VL" "y6" "Q9HI"},
+                         :block-folder #{}})
+           (add-limiter (LocalDateTime/parse "2018-11-19T12:17") (LocalDateTime/parse "2018-11-19T21:59")
+                        {:block-login  false,
+                         :block-host   #{"PuNW" "y0" "N" "Qq"},
+                         :block-folder #{"Y2m"}}))))
 
 (testing "add-limiter"
   (is (= {:is-last true} (limiter-at nil (t 10))))
