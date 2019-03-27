@@ -10,22 +10,6 @@
 (def t0 (LocalDateTime/of 2018 11 19 0 0 0))
 (defn t [x] (.plusMinutes t0 x))
 
-(testing "remove-duplicate"
-  (is (= (remove-duplicate [{:time (t 0)} {:time (t 10)} {:time (t 20)}]) [{:time (t 0)} {:time (t 20)}]))
-  (is (= (remove-duplicate
-           (concat (repeat 3 {:time (t 1)})
-                   (repeat 5 {:time (t 2)})
-                   (repeat 7 {:time (t 3)})))
-         [{:time (t 1)}
-          {:time (t 3)}]))
-  (is (= (remove-duplicate
-           (concat (repeat 3 {:time (t 1) :block-host #{"A"}})
-                   (repeat 5 {:time (t 2) :block-host #{"B"}})
-                   (repeat 1 {:time (t 3)})))
-         [{:time (t 1) :block-host #{"A"}}
-          {:time (t 2) :block-host #{"B"}}
-          {:time (t 3)}])))
-
 (def gen-limits
   (gen/fmap (fn [[t0 t1 block-login block-host block-folder]]
               {:start        (t t0)
@@ -59,32 +43,47 @@
       (recur (.plusMinutes at 1)
              (conj out at)))))
 
-(def double-limits-prop
+(def prop-add-limiters-twice
   (prop/for-all
     [limits-vec gen-limits-vec]
     (= (with-limits limits-vec)
        (with-limits
          (concat limits-vec limits-vec)))))
 
-(defn test-encapsulate [limits-vec]
-  (let [limiters (with-limits limits-vec)]
-    (forall [limits limits-vec]
-      (let [start (:start limits) end (:end limits)
-            item (-> limits
-                     (dissoc :start)
-                     (dissoc :end))]
-        (forall [at (every-minute start end)]
-          (includes? (limiter-at limiters at) item))))))
-
-(def encapsulate-prop
+(def prop-encapsulate
   (prop/for-all
     [limits-vec gen-limits-vec]
-    (test-encapsulate limits-vec)))
+    (let [limiters (with-limits limits-vec)]
+      (forall [limits limits-vec]
+        (let [start (:start limits) end (:end limits)
+              item (-> limits
+                       (dissoc :start)
+                       (dissoc :end))]
+          (forall [at (every-minute start end)]
+            (includes? (limiter-at limiters at) item)))))))
 
-(def always-end-prop
+; regardless what limits are added, :is-last should always be true
+; after the last limiter
+(def prop-always-end
   (prop/for-all
     [limits-vec gen-limits-vec]
     (= true (:is-last (limiter-at (with-limits limits-vec) (t 2005))))))
+
+(testing "remove-duplicate"
+  (is (= (remove-duplicate [{:time (t 0)} {:time (t 10)} {:time (t 20)}]) [{:time (t 0)} {:time (t 20)}]))
+  (is (= (remove-duplicate
+           (concat (repeat 3 {:time (t 1)})
+                   (repeat 5 {:time (t 2)})
+                   (repeat 7 {:time (t 3)})))
+         [{:time (t 1)}
+          {:time (t 3)}]))
+  (is (= (remove-duplicate
+           (concat (repeat 3 {:time (t 1) :block-host #{"A"}})
+                   (repeat 5 {:time (t 2) :block-host #{"B"}})
+                   (repeat 1 {:time (t 3)})))
+         [{:time (t 1) :block-host #{"A"}}
+          {:time (t 2) :block-host #{"B"}}
+          {:time (t 3)}])))
 
 (testing "every-minute"
   (is (= 100 (count (every-minute (t 100) (t 200)))))
@@ -209,6 +208,6 @@
                           {:block-login  false,
                            :block-host   #{"PuNW" "y0" "N" "Qq"},
                            :block-folder #{"Y2m"}}))))
-  (is (= true (:result (tc/quick-check 50 double-limits-prop))))
-  (is (= true (:result (tc/quick-check 50 always-end-prop))))
-  (is (= true (:result (tc/quick-check 20 encapsulate-prop)))))
+  (is (= true (:result (tc/quick-check 50 prop-add-limiters-twice))))
+  (is (= true (:result (tc/quick-check 50 prop-always-end))))
+  (is (= true (:result (tc/quick-check 20 prop-encapsulate)))))
