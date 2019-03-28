@@ -5,18 +5,19 @@
             [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.keyword-params :as keyword-params]
-            [ring.middleware.params :as params]))
+            [ring.middleware.params :as params]
+            [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]))
 
 (let [{:keys [ch-recv send-fn connected-uids
               ajax-post-fn ajax-get-or-ws-handshake-fn]}
-      (sente/make-channel-socket! (get-sch-adapter) {})]
+      ; TODO: enable CSRF token
+      (sente/make-channel-socket! (get-sch-adapter) {:csrf-token-fn nil})]
 
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
-  (def ch-chsk ch-recv)                                     ; ChannelSocket's receive channel
-  (def chsk-send! send-fn)                                  ; ChannelSocket's send API fn
-  (def connected-uids connected-uids)                       ; Watchable, read-only atom
-  )
+  (def ch-chsk ch-recv)
+  (def chsk-send! send-fn)
+  (def connected-uids connected-uids))
 
 (defroutes
   my-app-routes
@@ -28,4 +29,11 @@
       keyword-params/wrap-keyword-params
       params/wrap-params))
 
-(ks/run-server my-app {:port 9050})
+(defn run []
+  (let [server (ks/run-server my-app {:port 9050})]
+    (println server)
+    (go-loop []
+      (let [item (<! ch-chsk)]
+        (println "received item")
+        (println item))
+      (recur))))
