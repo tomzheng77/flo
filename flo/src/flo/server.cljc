@@ -18,4 +18,5 @@
       (.stop server))))
 
 (defn -main [& args]
+  (println "starting server")
   (launch))
