@@ -70,12 +70,18 @@
       var searchActive = false;
       var search = "";
 
+      var editor = document.getElementById("editor").children[0];
       function goToSubstr(text, substr) {
         var index = text.indexOf(substr);
         if (index === -1) return -1;
 
         quill.setSelection(index, substr.length);
-        console.log(quill.getBounds(index, substr.length));
+
+        // left right top bottom width height
+        var bounds = quill.getBounds(index, substr.length);
+        console.log(bounds);
+        editor.scrollBy(bounds.left, bounds.top);
+
         return index;
       }
 
