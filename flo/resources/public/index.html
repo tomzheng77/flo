@@ -1,144 +1,148 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="css/style.css" rel="stylesheet" type="text/css">
-    <link rel="icon" href="https://clojurescript.org/images/cljs-logo-icon-32.png">
-    <script src="js/socket.io.min.js"></script>
-    <script src="http://cdn.quilljs.com/1.0.0/quill.min.js"></script>
-    <link href="http://cdn.quilljs.com/1.0.0/quill.snow.css" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app">
-      <h2>Figwheel template</h2>
-      <p>Checkout your developer console.</p>
-    </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/style.css" rel="stylesheet" type="text/css">
+  <link rel="icon" href="https://clojurescript.org/images/cljs-logo-icon-32.png">
+  <script src="js/socket.io.min.js"></script>
+  <script src="http://cdn.quilljs.com/1.0.0/quill.min.js"></script>
+  <link href="http://cdn.quilljs.com/1.0.0/quill.snow.css" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+  <h2>Figwheel template</h2>
+  <p>Checkout your developer console.</p>
+</div>
 
-    <!-- Create the toolbar container -->
-    <div id="toolbar">
-      <button class="ql-bold">Bold</button>
-      <button class="ql-italic">Italic</button>
-    </div>
+<!-- Create the toolbar container -->
+<div id="toolbar">
+  <button class="ql-bold">Bold</button>
+  <button class="ql-italic">Italic</button>
+</div>
 
-    <!-- Create the editor container -->
-    <div id="editor" style="height: 500px">
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World! [ONE]</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World! [TWO]</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-      <p>Hello World!</p>
-    </div>
+<!-- Create the editor container -->
+<div id="editor" style="height: 500px">
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World! [ONE]</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World! [TWO]</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+  <p>Hello World!</p>
+</div>
 
-    <script>
-      function time() {
-        return new Date().getTime();
-      }
+<script>
+  var socket = io.connect('http://localhost:9092');
+  socket.emit("hello", "Hello, World!");
 
-      var quill = new Quill('#editor', {
-        modules: { toolbar: '#toolbar' },
-        theme: 'snow'
-      });
+  function time() {
+    return new Date().getTime();
+  }
 
-      var shiftPressTime = 0;
-      var searchActive = false;
-      var search = "";
+  var quill = new Quill('#editor', {
+    modules: {toolbar: '#toolbar'},
+    theme: 'snow'
+  });
 
-      var editor = document.getElementById("editor").children[0];
-      function goToSubstr(text, substr) {
-        var index = text.indexOf(substr);
-        if (index === -1) return -1;
+  var shiftPressTime = 0;
+  var searchActive = false;
+  var search = "";
 
-        quill.setSelection(index, substr.length);
+  var editor = document.getElementById("editor").children[0];
 
-        // left right top bottom width height
-        var bounds = quill.getBounds(index, substr.length);
-        console.log(bounds);
-        editor.scrollBy(bounds.left, bounds.top);
+  function goToSubstr(text, substr) {
+    var index = text.indexOf(substr);
+    if (index === -1) return -1;
 
-        return index;
-      }
+    quill.setSelection(index, substr.length);
 
-      function goToTag(search) {
-        if (search.length === 0) {
-          quill.setSelection(null);
-          return;
-        }
+    // left right top bottom width height
+    var bounds = quill.getBounds(index, substr.length);
+    console.log(bounds);
+    editor.scrollBy(bounds.left, bounds.top);
 
-        var text = quill.getText();
-        while (search.length > 0) {
-          console.log(search);
-          if (goToSubstr(text, "[" + search + "]") !== -1) break;
-          if (goToSubstr(text, "[" + search) !== -1) break;
+    return index;
+  }
+
+  function goToTag(search) {
+    if (search.length === 0) {
+      quill.setSelection(null);
+      return;
+    }
+
+    var text = quill.getText();
+    while (search.length > 0) {
+      console.log(search);
+      if (goToSubstr(text, "[" + search + "]") !== -1) break;
+      if (goToSubstr(text, "[" + search) !== -1) break;
+      search = search.substring(0, search.length - 1);
+    }
+  }
+
+  addEventListener("keydown", function (event) {
+    if (event.code === "ShiftLeft") {
+      shiftPressTime = time();
+    } else {
+      shiftPressTime = 0;
+      console.log(event);
+      if (searchActive) {
+        if (event.key === "Backspace") {
           search = search.substring(0, search.length - 1);
+          goToTag(search);
+        }
+        if (event.key.match(/^[A-Za-z0-9]$/)) {
+          search += event.key.toUpperCase();
+          goToTag(search);
         }
       }
+    }
+  });
 
-      addEventListener("keydown", function(event) {
-        if (event.code === "ShiftLeft") {
-          shiftPressTime = time();
+  addEventListener("keyup", function (event) {
+    if (event.code === "ShiftLeft") {
+      var nowTime = time();
+      var delta = nowTime - shiftPressTime;
+      if (delta < 500) {
+        if (!searchActive) {
+          searchActive = true;
+          search = "";
+          quill.disable();
         } else {
-          shiftPressTime = 0;
-          console.log(event);
-          if (searchActive) {
-            if (event.key === "Backspace") {
-              search = search.substring(0, search.length - 1);
-              goToTag(search);
-            }
-            if (event.key.match(/^[A-Za-z0-9]$/)) {
-              search += event.key.toUpperCase();
-              goToTag(search);
-            }
-          }
+          searchActive = false;
+          search = "";
+          quill.enable();
         }
-      });
+      }
+    }
+  });
+</script>
 
-      addEventListener("keyup", function(event) {
-        if (event.code === "ShiftLeft") {
-          var nowTime = time();
-          var delta = nowTime - shiftPressTime;
-          if (delta < 500) {
-            if (!searchActive) {
-              searchActive = true;
-              search = "";
-              quill.disable();
-            } else {
-              searchActive = false;
-              search = "";
-              quill.enable();
-            }
-          }
-        }
-      });
-    </script>
-
-    <script src="js/compiled/flo.js" type="text/javascript"></script>
-  </body>
+<script src="js/compiled/flo.js" type="text/javascript"></script>
+</body>
 </html>
