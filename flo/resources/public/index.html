@@ -71,6 +71,11 @@
       var search = "";
 
       function goToTag(search) {
+        if (search.length === 0) {
+          quill.setSelection(null);
+          return;
+        }
+
         var text = quill.getText();
         while (search.length > 0) {
           console.log(search);
