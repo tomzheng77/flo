@@ -29,7 +29,7 @@
 
 (add-watch chsk-state "watch"
            (fn [key ref old new]
-             (if (:open new)
+             (if (:open? new)
                (chsk-send! [:flo/hello "hello"]))))
 
 (defn on-js-reload []
