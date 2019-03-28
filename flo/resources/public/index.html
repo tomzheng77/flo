@@ -26,9 +26,49 @@
     </div>
 
     <script>
-      var editor = new Quill('#editor', {
+      function time() {
+        return new Date().getTime();
+      }
+
+      var quill = new Quill('#editor', {
         modules: { toolbar: '#toolbar' },
         theme: 'snow'
+      });
+
+      var shiftPressTime = 0;
+      var searchActive = false;
+      var search = "";
+
+      addEventListener("keydown", function(event) {
+        if (event.code === "ShiftLeft") {
+          shiftPressTime = time();
+        } else {
+          shiftPressTime = 0;
+          if (searchActive) {
+            if (event.key.match(/^[A-Za-z0-9]$/)) {
+              search += event.key.toUpperCase();
+              var text = quill.getText();
+              var substr = "[" + search + "]";
+              var index = text.indexOf(substr);
+              if (index !== -1) {
+                quill.setSelection(index, substr.length);
+                console.log(quill.getBounds(index, substr.length))
+              }
+            }
+          }
+        }
+      });
+
+      addEventListener("keyup", function(event) {
+        if (event.code === "ShiftLeft") {
+          var nowTime = time();
+          var delta = nowTime - shiftPressTime;
+          if (delta < 500) {
+            searchActive = true;
+            search = "";
+            quill.disable();
+          }
+        }
       });
     </script>
 
