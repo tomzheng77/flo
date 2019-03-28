@@ -20,12 +20,17 @@
   (def chsk-send! send-fn)
   (def chsk-state state))
 
+
 (defn start-loop []
   (js/setTimeout
     (fn []
-      (chsk-send! [:flo/hello "hello"])
+      (let [string (.stringify js/JSON (.getContents js/quill))]
+        (println (js->clj (.parse js/JSON string)))
+        (.setContents js/quill (.parse js/JSON string)))
       (start-loop))
     1000))
+
+(start-loop)
 
 (add-watch chsk-state "watch"
            (fn [key ref old new]
