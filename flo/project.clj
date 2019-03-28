@@ -13,7 +13,8 @@
                  [org.clojure/core.async  "0.4.474"]
                  [cljsjs/react "16.8.3-0"]
                  [cljsjs/react-dom "16.8.3-0"]
-                 [sablono "0.8.5"]]
+                 [sablono "0.8.5"]
+                 [com.corundumstudio.socketio/netty-socketio "1.7.12"]]
 
   :plugins [[lein-figwheel "0.5.16"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
