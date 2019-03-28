@@ -20,22 +20,24 @@
   (def chsk-send! send-fn)
   (def chsk-state state))
 
+(def last-contents (atom nil))
+(defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents js/quill)))))
+(defn set-contents [contents]
+  (.setContents (clj->js contents)))
 
-(defn start-loop []
-  (js/setTimeout
-    (fn []
-      (let [string (.stringify js/JSON (.getContents js/quill))]
-        (println (js->clj (.parse js/JSON string)))
-        (.setContents js/quill (.parse js/JSON string)))
-      (start-loop))
-    1000))
+(defn save-contents [contents]
+  (if (:open? @chsk-state)
+    (chsk-send! [:flo/save contents])))
 
-(start-loop)
+(defn on-enter-frame []
+  (let [contents (get-contents)]
+    (locking last-contents
+             (when (not= contents @last-contents)
+               (println "saving contents...")
+               (save-contents contents)
+               (reset! last-contents contents)))))
 
-(add-watch chsk-state "watch"
-           (fn [key ref old new]
-             (if (:open? new)
-               (chsk-send! [:flo/hello "hello"]))))
+(js/setInterval on-enter-frame 5000)
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on

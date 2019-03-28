@@ -37,7 +37,7 @@
 
 (defn run []
   (let [server (ks/run-server my-app {:port 9050})]
-    (println server)
     (go-loop []
-      (let [item (<! ch-chsk)])
+      (let [item (<! ch-chsk)]
+        (println (second (:event item))))
       (recur))))
