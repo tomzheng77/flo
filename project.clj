@@ -5,6 +5,7 @@
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [com.taoensso/encore "2.108.1"]
+                 [ring "1.7.0"]
                  [org.littleshoot/littleproxy "1.1.2"]
                  [com.taoensso/timbre "4.10.0"]
                  [org.apache.commons/commons-lang3 "3.8.1"]
