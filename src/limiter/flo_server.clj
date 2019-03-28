@@ -11,7 +11,9 @@
 (let [{:keys [ch-recv send-fn connected-uids
               ajax-post-fn ajax-get-or-ws-handshake-fn]}
       ; TODO: enable CSRF token
-      (sente/make-channel-socket! (get-sch-adapter) {:csrf-token-fn nil})]
+      (sente/make-channel-socket!
+        (get-sch-adapter)
+        {:csrf-token-fn nil})]
 
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
