@@ -70,6 +70,15 @@
       var searchActive = false;
       var search = "";
 
+      function goToSubstr(text, substr) {
+        var index = text.indexOf(substr);
+        if (index === -1) return -1;
+
+        quill.setSelection(index, substr.length);
+        console.log(quill.getBounds(index, substr.length));
+        return index;
+      }
+
       function goToTag(search) {
         if (search.length === 0) {
           quill.setSelection(null);
@@ -79,22 +88,8 @@
         var text = quill.getText();
         while (search.length > 0) {
           console.log(search);
-          var substr = "[" + search + "]";
-          var index = text.indexOf(substr);
-          if (index !== -1) {
-            quill.setSelection(index, substr.length);
-            console.log(quill.getBounds(index, substr.length));
-            break;
-          }
-
-          substr = "[" + search;
-          index = text.indexOf(substr);
-          if (index !== -1) {
-            quill.setSelection(index, substr.length);
-            console.log(quill.getBounds(index, substr.length));
-            break;
-          }
-
+          if (goToSubstr(text, "[" + search + "]") !== -1) break;
+          if (goToSubstr(text, "[" + search) !== -1) break;
           search = search.substring(0, search.length - 1);
         }
       }
