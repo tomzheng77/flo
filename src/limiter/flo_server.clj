@@ -19,6 +19,10 @@
   (def chsk-send! send-fn)
   (def connected-uids connected-uids))
 
+(add-watch connected-uids "watch"
+           (fn [key ref old new]
+             (println new)))
+
 (defroutes
   my-app-routes
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
@@ -33,7 +37,5 @@
   (let [server (ks/run-server my-app {:port 9050})]
     (println server)
     (go-loop []
-      (let [item (<! ch-chsk)]
-        (println "received item")
-        (println item))
+      (let [item (<! ch-chsk)])
       (recur))))
