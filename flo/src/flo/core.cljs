@@ -14,7 +14,7 @@
 (defonce app-state (atom {:text "Hello world!"}))
 
 (let [{:keys [chsk ch-recv send-fn state]}
-      (sente/make-channel-socket! "/chsk" {:type :auto :host "www.website.com"})]   ; Note the same path as before; e/o #{:auto :ajax :ws}
+      (sente/make-channel-socket! "/chsk" nil {:type :auto :host "localhost:9050"})]   ; Note the same path as before; e/o #{:auto :ajax :ws}
   (def chsk chsk)
   (def ch-chsk ch-recv)                                     ; ChannelSocket's receive channel
   (def chsk-send! send-fn)                                  ; ChannelSocket's send API fn

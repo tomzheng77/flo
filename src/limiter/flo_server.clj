@@ -3,7 +3,9 @@
             [taoensso.sente.server-adapters.http-kit :refer [get-sch-adapter]]
             [org.httpkit.server :as ks]
             [compojure.core :refer :all]
-            [compojure.route :as route]))
+            [compojure.route :as route]
+            [ring.middleware.keyword-params :as keyword-params]
+            [ring.middleware.params :as params]))
 
 (let [{:keys [ch-recv send-fn connected-uids
               ajax-post-fn ajax-get-or-ws-handshake-fn]}
@@ -23,7 +25,7 @@
 
 (def my-app
   (-> my-app-routes
-      ring.middleware.keyword-params/wrap-keyword-params
-      ring.middleware.params/wrap-params))
+      keyword-params/wrap-keyword-params
+      params/wrap-params))
 
 (ks/run-server my-app {:port 9050})
