@@ -84,7 +84,6 @@
 
     // left right top bottom width height
     var bounds = quill.getBounds(index, substr.length);
-    console.log(bounds);
     editor.scrollBy(bounds.left, bounds.top);
 
     return index;
@@ -98,7 +97,6 @@
 
     var text = quill.getText();
     while (search.length > 0) {
-      console.log(search);
       if (goToSubstr(text, "[" + search + "]") !== -1) break;
       if (goToSubstr(text, "[" + search) !== -1) break;
       search = search.substring(0, search.length - 1);
@@ -110,7 +108,6 @@
       shiftPressTime = time();
     } else {
       shiftPressTime = 0;
-      console.log(event);
       if (searchActive) {
         if (event.key === "Backspace") {
           search = search.substring(0, search.length - 1);
