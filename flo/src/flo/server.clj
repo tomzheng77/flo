@@ -16,3 +16,6 @@
       (.start server)
       (Thread/sleep Integer/MAX_VALUE)
       (.stop server))))
+
+(defn -main [& args]
+  (launch))
