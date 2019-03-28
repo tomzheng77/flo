@@ -1,22 +1,28 @@
 (ns limiter.flo-server
-  (:import (com.corundumstudio.socketio Configuration SocketIOServer)
-           (com.corundumstudio.socketio.listener DataListener)))
+  (:require [taoensso.sente :as sente]
+            [taoensso.sente.server-adapters.http-kit :refer [get-sch-adapter]]
+            [org.httpkit.server :as ks]
+            [compojure.core :refer :all]
+            [compojure.route :as route]))
 
-(defn new-listener [server]
-  (proxy [DataListener] []
-    (onData [client data ack-request]
-      (println data))))
+(let [{:keys [ch-recv send-fn connected-uids
+              ajax-post-fn ajax-get-or-ws-handshake-fn]}
+      (sente/make-channel-socket! (get-sch-adapter) {})]
 
-(defn launch []
-  (let [config (new Configuration)]
-    (.setHostname config "localhost")
-    (.setPort config 9092)
-    (let [server (new SocketIOServer config)]
-      (.addEventListener server "hello" String (new-listener server))
-      (.start server)
-      (Thread/sleep Integer/MAX_VALUE)
-      (.stop server))))
+  (def ring-ajax-post ajax-post-fn)
+  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
+  (def ch-chsk ch-recv)                                     ; ChannelSocket's receive channel
+  (def chsk-send! send-fn)                                  ; ChannelSocket's send API fn
+  (def connected-uids connected-uids)                       ; Watchable, read-only atom
+  )
 
-(defn -main [& args]
-  (println "starting server")
-  (launch))
+(defroutes my-app-routes
+           (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
+           (POST "/chsk" req (ring-ajax-post req)))
+
+(def my-app
+  (-> my-app-routes
+      ring.middleware.keyword-params/wrap-keyword-params
+      ring.middleware.params/wrap-params))
+
+(ks/run-server my-app {:port 9050})
