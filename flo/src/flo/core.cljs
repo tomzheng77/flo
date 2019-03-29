@@ -3,28 +3,43 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [cljs.core.async.macros :refer [go]])
   (:require
+    [cljsjs.quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
     [cljs-http.client :as http]
     [cljs.core.async :as async :refer [<! >! put! chan]]
-    [taoensso.sente :as sente :refer [cb-success?]]))
+    [taoensso.sente :as sente :refer [cb-success?]]
+    [clojure.string :as str]))
 
 (enable-console-print!)
 
-(println "This text is printed from src/flo/core.cljs. Go ahead and edit it and see reloading in action.")
-
-;; define your app data so that it doesn't get over-written on reload
-
-(defonce app-state (atom {:text "Hello world!"}))
+; create the quill editor instance
+(def quill
+  (new js/Quill "#editor"
+       (clj->js {"modules" {"toolbar" "#toolbar"}
+                 "theme" "snow"})))
 
 ; contents since it was last inspected
 ; get contents from quill
 ; set contents of quill
 (def last-contents (atom nil))
-(defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents js/quill)))))
+(defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents quill)))))
 (defn set-contents [contents]
-  (.setContents js/quill (clj->js contents)))
+  (.setContents quill (clj->js contents)))
+
+(def shift-press-time (atom 0))
+(def search-active (atom false))
+(def search (atom ""))
+(def editor (aget (.. (.getElementById js/document "editor") -children) 0))
+
+(defn go-to-substr [text substr]
+  (let [index (str/index-of text substr)]
+    (when (not= -1 index)
+      )))
+
+;; define your app data so that it doesn't get over-written on reload
+(defonce app-state (atom {:text "Hello world!"}))
 
 ; called once received any items from chsk
 (defn on-chsk-receive [item]
