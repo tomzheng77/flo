@@ -45,5 +45,5 @@
   "starts or restarts the server"
   []
   (locking server
-    (if @server (.stop @server))
+    (if @server (.abort @server))
     (reset! server (start-transparent))))
