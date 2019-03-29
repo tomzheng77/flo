@@ -99,13 +99,13 @@
       (let [now-time (current-time-millis)
             delta (- now-time @shift-press-time)]
         (when (< 500 delta)
-          (if @search-active
-            (do (reset! search-active false)
-                (reset! search "")
-                (enable-edit))
+          (if-not @search-active
             (do (reset! search-active true)
                 (reset! search "")
-                (disable-edit))))))))
+                (disable-edit))
+            (do (reset! search-active false)
+                (reset! search "")
+                (enable-edit))))))))
 
 ;; define your app data so that it doesn't get over-written on reload
 (defonce app-state (atom {:text "Hello world!"}))
