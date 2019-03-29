@@ -14,7 +14,7 @@
 (defonce app-state (atom {:text "Hello world!"}))
 
 (let [{:keys [chsk ch-recv send-fn state]}
-      (sente/make-channel-socket! "/chsk" nil {:type :auto :host "localhost:9050"})]
+      (sente/make-channel-socket! "/chsk" nil {:type :auto})]
   (def chsk chsk)
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
