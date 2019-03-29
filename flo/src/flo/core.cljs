@@ -81,32 +81,36 @@
             (go-to-substr text (str "[" @s))
             (recur (splice-last s)))))))
 
-(add-event-listener "keydown"
-  (fn [event]
-    (if (= "ShiftLeft" (:code event))
-      (reset! shift-press-time (current-time-millis))
-      (do (reset! shift-press-time 0)
-          (when @search-active
-            (if (= "Backspace" (:key event))
-              (go-to-tag (splice-last @search))
-              (if (re-matches #"^[A-Za-z0-9]$" (:key event))
-                (swap! search #(str % (str/upper-case (:key event))))
-                (go-to-tag @search))))))))
+(defn on-keydown
+  [event]
+  (if (= "ShiftLeft" (:code event))
+    (reset! shift-press-time (current-time-millis))
+    (do (reset! shift-press-time 0)
+        (when @search-active
+          (if (= "Backspace" (:key event))
+            (go-to-tag (splice-last @search))
+            (if (re-matches #"^[A-Za-z0-9]$" (:key event))
+              (swap! search #(str % (str/upper-case (:key event))))
+              (go-to-tag @search)))))))
 
-(add-event-listener "keyup"
-  (fn [event]
-    (if (= "ShiftLeft" (:code event))
-      (let [now-time (current-time-millis)
-            delta (- now-time @shift-press-time)]
-        (when (> 500 delta)
-          (if-not @search-active
-            (do (println "activate search")
-                (reset! search-active true)
-                (reset! search "")
-                (disable-edit))
-            (do (reset! search-active false)
-                (reset! search "")
-                (enable-edit))))))))
+(defn on-keyup
+  [event]
+  (if (= "ShiftLeft" (:code event))
+    (let [now-time (current-time-millis)
+          delta (- now-time @shift-press-time)]
+      (when (> 500 delta)
+        (if-not @search-active
+          (do (println "activate search")
+              (reset! search-active true)
+              (reset! search "")
+              (disable-edit))
+          (do (reset! search-active false)
+              (reset! search "")
+              (enable-edit)))))))
+
+(defonce add-listeners
+  (add-event-listener "keydown" on-keydown)
+  (add-event-listener "keyup" on-keyup))
 
 ;; define your app data so that it doesn't get over-written on reload
 (defonce app-state (atom {:text "Hello world!"}))
