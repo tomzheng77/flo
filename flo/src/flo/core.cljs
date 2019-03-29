@@ -41,15 +41,14 @@
 (defn scroll-by [x y]
   (.scrollBy editor x y))
 
+(defn json->clj [x & opts]
+  (apply js->clj (concat [(.parse js/JSON (.stringify js/JSON x))] opts)))
+
 (defn add-event-listener [type listener]
-  (println type listener)
-  (js/addEventListener
-    type
+  (js/addEventListener type
     (fn [event]
-      (.log js/console event)
-      (.log js/console (js->clj event :keywordize-keys true))
-      (println (js->clj event :keywordize-keys true))
-      (listener (js->clj event)))))
+      (let [clj-event {:code (. event -code) :key (. event -key)}]
+        (listener clj-event)))))
 
 (defn splice-last [str]
   (subs str 0 (dec (count str))))
@@ -84,19 +83,19 @@
 
 (add-event-listener "keydown"
   (fn [event]
-    (if (= "ShiftLeft" (get event "code"))
+    (if (= "ShiftLeft" (:code event))
       (reset! shift-press-time (current-time-millis))
       (do (reset! shift-press-time 0)
           (when @search-active
-            (if (= "Backspace" (get event "key"))
+            (if (= "Backspace" (:key event))
               (go-to-tag (splice-last @search))
-              (if (re-matches #"^[A-Za-z0-9]$" (get event "key"))
-                (swap! search #(str % (str/upper-case (get event "key"))))
+              (if (re-matches #"^[A-Za-z0-9]$" (:key event))
+                (swap! search #(str % (str/upper-case (:key event))))
                 (go-to-tag @search))))))))
 
 (add-event-listener "keyup"
   (fn [event]
-    (if (= "ShiftLeft" (get event "code"))
+    (if (= "ShiftLeft" (:code event))
       (let [now-time (current-time-millis)
             delta (- now-time @shift-press-time)]
         (when (< 500 delta)
