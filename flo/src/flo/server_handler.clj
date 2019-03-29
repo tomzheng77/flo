@@ -5,6 +5,7 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
 
+            [hiccup.core :refer [html]]
             [clojure.core.match :refer [match]]
             [clojure.pprint :refer [pprint]]
             [taoensso.sente :as sente]

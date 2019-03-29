@@ -19,7 +19,8 @@
                  [ring/ring-defaults "0.3.2"]
                  [compojure "1.6.1"]
                  [cljs-http "0.1.46"]
-                 [org.clojure/core.match "0.3.0-alpha5"]]
+                 [org.clojure/core.match "0.3.0-alpha5"]
+                 [hiccup "1.0.5"]]
 
   :plugins [[lein-figwheel "0.5.16"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
