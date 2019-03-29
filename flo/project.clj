@@ -92,7 +92,7 @@
              ;; :server-logfile "tmp/logs/figwheel-logfile.log"
 
              ;; to pipe all the output to the repl
-             ;; :server-logfile false
+             :server-logfile false
              }
 
 
