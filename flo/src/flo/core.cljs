@@ -43,11 +43,13 @@
 
 (defn add-event-listener [type listener]
   (println type listener)
-  (js/addEventListener type (fn [event]
-                              (.log js/console event)
-                              (.log js/console (js->clj event))
-                              (println (type 10))
-                              (listener (js->clj event)))))
+  (js/addEventListener
+    type
+    (fn [event]
+      (.log js/console event)
+      (.log js/console (js->clj event :keywordize-keys true))
+      (println (js->clj event :keywordize-keys true))
+      (listener (js->clj event)))))
 
 (defn splice-last [str]
   (subs str 0 (dec (count str))))
