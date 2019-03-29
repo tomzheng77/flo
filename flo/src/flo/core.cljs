@@ -18,7 +18,13 @@
 
 (defonce app-state (atom {:text "Hello world!"}))
 
+; called once received any items from chsk
+(defn on-chsk-receive [item]
+  (match item
+    [:chsk-recv [body]] (println body)))
+
 ; initialize the socket connection
+(def chsk-state (atom {:open? false}))
 (go (let [csrf-token (-> (<! (http/get "/login"))
                          (:body)
                          (read-string)
@@ -32,9 +38,7 @@
         (def chsk-state state)
         (go-loop []
           (let [item (<! ch-chsk)]
-            (let [[type body] (:event item)]
-              (when (= :chsk/recv type)
-                (js/alert body))))
+            (on-chsk-receive item))
           (recur)))))
 
 ; contents since it was last inspected
