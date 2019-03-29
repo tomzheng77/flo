@@ -31,7 +31,7 @@
   (def chsk-send! send-fn)
   (def connected-uids connected-uids))
 
-(defn contents (atom {}))
+(def contents (atom {}))
 
 (add-watch
   connected-uids "watch"
