@@ -6,7 +6,8 @@
             [compojure.route :as route]
             [ring.middleware.keyword-params :as keyword-params]
             [ring.middleware.params :as params]
-            [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]))
+            [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]
+            [clojure.set :as set]))
 
 (let [{:keys [ch-recv send-fn connected-uids
               ajax-post-fn ajax-get-or-ws-handshake-fn]}
@@ -23,7 +24,9 @@
 
 (add-watch connected-uids "watch"
            (fn [key ref old new]
-             (println new)))
+             (let [added (set/difference new old)]
+               (doseq [uid added]
+                 (chsk-send! uid [:flo/load {}])))))
 
 (defroutes
   my-app-routes
