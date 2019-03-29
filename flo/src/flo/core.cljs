@@ -15,6 +15,7 @@
 
 (defonce app-state (atom {:text "Hello world!"}))
 
+; initialize the socket connection
 (go (<! (http/get "/login"))
     (let [{:keys [chsk ch-recv send-fn state]}
           (sente/make-channel-socket! "/chsk" nil {:type :auto})]
@@ -26,16 +27,20 @@
         (let [item (<! ch-chsk)])
         (recur))))
 
+; contents since it was last inspected
+; get contents from quill
+; set contents of quill
 (def last-contents (atom nil))
 (defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents js/quill)))))
 (defn set-contents [contents]
   (.setContents (clj->js contents)))
 
+; sends a message to the server via socket to save the contents
 (defn save-contents [contents]
   (if (:open? @chsk-state)
     (chsk-send! [:flo/save contents])))
 
-(defn on-enter-frame []
+(defn detect-change []
   (let [contents (get-contents)]
     (locking last-contents
       (when (= nil @last-contents) (reset! last-contents contents))
@@ -44,7 +49,7 @@
         (save-contents contents)
         (reset! last-contents contents)))))
 
-(js/setInterval on-enter-frame 1000)
+(js/setInterval detect-change 1000)
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on
