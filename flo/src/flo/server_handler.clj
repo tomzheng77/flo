@@ -13,7 +13,8 @@
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.anti-forgery :as anti-forgery :refer [wrap-anti-forgery]]
             [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]
-            [clojure.set :as set]))
+            [clojure.set :as set])
+  (:import (java.util UUID)))
 
 (let [{:keys [ch-recv
               send-fn
@@ -21,7 +22,7 @@
               ajax-post-fn
               ajax-get-or-ws-handshake-fn]}
 
-      (sente/make-channel-socket! (get-sch-adapter))]
+      (sente/make-channel-socket! (get-sch-adapter) :csrf-token-fn nil)]
 
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
@@ -68,7 +69,7 @@
       {:status  200
        :headers {"Content-Type" "text/plain"}
        :body    (pr-str {:csrf-token csrf-token})
-       :session {:uid 0}}))
+       :session {:uid (.toString (UUID/randomUUID))}}))
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post req))
   (route/not-found "Not Found"))
