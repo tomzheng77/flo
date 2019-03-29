@@ -14,7 +14,10 @@
                  [cljsjs/react "16.8.3-0"]
                  [cljsjs/react-dom "16.8.3-0"]
                  [sablono "0.8.5"]
-                 [com.taoensso/sente "1.14.0-RC2"]]
+                 [com.taoensso/sente "1.14.0-RC2"]
+                 [ring "1.7.1"]
+                 [ring/ring-defaults "0.3.2"]
+                 [compojure "1.6.1"]]
 
   :plugins [[lein-figwheel "0.5.16"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
@@ -68,7 +71,7 @@
 
              ;; doesn't work for you just run your own server :) (see lein-ring)
 
-             ;; :ring-handler hello_world.server/handler
+             :ring-handler flo.server-handler/dev-app
 
              ;; To be able to open files in your editor from the heads up display
              ;; you will need to put a script on your path.
