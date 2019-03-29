@@ -31,6 +31,7 @@
         (def chsk-state state)
         (go-loop []
           (let [item (<! ch-chsk)]
+            (println item)
             (let [[type body] (:event item)]
               (when (= :flo/load type)
                 (js/alert body))))

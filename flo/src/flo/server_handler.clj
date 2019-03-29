@@ -81,5 +81,4 @@
       (wrap-defaults site-defaults)
       (wrap-reload)
       (wrap-keyword-params)
-      (wrap-params)
-      (wrap-anti-forgery)))
+      (wrap-params)))
