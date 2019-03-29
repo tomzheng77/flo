@@ -61,7 +61,23 @@
   ;; NOTE: this will deliver your index.html
   (GET "/" [] (-> (response/resource-response "index.html" {:root "public"})
                   (response/content-type "text/html")))
-  (GET "/hello" [] "Hello World!")
+  (GET "/index.html" [] {:status 200
+                    :headers {"Content-Type" "text/html"}
+                    :body (html
+                            "<!DOCTYPE html>\n"
+                            [:html {:lang "en"}
+                             [:head
+                              [:meta {:charset "UTF-8"}]
+                              [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
+                              [:link {:rel "icon" :href "https://clojurescript.org/images/cljs-logo-icon-32.png"}]
+                              [:link {:href "http://cdn.quilljs.com/1.0.0/quill.snow.css" :rel "stylesheet"}]
+                              [:title "FloNote"]]
+                             [:body
+                              [:div#toolbar
+                               [:button.ql-bold]
+                               [:button.ql-italic]]
+                              [:div#editor {:style "height: 500px"}]
+                              [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])})
   (GET "/login" req
     (let [csrf-token (force anti-forgery/*anti-forgery-token*)]
       {:status  200
