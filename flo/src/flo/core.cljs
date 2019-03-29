@@ -32,12 +32,13 @@
 (defn on-enter-frame []
   (let [contents (get-contents)]
     (locking last-contents
-             (when (not= contents @last-contents)
-               (println "saving contents...")
-               (save-contents contents)
-               (reset! last-contents contents)))))
+      (when (= nil @last-contents) (reset! last-contents contents))
+      (when (not= contents @last-contents)
+        (println "contents changed, saving...")
+        (save-contents contents)
+        (reset! last-contents contents)))))
 
-(js/setInterval on-enter-frame 5000)
+(js/setInterval on-enter-frame 1000)
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on

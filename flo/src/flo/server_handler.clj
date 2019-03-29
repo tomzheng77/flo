@@ -5,6 +5,7 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
 
+            [clojure.pprint :refer [pprint]]
             [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit :refer [get-sch-adapter]]
             [org.httpkit.server :as ks]
@@ -27,10 +28,8 @@
   (def connected-uids connected-uids))
 
 (add-watch connected-uids "watch"
-           (fn [key ref old new]
-             (let [added (set/difference new old)]
-               (doseq [uid added]
-                 (chsk-send! uid [:flo/load {}])))))
+  (fn [key ref old new]
+    (println new)))
 
 ;; If you are new to using Clojure as an HTTP server please take your
 ;; time and study ring and compojure. They are both very popular and
