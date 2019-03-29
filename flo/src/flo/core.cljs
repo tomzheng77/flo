@@ -1,7 +1,9 @@
 (ns flo.core
   (:require-macros
-    [cljs.core.async.macros :as asyncm :refer [go go-loop]])
+    [cljs.core.async.macros :as asyncm :refer [go go-loop]]
+    [cljs.core.async.macros :refer [go]])
   (:require
+    [cljs-http.client :as http]
     [cljs.core.async :as async :refer [<! >! put! chan]]
     [taoensso.sente :as sente :refer [cb-success?]]))
 
@@ -13,22 +15,21 @@
 
 (defonce app-state (atom {:text "Hello world!"}))
 
-(let [{:keys [chsk ch-recv send-fn state]}
-      (sente/make-channel-socket! "/chsk" nil {:type :auto})]
-  (def chsk chsk)
-  (def ch-chsk ch-recv)
-  (def chsk-send! send-fn)
-  (def chsk-state state))
+(go (<! (http/get "/login"))
+    (let [{:keys [chsk ch-recv send-fn state]}
+          (sente/make-channel-socket! "/chsk" nil {:type :auto})]
+      (def chsk chsk)
+      (def ch-chsk ch-recv)
+      (def chsk-send! send-fn)
+      (def chsk-state state)
+      (go-loop []
+        (let [item (<! ch-chsk)])
+        (recur))))
 
 (def last-contents (atom nil))
 (defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents js/quill)))))
 (defn set-contents [contents]
   (.setContents (clj->js contents)))
-
-(go-loop []
-  (let [item (<! ch-chsk)]
-    (println "client received" item))
-  (recur))
 
 (defn save-contents [contents]
   (if (:open? @chsk-state)
