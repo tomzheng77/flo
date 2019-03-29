@@ -52,13 +52,6 @@
       (on-chsk-receive item))
     (recur)))
 
-;; If you are new to using Clojure as an HTTP server please take your
-;; time and study ring and compojure. They are both very popular and
-;; accessible Clojure libraries.
-
-;; --> https://github.com/ring-clojure/ring
-;; --> https://github.com/weavejester/compojure
-
 (defroutes
   app-routes
   ;; NOTE: this will deliver all of your assets from the public directory
