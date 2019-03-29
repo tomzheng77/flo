@@ -98,9 +98,10 @@
     (if (= "ShiftLeft" (:code event))
       (let [now-time (current-time-millis)
             delta (- now-time @shift-press-time)]
-        (when (< 500 delta)
+        (when (> 500 delta)
           (if-not @search-active
-            (do (reset! search-active true)
+            (do (println "activate search")
+                (reset! search-active true)
                 (reset! search "")
                 (disable-edit))
             (do (reset! search-active false)
