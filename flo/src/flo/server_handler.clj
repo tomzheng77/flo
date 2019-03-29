@@ -47,9 +47,9 @@
            (GET "/" [] (-> (response/resource-response "index.html" {:root "public"})
                            (response/content-type "text/html")))
            (GET "/hello" [] "Hello World there!")
-           (route/not-found "Not Found")
            (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
-           (POST "/chsk" req (ring-ajax-post req)))
+           (POST "/chsk" req (ring-ajax-post req))
+           (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel
 ;; but it's very good to know about
