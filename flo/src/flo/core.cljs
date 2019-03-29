@@ -109,8 +109,8 @@
               (enable-edit)))))))
 
 (defonce add-listeners
-  (add-event-listener "keydown" on-keydown)
-  (add-event-listener "keyup" on-keyup))
+  (do (add-event-listener "keydown" on-keydown)
+      (add-event-listener "keyup" on-keyup)))
 
 ;; define your app data so that it doesn't get over-written on reload
 (defonce app-state (atom {:text "Hello world!"}))
