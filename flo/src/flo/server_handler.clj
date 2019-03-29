@@ -22,7 +22,7 @@
               ajax-post-fn
               ajax-get-or-ws-handshake-fn]}
 
-      (sente/make-channel-socket! (get-sch-adapter) :csrf-token-fn nil)]
+      (sente/make-channel-socket! (get-sch-adapter) {:csrf-token-fn nil})]
 
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)

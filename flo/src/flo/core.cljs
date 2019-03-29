@@ -1,7 +1,8 @@
 (ns flo.core
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
-    [cljs.core.async.macros :refer [go]])
+    [cljs.core.async.macros :refer [go]]
+    [cljs.core.match :refer [match]])
   (:require
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
@@ -24,16 +25,15 @@
                          (:csrf-token))]
 
       (let [{:keys [chsk ch-recv send-fn state]}
-            (sente/make-channel-socket! "/chsk" csrf-token {:type :auto})]
+            (sente/make-channel-socket! "/chsk" nil {:type :auto})]
         (def chsk chsk)
         (def ch-chsk ch-recv)
         (def chsk-send! send-fn)
         (def chsk-state state)
         (go-loop []
           (let [item (<! ch-chsk)]
-            (println item)
             (let [[type body] (:event item)]
-              (when (= :flo/load type)
+              (when (= :chsk/recv type)
                 (js/alert body))))
           (recur)))))
 
