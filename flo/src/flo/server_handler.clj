@@ -5,6 +5,7 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
 
+            [clojure.core.match :refer [match]]
             [clojure.pprint :refer [pprint]]
             [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit :refer [get-sch-adapter]]
@@ -30,22 +31,25 @@
   (def chsk-send! send-fn)
   (def connected-uids connected-uids))
 
+(defn contents (atom {}))
+
 (add-watch
   connected-uids "watch"
   (fn [key ref old new]
     (let [added (set/difference (:any new) (:any old))]
       (doseq [uid added]
         (println "sending to" uid)
-        (chsk-send! uid [:flo/load "this is a test message"])))))
+        (chsk-send! uid [:flo/load @contents])))))
 
-(defonce
-  handler
+(defn on-chsk-receive [item]
+  (match (:event item)
+    [:flo/save c] (reset! contents c)
+    :else nil))
+
+(defonce start-loop
   (go-loop []
     (let [item (<! ch-chsk)]
-      (let [[type msg] (:event item)]
-        (println type msg)
-        (when (= :flo/save type)
-          (println msg))))
+      (on-chsk-receive item))
     (recur)))
 
 ;; If you are new to using Clojure as an HTTP server please take your
