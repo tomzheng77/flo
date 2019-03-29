@@ -1,9 +1,9 @@
 (ns flo.core
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
-    [cljs.core.async.macros :refer [go]]
-    [cljs.core.match :refer [match]])
+    [cljs.core.async.macros :refer [go]])
   (:require
+    [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
     [cljs-http.client :as http]
@@ -18,10 +18,19 @@
 
 (defonce app-state (atom {:text "Hello world!"}))
 
+; contents since it was last inspected
+; get contents from quill
+; set contents of quill
+(def last-contents (atom nil))
+(defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents js/quill)))))
+(defn set-contents [contents]
+  (.setContents js/quill (clj->js contents)))
+
 ; called once received any items from chsk
 (defn on-chsk-receive [item]
-  (match item
-    [:chsk-recv [body]] (println body)))
+  (match (:event item)
+    [:chsk/recv [:flo/load contents]] (set-contents contents)
+    :else nil))
 
 ; initialize the socket connection
 (def chsk-state (atom {:open? false}))
@@ -40,14 +49,6 @@
           (let [item (<! ch-chsk)]
             (on-chsk-receive item))
           (recur)))))
-
-; contents since it was last inspected
-; get contents from quill
-; set contents of quill
-(def last-contents (atom nil))
-(defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents js/quill)))))
-(defn set-contents [contents]
-  (.setContents (clj->js contents)))
 
 ; sends a message to the server via socket to save the contents
 (defn save-contents [contents]
