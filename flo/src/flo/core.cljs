@@ -42,9 +42,14 @@
   (.scrollBy editor x y))
 
 (defn add-event-listener [type listener]
-  (js/addEventListener type (fn [event] (listener (js->clj event)))))
+  (println type listener)
+  (js/addEventListener type (fn [event]
+                              (.log js/console event)
+                              (.log js/console (js->clj event))
+                              (println (type 10))
+                              (listener (js->clj event)))))
 
-(defn drop-last [str]
+(defn splice-last [str]
   (subs str 0 (dec (count str))))
 
 (def shift-press-time (atom 0))
@@ -66,23 +71,23 @@
 
 (defn go-to-tag
   [search]
-  (when-not (empty? search (set-selection))
+  (if-not (empty? search)
+    (set-selection)
     (let [text (get-text)]
-      (with-local-vars [s search]
-        (while (< 0 (count @s))
+      (loop [s search]
+        (when (< 0 (count s))
           (when-not (go-to-substr text (str "[" @s "]"))
             (when-not (go-to-substr text (str "[" @s))
-              (var-set s (drop-last @s))
-              (recur))))))))
+              (recur (splice-last s)))))))))
 
 (add-event-listener "keydown"
   (fn [event]
     (if (= "ShiftLeft" (get event "code"))
       (reset! shift-press-time (current-time-millis))
       (do (reset! shift-press-time 0)
-          (when (@search-active)
+          (when @search-active
             (if (= "Backspace" (get event "key"))
-              (go-to-tag (drop-last @search))
+              (go-to-tag (splice-last @search))
               (if (re-matches #"^[A-Za-z0-9]$" (get event "key"))
                 (swap! search #(str % (str/upper-case (get event "key"))))
                 (go-to-tag @search))))))))
