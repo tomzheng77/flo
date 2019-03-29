@@ -24,19 +24,82 @@
 ; get contents from quill
 ; set contents of quill
 (def last-contents (atom nil))
+(defn enable-edit [] (.enable quill))
+(defn disable-edit [] (.disable quill))
+(defn get-text [] (.getText quill))
 (defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents quill)))))
 (defn set-contents [contents]
   (.setContents quill (clj->js contents)))
+(defn set-selection
+  ([] (.setSelection quill nil))
+  ([index length]
+   (.setSelection quill index length)))
+(defn get-bounds [index length]
+  (js->clj (.getBounds quill index length)))
+
+(def editor (aget (.. (.getElementById js/document "editor") -children) 0))
+(defn scroll-by [x y]
+  (.scrollBy editor x y))
+
+(defn add-event-listener [type listener]
+  (js/addEventListener type (fn [event] (listener (js->clj event)))))
+
+(defn drop-last [str]
+  (subs str 0 (dec (count str))))
 
 (def shift-press-time (atom 0))
 (def search-active (atom false))
 (def search (atom ""))
-(def editor (aget (.. (.getElementById js/document "editor") -children) 0))
 
-(defn go-to-substr [text substr]
-  (let [index (str/index-of text substr)]
+(defn current-time-millis [] (.getTime (new js/Date)))
+
+(defn go-to-substr
+  [text substr]
+  (let [index (str/index-of text substr)
+        length (count substr)]
     (when (not= -1 index)
-      )))
+      (set-selection index length)
+      (let [bounds (get-bounds index length)]
+        (scroll-by (get bounds "left")
+                   (get bounds "top")))
+      index)))
+
+(defn go-to-tag
+  [search]
+  (when-not (empty? search (set-selection))
+    (let [text (get-text)]
+      (with-local-vars [s search]
+        (while (< 0 (count @s))
+          (when-not (go-to-substr text (str "[" @s "]"))
+            (when-not (go-to-substr text (str "[" @s))
+              (var-set s (drop-last @s))
+              (recur))))))))
+
+(add-event-listener "keydown"
+  (fn [event]
+    (if (= "ShiftLeft" (get event "code"))
+      (reset! shift-press-time (current-time-millis))
+      (do (reset! shift-press-time 0)
+          (when (@search-active)
+            (if (= "Backspace" (get event "key"))
+              (go-to-tag (drop-last @search))
+              (if (re-matches #"^[A-Za-z0-9]$" (get event "key"))
+                (swap! search #(str % (str/upper-case (get event "key"))))
+                (go-to-tag @search))))))))
+
+(add-event-listener "keyup"
+  (fn [event]
+    (if (= "ShiftLeft" (get event "code"))
+      (let [now-time (current-time-millis)
+            delta (- now-time @shift-press-time)]
+        (when (< 500 delta)
+          (if @search-active
+            (do (reset! search-active false)
+                (reset! search "")
+                (enable-edit))
+            (do (reset! search-active true)
+                (reset! search "")
+                (disable-edit))))))))
 
 ;; define your app data so that it doesn't get over-written on reload
 (defonce app-state (atom {:text "Hello world!"}))
