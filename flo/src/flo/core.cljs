@@ -25,6 +25,11 @@
 (defn set-contents [contents]
   (.setContents (clj->js contents)))
 
+(go-loop []
+  (let [item (<! ch-chsk)]
+    (println "client received" item))
+  (recur))
+
 (defn save-contents [contents]
   (if (:open? @chsk-state)
     (chsk-send! [:flo/save contents])))
