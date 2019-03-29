@@ -63,7 +63,7 @@
   [text substr]
   (let [index (str/index-of text substr)
         length (count substr)]
-    (when (not= -1 index)
+    (when index
       (set-selection index length)
       (let [bounds (get-bounds index length)]
         (scroll-by (get bounds "left")
@@ -72,13 +72,13 @@
 
 (defn go-to-tag
   [search]
-  (if-not (empty? search)
+  (if (empty? search)
     (set-selection)
     (let [text (get-text)]
       (loop [s search]
         (or (>= 0 (count s))
-            (go-to-substr text (str "[" @s "]"))
-            (go-to-substr text (str "[" @s))
+            (go-to-substr text (str "[" s "]"))
+            (go-to-substr text (str "[" s))
             (recur (splice-last s)))))))
 
 (defn on-keydown
@@ -88,8 +88,10 @@
     (do (reset! shift-press-time 0)
         (when @search-active
           (if (= "Backspace" (:key event))
-            (go-to-tag (splice-last @search))
-            (if (re-matches #"^[A-Za-z0-9]$" (:key event))
+            (do
+              (swap! search splice-last)
+              (go-to-tag @search))
+            (when (re-matches #"^[A-Za-z0-9]$" (:key event))
               (swap! search #(str % (str/upper-case (:key event))))
               (go-to-tag @search)))))))
 
