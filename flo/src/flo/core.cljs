@@ -75,10 +75,10 @@
     (set-selection)
     (let [text (get-text)]
       (loop [s search]
-        (when (< 0 (count s))
-          (when-not (go-to-substr text (str "[" @s "]"))
-            (when-not (go-to-substr text (str "[" @s))
-              (recur (splice-last s)))))))))
+        (or (>= 0 (count s))
+            (go-to-substr text (str "[" @s "]"))
+            (go-to-substr text (str "[" @s))
+            (recur (splice-last s)))))))
 
 (add-event-listener "keydown"
   (fn [event]
