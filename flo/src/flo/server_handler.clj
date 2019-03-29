@@ -46,18 +46,12 @@
            (GET "/" [] (-> (response/resource-response "index.html" {:root "public"})
                            (response/content-type "text/html")))
            (GET "/hello" [] "Hello World!")
-           (GET "/second-hello" req
+           (GET "/login" req
              (println req)
              {:status  200
               :headers {"Content-Type" "text/plain"}
               :body    (pr-str req)
-              :session {:test "BOOM"}})
-           (GET "/third-hello" req
-             (println req)
-             {:status  200
-              :headers {"Content-Type" "text/plain"}
-              :body    (pr-str req)
-              :session {:test "BOOM"}})
+              :session {:uid 0}})
            (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
            (POST "/chsk" req (ring-ajax-post req))
            (route/not-found "Not Found"))
