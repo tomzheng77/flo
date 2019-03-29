@@ -28,8 +28,8 @@
   (def connected-uids connected-uids))
 
 (add-watch connected-uids "watch"
-  (fn [key ref old new]
-    (println new)))
+           (fn [key ref old new]
+             (println new)))
 
 ;; If you are new to using Clojure as an HTTP server please take your
 ;; time and study ring and compojure. They are both very popular and
@@ -45,7 +45,19 @@
            ;; NOTE: this will deliver your index.html
            (GET "/" [] (-> (response/resource-response "index.html" {:root "public"})
                            (response/content-type "text/html")))
-           (GET "/hello" [] "Hello World there!")
+           (GET "/hello" [] "Hello World!")
+           (GET "/second-hello" req
+             (println req)
+             {:status  200
+              :headers {"Content-Type" "text/plain"}
+              :body    (pr-str req)
+              :session {:test "BOOM"}})
+           (GET "/third-hello" req
+             (println req)
+             {:status  200
+              :headers {"Content-Type" "text/plain"}
+              :body    (pr-str req)
+              :session {:test "BOOM"}})
            (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
            (POST "/chsk" req (ring-ajax-post req))
            (route/not-found "Not Found"))
