@@ -3,6 +3,8 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [cljs.core.async.macros :refer [go]])
   (:require
+    [cljs.reader :refer [read-string]]
+    [cljs.pprint :refer [pprint]]
     [cljs-http.client :as http]
     [cljs.core.async :as async :refer [<! >! put! chan]]
     [taoensso.sente :as sente :refer [cb-success?]]))
@@ -16,16 +18,23 @@
 (defonce app-state (atom {:text "Hello world!"}))
 
 ; initialize the socket connection
-(go (<! (http/get "/login"))
-    (let [{:keys [chsk ch-recv send-fn state]}
-          (sente/make-channel-socket! "/chsk" nil {:type :auto})]
-      (def chsk chsk)
-      (def ch-chsk ch-recv)
-      (def chsk-send! send-fn)
-      (def chsk-state state)
-      (go-loop []
-        (let [item (<! ch-chsk)])
-        (recur))))
+(go (let [csrf-token (-> (<! (http/get "/login"))
+                         (:body)
+                         (read-string)
+                         (:csrf-token))]
+
+      (let [{:keys [chsk ch-recv send-fn state]}
+            (sente/make-channel-socket! "/chsk" csrf-token {:type :auto})]
+        (def chsk chsk)
+        (def ch-chsk ch-recv)
+        (def chsk-send! send-fn)
+        (def chsk-state state)
+        (go-loop []
+          (let [item (<! ch-chsk)]
+            (let [[type body] (:event item)]
+              (when (= :flo/load type)
+                (js/alert body))))
+          (recur)))))
 
 ; contents since it was last inspected
 ; get contents from quill
