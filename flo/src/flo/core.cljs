@@ -4,7 +4,9 @@
     [cljs.core.async.macros :refer [go]]
     [flo.macros :refer [console-log]])
   (:require
+    [flo.functions :refer [json->clj]]
     [cljsjs.quill]
+    [flo.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
@@ -14,50 +16,6 @@
     [clojure.string :as str]))
 
 (enable-console-print!)
-
-; converts one or more arguments to JSON then clojure
-; accepts same options as js->clj
-(defn json->clj [x & opts]
-  (apply js->clj (concat [(.parse js/JSON (.stringify js/JSON x))] opts)))
-
-(defn compose-delta [old-delta new-delta]
-  (.compose old-delta new-delta))
-
-; track the contents of quill using an atom
-(def contents (atom {}))
-
-; create the quill editor instance
-(def quill
-  (new js/Quill "#editor"
-       (clj->js {"modules" {"toolbar" "#toolbar"}
-                 "theme" "snow"})))
-
-(.on quill "text-change"
-     (fn [new-delta old-delta source]
-       (reset! contents (json->clj (compose-delta old-delta new-delta)))))
-
-(def last-contents (atom nil))
-
-(defn enable-edit [] (.enable quill))
-(defn disable-edit [] (.disable quill))
-
-(defn get-text [] (.getText quill))
-
-(defn get-contents [] (json->clj (.getContents quill)))
-(defn set-contents [contents]
-  (.setContents quill (clj->js contents)))
-
-(defn set-selection
-  ([] (.setSelection quill nil))
-  ([index length]
-   (.setSelection quill index length)))
-
-(defn get-bounds [index length]
-  (js->clj (.getBounds quill index length)))
-
-(def editor (aget (.. (.getElementById js/document "editor") -children) 0))
-(defn scroll-by [x y]
-  (.scrollBy editor x y))
 
 (defn add-event-listener [type listener]
   (js/addEventListener type
@@ -79,17 +37,17 @@
   (let [index (str/index-of text substr)
         length (count substr)]
     (when index
-      (set-selection index length)
-      (let [bounds (get-bounds index length)]
-        (scroll-by (get bounds "left")
+      (quill/set-selection index length)
+      (let [bounds (quill/get-bounds index length)]
+        (quill/scroll-by (get bounds "left")
                    (get bounds "top")))
       index)))
 
 (defn go-to-tag
   [search]
   (if (empty? search)
-    (set-selection)
-    (let [text (get-text)]
+    (quill/set-selection)
+    (let [text (quill/get-text)]
       (loop [s search]
         (or (>= 0 (count s))
             (go-to-substr text (str "[" s "]"))
@@ -122,10 +80,10 @@
           (do (println "activate search")
               (reset! search-active true)
               (reset! search "")
-              (disable-edit))
+              (quill/disable-edit))
           (do (reset! search-active false)
               (reset! search "")
-              (enable-edit)))))))
+              (quill/enable-edit)))))))
 
 (defonce add-listeners
   (do (add-event-listener "keydown" on-keydown)
@@ -137,7 +95,7 @@
 ; called once received any items from chsk
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:chsk/recv [:flo/load contents]] (set-contents contents)
+    [:chsk/recv [:flo/load contents]] (quill/set-contents contents)
     :else nil))
 
 ; initialize the socket connection
@@ -164,13 +122,13 @@
     (chsk-send! [:flo/save contents])))
 
 (defn detect-change []
-  (let [contents (get-contents)]
+  (let [contents (quill/get-contents)]
     (locking last-contents
-      (when (= nil @last-contents) (reset! last-contents contents))
-      (when (not= contents @last-contents)
+      (when (= nil @quill/last-contents) (reset! quill/last-contents contents))
+      (when (not= contents @quill/last-contents)
         (println "contents changed, saving...")
         (save-contents contents)
-        (reset! last-contents contents)))))
+        (reset! quill/last-contents contents)))))
 
 (js/setInterval detect-change 1000)
 
