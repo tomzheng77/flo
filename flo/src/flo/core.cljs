@@ -37,16 +37,21 @@
        (reset! contents (json->clj (compose-delta old-delta new-delta)))))
 
 (def last-contents (atom nil))
+
 (defn enable-edit [] (.enable quill))
 (defn disable-edit [] (.disable quill))
+
 (defn get-text [] (.getText quill))
+
 (defn get-contents [] (json->clj (.getContents quill)))
 (defn set-contents [contents]
   (.setContents quill (clj->js contents)))
+
 (defn set-selection
   ([] (.setSelection quill nil))
   ([index length]
    (.setSelection quill index length)))
+
 (defn get-bounds [index length]
   (js->clj (.getBounds quill index length)))
 
