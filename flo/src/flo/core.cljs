@@ -36,9 +36,6 @@
      (fn [new-delta old-delta source]
        (reset! contents (json->clj (compose-delta old-delta new-delta)))))
 
-; contents since it was last inspected
-; get contents from quill
-; set contents of quill
 (def last-contents (atom nil))
 (defn enable-edit [] (.enable quill))
 (defn disable-edit [] (.disable quill))
