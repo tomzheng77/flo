@@ -1,7 +1,8 @@
 (ns flo.core
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
-    [cljs.core.async.macros :refer [go]])
+    [cljs.core.async.macros :refer [go]]
+    [flo.macros :refer [console-log]])
   (:require
     [cljsjs.quill]
     [cljs.core.match :refer-macros [match]]
@@ -14,11 +15,26 @@
 
 (enable-console-print!)
 
+; converts one or more arguments to JSON then clojure
+; accepts same options as js->clj
+(defn json->clj [x & opts]
+  (apply js->clj (concat [(.parse js/JSON (.stringify js/JSON x))] opts)))
+
+(defn compose-delta [old-delta new-delta]
+  (.compose old-delta new-delta))
+
+; track the contents of quill using an atom
+(def contents (atom {}))
+
 ; create the quill editor instance
 (def quill
   (new js/Quill "#editor"
        (clj->js {"modules" {"toolbar" "#toolbar"}
                  "theme" "snow"})))
+
+(.on quill "text-change"
+     (fn [new-delta old-delta source]
+       (reset! contents (json->clj (compose-delta old-delta new-delta)))))
 
 ; contents since it was last inspected
 ; get contents from quill
@@ -27,7 +43,7 @@
 (defn enable-edit [] (.enable quill))
 (defn disable-edit [] (.disable quill))
 (defn get-text [] (.getText quill))
-(defn get-contents [] (js->clj (.parse js/JSON (.stringify js/JSON (.getContents quill)))))
+(defn get-contents [] (json->clj (.getContents quill)))
 (defn set-contents [contents]
   (.setContents quill (clj->js contents)))
 (defn set-selection
@@ -40,9 +56,6 @@
 (def editor (aget (.. (.getElementById js/document "editor") -children) 0))
 (defn scroll-by [x y]
   (.scrollBy editor x y))
-
-(defn json->clj [x & opts]
-  (apply js->clj (concat [(.parse js/JSON (.stringify js/JSON x))] opts)))
 
 (defn add-event-listener [type listener]
   (js/addEventListener type
