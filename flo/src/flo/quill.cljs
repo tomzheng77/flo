@@ -1,5 +1,6 @@
 (ns flo.quill
   (:require
+    [cljsjs.quill]
     [flo.functions :refer [json->clj]]
     [clojure.string :as str]))
 

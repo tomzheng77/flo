@@ -5,7 +5,6 @@
     [flo.macros :refer [console-log]])
   (:require
     [flo.functions :refer [json->clj]]
-    [cljsjs.quill]
     [flo.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -38,8 +37,8 @@
     (quill/set-selection)
       (loop [s search]
         (or (>= 0 (count s))
-            (quill/goto-substr text (str "[" s "]"))
-            (quill/goto-substr text (str "[" s))
+            (quill/goto-substr (str "[" s "]"))
+            (quill/goto-substr (str "[" s))
             (recur (splice-last s))))))
 
 (add-watch search :auto-search
