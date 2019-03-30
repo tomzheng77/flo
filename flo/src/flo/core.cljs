@@ -25,9 +25,8 @@
 (defn splice-last [str]
   (subs str 0 (dec (count str))))
 
-(def shift-press-time (atom 0))
-(def search-active (atom false))
-(def search (atom ""))
+(def last-shift-press (atom 0))
+(def search (atom nil))
 
 (defn current-time-millis [] (.getTime (new js/Date)))
 
@@ -42,16 +41,16 @@
             (recur (splice-last s))))))
 
 (add-watch search :auto-search
-           (fn [key ref old new]
+  (fn [key ref old new]
     (println "search changed to" new)
-    (goto-tag new)))
+    (if new (goto-tag new))))
 
 (defn on-keydown
   [event]
   (if (= "ShiftLeft" (:code event))
-    (reset! shift-press-time (current-time-millis))
-    (do (reset! shift-press-time 0)
-        (when @search-active
+    (reset! last-shift-press (current-time-millis))
+    (do (reset! last-shift-press 0)
+        (when @search
           (if (= "Backspace" (:key event))
             (swap! search splice-last)
             (when (re-matches #"^[A-Za-z0-9]$" (:key event))
@@ -61,15 +60,13 @@
   [event]
   (if (= "ShiftLeft" (:code event))
     (let [now-time (current-time-millis)
-          delta (- now-time @shift-press-time)]
+          delta (- now-time @last-shift-press)]
       (when (> 500 delta)
-        (if-not @search-active
+        (if-not @search
           (do (println "activate search")
-              (reset! search-active true)
               (reset! search "")
               (quill/disable-edit))
-          (do (reset! search-active false)
-              (reset! search "")
+          (do (reset! search nil)
               (quill/enable-edit)))))))
 
 (defonce add-listeners
