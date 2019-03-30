@@ -96,6 +96,11 @@
             (go-to-substr text (str "[" s))
             (recur (splice-last s)))))))
 
+(add-watch search :auto-search
+  (fn [key ref old new]
+    (println "search changed to" new)
+    (go-to-tag new)))
+
 (defn on-keydown
   [event]
   (if (= "ShiftLeft" (:code event))
@@ -103,12 +108,9 @@
     (do (reset! shift-press-time 0)
         (when @search-active
           (if (= "Backspace" (:key event))
-            (do
-              (swap! search splice-last)
-              (go-to-tag @search))
+            (swap! search splice-last)
             (when (re-matches #"^[A-Za-z0-9]$" (:key event))
-              (swap! search #(str % (str/upper-case (:key event))))
-              (go-to-tag @search)))))))
+              (swap! search #(str % (str/upper-case (:key event))))))))))
 
 (defn on-keyup
   [event]
