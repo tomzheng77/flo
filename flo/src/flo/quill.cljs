@@ -7,7 +7,7 @@
 (defn compose-delta [old-delta new-delta]
   (.compose old-delta new-delta))
 
-; track the contents of quill using an atom
+; read-only atom containing the contents displayed in quill
 (def contents (atom {}))
 
 ; create the quill editor instance
