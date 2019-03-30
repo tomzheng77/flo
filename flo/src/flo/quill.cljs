@@ -1,6 +1,7 @@
 (ns flo.quill
   (:require
-    [flo.functions :refer [json->clj]]))
+    [flo.functions :refer [json->clj]]
+    [clojure.string :as str]))
 
 (defn compose-delta [old-delta new-delta]
   (.compose old-delta new-delta))
@@ -42,3 +43,13 @@
 
 (defn scroll-by [x y]
   (.scrollBy quill-editor x y))
+
+(defn goto-substr
+  [substr]
+  (let [index (str/index-of (get-text) substr) length (count substr)]
+    (when index
+      (set-selection index length)
+      (let [bounds (get-bounds index length)]
+        (scroll-by (get bounds "left")
+                   (get bounds "top")))
+      index)))

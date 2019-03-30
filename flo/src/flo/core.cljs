@@ -32,32 +32,20 @@
 
 (defn current-time-millis [] (.getTime (new js/Date)))
 
-(defn go-to-substr
-  [text substr]
-  (let [index (str/index-of text substr)
-        length (count substr)]
-    (when index
-      (quill/set-selection index length)
-      (let [bounds (quill/get-bounds index length)]
-        (quill/scroll-by (get bounds "left")
-                   (get bounds "top")))
-      index)))
-
-(defn go-to-tag
+(defn goto-tag
   [search]
   (if (empty? search)
     (quill/set-selection)
-    (let [text (quill/get-text)]
       (loop [s search]
         (or (>= 0 (count s))
-            (go-to-substr text (str "[" s "]"))
-            (go-to-substr text (str "[" s))
-            (recur (splice-last s)))))))
+            (quill/goto-substr text (str "[" s "]"))
+            (quill/goto-substr text (str "[" s))
+            (recur (splice-last s))))))
 
 (add-watch search :auto-search
-  (fn [key ref old new]
+           (fn [key ref old new]
     (println "search changed to" new)
-    (go-to-tag new)))
+    (goto-tag new)))
 
 (defn on-keydown
   [event]
