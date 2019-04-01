@@ -59,6 +59,7 @@
         (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (if (:block-login limiter)
           (do (disable-login)
+              (remove-locks)
               (lock-screen))
           (do (enable-login)
               (remove-locks)))
