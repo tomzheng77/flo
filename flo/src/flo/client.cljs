@@ -54,7 +54,7 @@
   (if (= "ShiftLeft" (:code event))
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))
-  (if (:search @state)
+  (when (:search @state)
     (if (= "Backspace" (:key event))
       (swap! state #(assoc % :search (splice-last (:search %)))))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
@@ -67,8 +67,6 @@
       (when (> 500 delta)
         (on-hit-shift)))))
 
-(remove-event-listener "keydown" on-press-key)
-(remove-event-listener "keyup" on-release-key)
 (add-event-listener "keydown" on-press-key)
 (add-event-listener "keyup" on-release-key)
 
@@ -113,7 +111,4 @@
 (js/setInterval detect-change 1000)
 
 (defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-  )
+  (remove-event-listener))
