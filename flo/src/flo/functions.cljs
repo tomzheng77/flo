@@ -8,9 +8,21 @@
 
 (defn current-time-millis [] (.getTime (new js/Date)))
 
+(def listener-to-handler (atom {}))
+
+(defn remove-event-listener [type listener]
+  (let [handler (@listener-to-handler listener)]
+    (println "removed" handler)
+    (if handler
+      (js/document.removeEventListener type handler))))
+
 (defn add-event-listener [type listener]
   (println "adding event listener for" type)
-  (js/addEventListener type
-    (fn [event]
-      (let [clj-event {:code (. event -code) :key (. event -key)}]
-        (listener clj-event)))))
+  (let [handler
+        (fn [event]
+          (let [clj-event {:code (. event -code) :key (. event -key)}]
+            (listener clj-event)))]
+    (swap! listener-to-handler #(assoc % listener handler))
+    (println listener-to-handler)
+    (js/document.addEventListener type handler)))
+

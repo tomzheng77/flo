@@ -4,7 +4,8 @@
     [cljs.core.async.macros :refer [go]]
     [flo.macros :refer [console-log]])
   (:require
-    [flo.functions :refer [json->clj current-time-millis splice-last add-event-listener]]
+    [flo.functions :refer [json->clj current-time-millis splice-last
+                           add-event-listener remove-event-listener]]
     [flo.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -53,10 +54,11 @@
   (if (= "ShiftLeft" (:code event))
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))
-  (if (= "Backspace" (:key event))
-    (swap! state #(assoc % :search (splice-last (:search %)))))
-  (when (re-matches #"^[A-Za-z0-9]$" (:key event))
-    (swap! state #(assoc % :search (str (:search %) (str/upper-case (:key event)))))))
+  (if (:search @state)
+    (if (= "Backspace" (:key event))
+      (swap! state #(assoc % :search (splice-last (:search %)))))
+    (when (re-matches #"^[A-Za-z0-9]$" (:key event))
+      (swap! state #(assoc % :search (str (:search %) (str/upper-case (:key event))))))))
 
 (defn on-release-key
   [event]
@@ -65,9 +67,10 @@
       (when (> 500 delta)
         (on-hit-shift)))))
 
-(defonce add-listeners
-   (do (add-event-listener "keydown" on-press-key)
-       (add-event-listener "keyup" on-release-key)))
+(remove-event-listener "keydown" on-press-key)
+(remove-event-listener "keyup" on-release-key)
+(add-event-listener "keydown" on-press-key)
+(add-event-listener "keyup" on-release-key)
 
 ; called once received any items from chsk
 (defn on-chsk-receive [item]
