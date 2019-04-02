@@ -4,7 +4,7 @@
     [cljs.core.async.macros :refer [go]]
     [flo.macros :refer [console-log]])
   (:require
-    [flo.functions :refer [json->clj]]
+    [flo.functions :refer [json->clj current-time-millis splice-last]]
     [flo.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -22,13 +22,8 @@
       (let [clj-event {:code (. event -code) :key (. event -key)}]
         (listener clj-event)))))
 
-(defn splice-last [str]
-  (subs str 0 (dec (count str))))
-
 (def last-shift-press (atom 0))
 (def search (atom nil))
-
-(defn current-time-millis [] (.getTime (new js/Date)))
 
 (defn goto-tag
   [search]
