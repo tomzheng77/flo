@@ -46,19 +46,9 @@
 (defn enable-login [] (s/call "passwd" "-u" c/user))
 
 (defn lock-screen []
-  (future (s/call "sudo" "-u" c/user "DISPLAY=:1" "i3lock" "-c" "000000"))
-  (future (s/call "sudo" "-u" c/user "DISPLAY=:1" "xdg-screensaver" "lock")))
+  (future (s/call "sudo" "-u" c/user "DISPLAY=:1" "i3lock" "-c" "000000")))
 
-(defn restart-lock-if-present []
-  (let [report (s/process-report)
-        locations (into #{} (concat (s/find-executable "xdg-screensaver") (s/find-executable "i3lock")))
-        i3-ins (filter #(locations (:exe %)) report)]
-    (when (not-empty i3-ins)
-      (doseq [proc i3-ins]
-        (s/call "kill" (:pid proc)))
-      (lock-screen))))
-
-(defn remove-locks []
+(defn unlock-screen []
   (s/call "killall" "i3lock"))
 
 (defn remove-firewall-rules []
@@ -71,7 +61,7 @@
 
 (defn clear-all-restrictions []
   (enable-login)
-  (remove-locks)
+  (unlock-screen)
   (add-wheel)
   (unlock-home)
   (remove-firewall-rules)

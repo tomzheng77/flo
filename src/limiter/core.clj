@@ -2,8 +2,7 @@
   (:gen-class)
   (:require [limiter.proxy :as proxy]
             [limiter.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions
-                                    remove-wheel add-firewall-rules enable-login restart-lock-if-present lock-home
-                                    remove-locks send-notify]]
+                                    remove-wheel add-firewall-rules enable-login lock-home unlock-screen send-notify]]
             [limiter.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
@@ -12,7 +11,8 @@
             [limiter.orbit :as orbit]
             [java-time-literals.core]
             [taoensso.encore :as enc]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.core.async :refer [go-loop <! chan >!!]])
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
 
@@ -59,10 +59,10 @@
         (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (if (:block-login limiter)
           (do (disable-login)
-              (remove-locks)
+              (unlock-screen)
               (lock-screen))
           (do (enable-login)
-              (remove-locks)))
+              (unlock-screen)))
         (block-folder
           #(not (contains? (:block-folder limiter) %))))))
 
@@ -70,14 +70,40 @@
 (def prev-limiter (atom nil))
 (def notified (atom #{}))
 
+; use an atom to store the current limiters
+; this must be initialized first, but can then be
+; used or modified concurrently
+(def limiters (atom []))
+
+; this will start a thread which continuously writes
+; the latest version of limiters
+(let [limiters-last-write (atom [])
+      signals (chan)
+      signal-count (atom 0)]
+  ; whenever the value of limiters changes, add a new signal
+  ; the signal can be any value
+  (add-watch limiters :rewrite
+    (fn [_ _ _ _]
+      (if (> 512 @signal-count)
+        (swap! signal-count inc)
+        (>!! signals 0))))
+  (go-loop []
+    (let [_ (<! signals)]
+      (println "signal received")
+      (swap! signal-count dec)
+      (let [now-limiters @limiters]
+        (when (not= now-limiters @limiters-last-write)
+          (println "writing limiters")
+          (write-limiters now-limiters)
+          (reset! limiters-last-write now-limiters))))
+    (recur)))
+
 ; this method should be called once per second
 (defn on-enter-second []
-  (create-limiter-edn-if-not-found)
   (let [now (LocalDateTime/now)
-        limiters (read-limiters)
-        limiter (limiter-at limiters now)
-        in-1-minute (limiter-at limiters (.plusMinutes now 1))
-        limiters-optimized (drop-before limiters now)]
+        now-limiters @limiters
+        limiter (limiter-at now-limiters now)
+        in-1-minute (limiter-at now-limiters (.plusMinutes now 1))]
     (locking notified
       (when-not (@notified in-1-minute)
         (send-notify "in 1 minute" (pr-str in-1-minute))
@@ -86,8 +112,7 @@
       (when (not (= @prev-limiter limiter))
         (reset! prev-limiter limiter)
         (activate-limiter limiter)))
-    (when (not (= limiters-optimized limiters))
-      (write-limiters limiters-optimized))))
+    (swap! limiters #(drop-before % now))))
 
 (defn handle-request
   [edn]
@@ -101,11 +126,9 @@
       (assert (limiter/date-time? end))
       (assert (.isBefore start end))
       (assert (limiter/valid-limits? edn))
-      (with-local-vars [limiters (read-limiters)]
-        (var-set limiters (-> @limiters
-                              (limiter/add-limiter start end edn)
-                              (limiter/drop-before now)))
-        (write-limiters @limiters)))))
+      (swap! limiters #(-> %
+        (limiter/add-limiter start end edn)
+        (limiter/drop-before now))))))
 
 (defmacro try-or-resign
   [& body]
@@ -113,6 +136,8 @@
 
 (defn run []
   (info "starting limiter")
+  (create-limiter-edn-if-not-found)
+  (reset! limiters (read-limiters))
   (try-or-resign
     (proxy/start-server)
     (start-http-server c/server-port handle-request))
