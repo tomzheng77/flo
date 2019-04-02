@@ -16,7 +16,10 @@
 
 (enable-console-print!)
 
-(def example-state)
+(def example-state
+  {:last-shift-press 0
+   :search 0
+   :content 0})
 
 ;; define your app data so that it doesn't get over-written on reload
 (defonce app-state (atom {:last-shift-press nil
