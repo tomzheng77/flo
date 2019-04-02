@@ -7,3 +7,9 @@
   (subs str 0 (dec (count str))))
 
 (defn current-time-millis [] (.getTime (new js/Date)))
+
+(defn add-event-listener [type listener]
+  (js/addEventListener type
+    (fn [event]
+      (let [clj-event {:code (. event -code) :key (. event -key)}]
+        (listener clj-event)))))

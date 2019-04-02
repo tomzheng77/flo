@@ -1,4 +1,4 @@
-(ns flo.server-handler
+(ns flo.server
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.reload :refer [wrap-reload]]

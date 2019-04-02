@@ -1,10 +1,10 @@
-(ns flo.core
+(ns flo.client
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [cljs.core.async.macros :refer [go]]
     [flo.macros :refer [console-log]])
   (:require
-    [flo.functions :refer [json->clj current-time-millis splice-last]]
+    [flo.functions :refer [json->clj current-time-millis splice-last add-event-listener]]
     [flo.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -16,11 +16,11 @@
 
 (enable-console-print!)
 
-(defn add-event-listener [type listener]
-  (js/addEventListener type
-    (fn [event]
-      (let [clj-event {:code (. event -code) :key (. event -key)}]
-        (listener clj-event)))))
+(def example-state)
+
+;; define your app data so that it doesn't get over-written on reload
+(defonce app-state (atom {:last-shift-press nil
+                          :search ""}))
 
 (def last-shift-press (atom 0))
 (def search (atom nil))
@@ -67,9 +67,6 @@
 (defonce add-listeners
   (do (add-event-listener "keydown" on-keydown)
       (add-event-listener "keyup" on-keyup)))
-
-;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (atom {:text "Hello world!"}))
 
 ; called once received any items from chsk
 (defn on-chsk-receive [item]
