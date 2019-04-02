@@ -5,7 +5,7 @@
     [flo.macros :refer [console-log]])
   (:require
     [flo.functions :refer [json->clj current-time-millis splice-last
-                           add-event-listener remove-event-listener]]
+                           add-event-listener]]
     [flo.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -67,8 +67,11 @@
       (when (> 500 delta)
         (on-hit-shift)))))
 
-(add-event-listener "keydown" on-press-key)
-(add-event-listener "keyup" on-release-key)
+(when-not js/window.listeners-added
+  (add-event-listener "keydown" on-press-key)
+  (add-event-listener "keyup" on-release-key))
+
+(set! js/window.listeners-added true)
 
 ; called once received any items from chsk
 (defn on-chsk-receive [item]
@@ -110,5 +113,4 @@
 
 (js/setInterval detect-change 1000)
 
-(defn on-js-reload []
-  (remove-event-listener))
+(defn on-js-reload [])

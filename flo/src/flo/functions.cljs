@@ -8,10 +8,6 @@
 
 (defn current-time-millis [] (.getTime (new js/Date)))
 
-(defn remove-event-listener []
-  (let [listeners (js/getEventListeners js/document.body)]
-    (println listeners)))
-
 (defn add-event-listener [type listener]
   (println "adding event listener for" type)
   (js/document.body.addEventListener type
