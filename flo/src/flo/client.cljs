@@ -40,7 +40,15 @@
     (println "search changed to" search)
     (when search (goto-search search))))
 
-(defn on-keydown
+; when the user presses and releases the left shift key in quick succession
+(defn on-hit-shift []
+  (if-not (:search @state)
+    (do (swap! state #(assoc % :search ""))
+        (quill/disable-edit))
+    (do (swap! state #(assoc % :search nil))
+        (quill/enable-edit))))
+
+(defn on-press-key
   [event]
   (if (= "ShiftLeft" (:code event))
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
@@ -50,20 +58,16 @@
   (when (re-matches #"^[A-Za-z0-9]$" (:key event))
     (swap! state #(assoc % :search (str (:search %) (str/upper-case (:key event)))))))
 
-(defn on-keyup
+(defn on-release-key
   [event]
   (if (= "ShiftLeft" (:code event))
     (let [delta (- (current-time-millis) (:last-shift-press @state 0))]
       (when (> 500 delta)
-        (if-not (:search @state)
-          (do (swap! state #(assoc % :search ""))
-              (quill/disable-edit))
-          (do (swap! state #(assoc % :search nil))
-              (quill/enable-edit)))))))
+        (on-hit-shift)))))
 
 (defonce add-listeners
-  (do (add-event-listener "keydown" on-keydown)
-      (add-event-listener "keyup" on-keyup)))
+   (do (add-event-listener "keydown" on-press-key)
+       (add-event-listener "keyup" on-release-key)))
 
 ; called once received any items from chsk
 (defn on-chsk-receive [item]

@@ -9,6 +9,7 @@
 (defn current-time-millis [] (.getTime (new js/Date)))
 
 (defn add-event-listener [type listener]
+  (println "adding event listener for" type)
   (js/addEventListener type
     (fn [event]
       (let [clj-event {:code (. event -code) :key (. event -key)}]
