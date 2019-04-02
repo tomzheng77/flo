@@ -74,9 +74,6 @@
                   [:link {:href "http://cdn.quilljs.com/1.0.0/quill.snow.css" :rel "stylesheet"}]
                   [:title "FloNote"]]
                  [:body
-                  [:div#toolbar
-                   [:button.ql-bold]
-                   [:button.ql-italic]]
                   [:div#editor {:style "height: 500px"}]
                   [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])})
   (GET "/login" req
