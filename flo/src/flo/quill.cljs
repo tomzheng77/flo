@@ -29,8 +29,8 @@
 ; create the quill editor instance
 (def quill
   (new js/Quill "#editor"
-       (clj->js {"modules" {"toolbar" toolbar-options}
-                 "theme"   "snow"})))
+    (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}}
+              "theme"   "snow"})))
 
 (def quill-editor
   (aget (.. (.getElementById js/document "editor") -children) 0))

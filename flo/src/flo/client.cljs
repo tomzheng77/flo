@@ -41,6 +41,10 @@
     (println "search changed to" search)
     (when search (goto-search search))))
 
+(add-watch quill/contents :quill-contents
+  (fn [_ _ _ new]
+    (println new)))
+
 ; when the user presses and releases the left shift key in quick succession
 (defn on-hit-shift []
   (if-not (:search @state)
