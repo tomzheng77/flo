@@ -17,18 +17,15 @@
 (enable-console-print!)
 
 (def example-state
-  {:last-shift-press 0
-   :search 0
-   :content 0})
+  {:last-shift-press 0                                      ; the time when the shift key was last pressed
+   :search           "AA"                                   ; the active label being searched, nil means no search
+   :content          {}})                                   ; the current contents of the editor
 
-;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (atom {:last-shift-press nil
-                          :search ""}))
+(defonce state (atom {:last-shift-press nil
+                      :search           nil
+                      :content          nil}))
 
-(def last-shift-press (atom 0))
-(def search (atom nil))
-
-(defn goto-tag
+(defn goto-search
   [search]
   (if (empty? search)
     (quill/set-selection)
@@ -38,33 +35,30 @@
             (quill/goto-substr (str "[" s))
             (recur (splice-last s))))))
 
-(add-watch search :auto-search
-  (fn [key ref old new]
-    (println "search changed to" new)
-    (if new (goto-tag new))))
+(add-watch state :auto-search
+  (fn [_ _ _ {:keys [search]}]
+    (println "search changed to" search)
+    (when search (goto-search search))))
 
 (defn on-keydown
   [event]
   (if (= "ShiftLeft" (:code event))
-    (reset! last-shift-press (current-time-millis))
-    (do (reset! last-shift-press 0)
-        (when @search
-          (if (= "Backspace" (:key event))
-            (swap! search splice-last)
-            (when (re-matches #"^[A-Za-z0-9]$" (:key event))
-              (swap! search #(str % (str/upper-case (:key event))))))))))
+    (swap! state #(assoc % :last-shift-press (current-time-millis)))
+    (swap! state #(assoc % :last-shift-press nil)))
+  (if (= "Backspace" (:key event))
+    (swap! state #(assoc % :search (splice-last (:search %)))))
+  (when (re-matches #"^[A-Za-z0-9]$" (:key event))
+    (swap! state #(assoc % :search (str (:search %) (str/upper-case (:key event)))))))
 
 (defn on-keyup
   [event]
   (if (= "ShiftLeft" (:code event))
-    (let [now-time (current-time-millis)
-          delta (- now-time @last-shift-press)]
+    (let [delta (- (current-time-millis) (:last-shift-press @state 0))]
       (when (> 500 delta)
-        (if-not @search
-          (do (println "activate search")
-              (reset! search "")
+        (if-not (:search @state)
+          (do (swap! state #(assoc % :search ""))
               (quill/disable-edit))
-          (do (reset! search nil)
+          (do (swap! state #(assoc % :search nil))
               (quill/enable-edit)))))))
 
 (defonce add-listeners
