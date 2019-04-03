@@ -71,7 +71,7 @@
                   [:meta {:charset "UTF-8"}]
                   [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
                   [:link {:rel "icon" :href "https://clojurescript.org/images/cljs-logo-icon-32.png"}]
-                  [:link {:href "http://cdn.quilljs.com/1.0.0/quill.snow.css" :rel "stylesheet"}]
+                  [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
                   [:title "FloNote"]]
                  [:body
                   [:div#editor {:style "height: 500px"}]
