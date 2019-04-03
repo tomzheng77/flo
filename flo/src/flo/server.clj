@@ -70,7 +70,7 @@
 
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/save c] (do (println "saving one" c) (reset! contents c))
+    [:flo/save c] (reset! contents c)
     :else nil))
 
 (defonce start-loop
