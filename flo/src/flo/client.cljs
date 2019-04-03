@@ -47,7 +47,7 @@
 
 ; when the user presses and releases the left shift key in quick succession
 (defn on-hit-shift []
-  (if-not (:search @state)
+  (if-not (= "" (:search @state))
     (do (swap! state #(assoc % :search ""))
         (quill/disable-edit))
     (do (swap! state #(assoc % :search nil))
