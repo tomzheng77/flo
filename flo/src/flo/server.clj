@@ -32,7 +32,12 @@
   (def chsk-send! send-fn)
   (def connected-uids connected-uids))
 
-(def contents (atom {}))
+(defn read-contents [] (read-string (slurp "contents.edn")))
+(defn write-contents
+  [contents]
+  (spit "contents.edn" (pr-str contents)))
+
+(def contents (atom (read-contents)))
 
 ; this will start a thread which continuously writes
 ; the latest version of contents
