@@ -2,7 +2,8 @@
   (:require
     [cljsjs.quill]
     [flo.functions :refer [json->clj]]
-    [clojure.string :as str]))
+    [clojure.string :as str]
+    [quill-image-resize-module :as resize]))
 
 (defn compose-delta [old-delta new-delta]
   (.compose old-delta new-delta))
@@ -27,9 +28,10 @@
    ["clean"]])
 
 ; create the quill editor instance
+;(js/Quill.register "modules/imageResize" (.-default resize))
 (def quill
   (new js/Quill "#editor"
-    (clj->js {"modules" {"toolbar" toolbar-options}
+    (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}}
               "theme"   "snow"})))
 
 (def quill-editor

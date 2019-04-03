@@ -4,8 +4,7 @@
     [cljs.core.async.macros :refer [go]]
     [flo.macros :refer [console-log]])
   (:require
-    [flo.functions :refer [json->clj current-time-millis splice-last
-                           add-event-listener]]
+    [flo.functions :refer [json->clj current-time-millis splice-last add-event-listener]]
     [flo.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -13,7 +12,8 @@
     [cljs-http.client :as http]
     [cljs.core.async :as async :refer [<! >! put! chan]]
     [taoensso.sente :as sente :refer [cb-success?]]
-    [clojure.string :as str]))
+    [clojure.string :as str]
+    [quill-image-resize-module]))
 
 (enable-console-print!)
 

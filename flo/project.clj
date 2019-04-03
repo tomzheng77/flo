@@ -49,7 +49,9 @@
                            :source-map-timestamp true
                            ;; To console.log CLJS data-structures make sure you enable devtools in Chrome
                            ;; https://github.com/binaryage/cljs-devtools
-                           :preloads [devtools.preload]}}
+                           :preloads [devtools.preload]
+                           :npm-deps {:quill-image-resize-module "3.0.0"}
+                           :install-deps true}}
                ;; This next build is a compressed minified build for
                ;; production. You can build this with:
                ;; lein cljsbuild once min
@@ -58,7 +60,9 @@
                 :compiler {:output-to "resources/public/js/compiled/flo.js"
                            :main flo.client
                            :optimizations :advanced
-                           :pretty-print false}}]}
+                           :pretty-print false
+                           :npm-deps {:quill-image-resize-module "3.0.0"}
+                           :install-deps true}}]}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
              ;; :server-port 3449 ;; default
