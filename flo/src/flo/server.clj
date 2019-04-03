@@ -47,10 +47,10 @@
   ; whenever the value of contents changes, add a new signal
   ; the signal can be any value
   (add-watch contents :rewrite
-             (fn [_ _ _ _]
-               (if (> 512 @signal-count)
-                 (swap! signal-count inc)
-                 (>!! signals 0))))
+    (fn [_ _ _ _]
+      (when (> 512 @signal-count)
+        (swap! signal-count inc)
+        (>!! signals 0))))
   (go-loop []
     (let [_ (<! signals)]
       (swap! signal-count dec)
@@ -70,7 +70,7 @@
 
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/save c] (reset! contents c)
+    [:flo/save c] (do (println "saving one" c) (reset! contents c))
     :else nil))
 
 (defonce start-loop

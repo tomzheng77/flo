@@ -84,7 +84,7 @@
   ; the signal can be any value
   (add-watch limiters :rewrite
     (fn [_ _ _ _]
-      (if (> 512 @signal-count)
+      (when (> 512 @signal-count)
         (swap! signal-count inc)
         (>!! signals 0))))
   (go-loop []
