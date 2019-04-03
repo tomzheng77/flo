@@ -115,6 +115,6 @@
         (save-contents contents)
         (reset! quill/last-contents contents)))))
 
-(js/setInterval detect-change 1000)
+(js/setInterval detect-change 10000)
 
 (defn on-js-reload [])
