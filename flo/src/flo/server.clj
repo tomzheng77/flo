@@ -14,7 +14,7 @@
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.anti-forgery :as anti-forgery :refer [wrap-anti-forgery]]
-            [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]
+            [clojure.core.async :as async :refer [chan <! <!! >! >!! put! chan go go-loop]]
             [clojure.set :as set])
   (:import (java.util UUID)))
 
