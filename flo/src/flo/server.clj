@@ -75,8 +75,7 @@
                   [:title "FloNote"]]
                  [:body
                   [:div#editor {:style "height: 500px"}]
-                  [:script {:src "js/compiled/flo.js" :type "text/javascript"}]
-                  [:script {:src "js/image-resize.min.js" :type "text/javascript"}]]])})
+                  [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])})
   (GET "/login" req
     (let [csrf-token (force anti-forgery/*anti-forgery-token*)]
       {:status  200
