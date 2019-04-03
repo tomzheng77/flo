@@ -71,11 +71,11 @@
       (when (> 500 delta)
         (on-hit-shift)))))
 
-(when-not js/window.listeners-added
+(when-not js/window.initialized
   (add-event-listener "keydown" on-press-key)
   (add-event-listener "keyup" on-release-key))
 
-(set! js/window.listeners-added true)
+(set! js/window.initialized true)
 
 ; called once received any items from chsk
 (defn on-chsk-receive [item]
