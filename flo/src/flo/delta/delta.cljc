@@ -45,27 +45,28 @@
 (defn push [this new-op]
   (with-local-vars [index (count (:ops this)) last-op (last (:ops this))]
     (when (map? @last-op)
-      (cond
-        (and (integer? (:delete new-op)) (integer? (:delete @last-op)))
-          (replace-last this {:delete (+ (:delete new-op) (:delete @last-op))})
-        (and (integer? (:delete @last-op)) (not-nil? (:insert new-op)))
-          (do
-            (var-set index (dec @index))
-            (var-set last-op (get (:ops this) (dec @index)))
-            (if-not (map? last-op)
-              (assoc this :ops (vec (concat [new-op] (:ops this))))))
-        (= (:attributes new-op) (:attributes last-op))
-          (cond
-            (and (string? (:insert new-op)) (string? (:insert last-op)))
-              (replace-last this
-                {:insert (str (:insert last-op) (:insert new-op))
-                 :attributes (:attributes new-op)})
-            (and (integer? (:retain new-op)) (integer? (:retain last-op)))
-              (replace-last this
-                {:retain (+ (:retain last-op) (:retain new-op))
-                 :attributes (:attributes new-op)})
-            true (insert-at this @index new-op))
-        true (insert-at this @index new-op)))))
+      (or (and (integer? (:delete new-op))
+               (integer? (:delete @last-op))
+               (replace-last this {:delete (+ (:delete new-op) (:delete @last-op))}))
+          (and (integer? (:delete @last-op))
+               (not-nil? (:insert new-op))
+               (do (var-set index (dec @index))
+                   (var-set last-op (get (:ops this) (dec @index)))
+                   (if-not (map? last-op)
+                     (assoc this :ops (vec (concat [new-op] (:ops this)))))))
+          (and (= (:attributes new-op) (:attributes last-op))
+               (or (and (string? (:insert new-op))
+                        (string? (:insert last-op))
+                        (replace-last this
+                                      {:insert     (str (:insert last-op) (:insert new-op))
+                                       :attributes (:attributes new-op)}))
+                   (and (integer? (:retain new-op))
+                        (integer? (:retain last-op))
+                        (replace-last this
+                                      {:retain     (+ (:retain last-op) (:retain new-op))
+                                       :attributes (:attributes new-op)}))
+                   (insert-at this @index new-op)))
+          (insert-at this @index new-op)))))
 
 (defn chop [this]
   (let [last-op (last (:ops this))]
