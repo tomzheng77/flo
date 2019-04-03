@@ -34,6 +34,27 @@
 
 (def contents (atom {}))
 
+; this will start a thread which continuously writes
+; the latest version of contents
+(let [contents-last-write (atom [])
+      signals (chan)
+      signal-count (atom 0)]
+  ; whenever the value of contents changes, add a new signal
+  ; the signal can be any value
+  (add-watch contents :rewrite
+             (fn [_ _ _ _]
+               (if (> 512 @signal-count)
+                 (swap! signal-count inc)
+                 (>!! signals 0))))
+  (go-loop []
+    (let [_ (<! signals)]
+      (swap! signal-count dec)
+      (let [now-contents @contents]
+        (when (not= now-contents @contents-last-write)
+          (write-contents now-contents)
+          (reset! contents-last-write now-contents))))
+    (recur)))
+
 (add-watch
   connected-uids "watch"
   (fn [key ref old new]
