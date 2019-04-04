@@ -11,6 +11,9 @@
 ; read-only atom containing the contents displayed in quill
 (def contents (atom {}))
 
+(def instance (atom nil))
+(def instance-editor (atom nil))
+
 (def toolbar-options
   [["bold" "italic" "underline" "strike"]
    ["blockquote" "code-block"]
@@ -27,41 +30,35 @@
    [{"align" []}]
    ["clean"]])
 
-; create the quill editor instance
-;(js/Quill.register "modules/imageResize" (.-default resize))
-(def quill
-  (new js/Quill "#editor"
-    (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}}
-              "theme"   "snow"})))
-
-(def quill-editor
-  (aget (.. (.getElementById js/document "editor") -children) 0))
-
-(.on quill "text-change"
-     (fn [new-delta old-delta source]
-       (reset! contents (json->clj (compose-delta old-delta new-delta)))))
+(defn new-instance []
+  (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}} "theme" "snow"})))
+  (.on @instance "text-change"
+    (fn [new-delta old-delta source]
+      (reset! contents (json->clj (compose-delta old-delta new-delta)))))
+  (reset! instance-editor
+    (aget (.. (.getElementById js/document "editor") -children) 0)))
 
 (def last-contents (atom nil))
 
-(defn enable-edit [] (.enable quill))
-(defn disable-edit [] (.disable quill))
+(defn enable-edit [] (.enable @instance))
+(defn disable-edit [] (.disable @instance))
 
-(defn get-text [] (.getText quill))
+(defn get-text [] (.getText @instance))
 
-(defn get-contents [] (json->clj (.getContents quill)))
+(defn get-contents [] (json->clj (.getContents @instance)))
 (defn set-contents [contents]
-  (.setContents quill (clj->js contents)))
+  (.setContents @instance (clj->js contents)))
 
 (defn set-selection
-  ([] (.setSelection quill nil))
+  ([] (.setSelection @instance nil))
   ([index length]
-   (.setSelection quill index length)))
+   (.setSelection @instance index length)))
 
 (defn get-bounds [index length]
-  (js->clj (.getBounds quill index length)))
+  (js->clj (.getBounds @instance index length)))
 
 (defn scroll-by [x y]
-  (.scrollBy quill-editor x y))
+  (.scrollBy @instance-editor x y))
 
 (defn goto-substr
   [substr]

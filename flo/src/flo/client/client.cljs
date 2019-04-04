@@ -27,8 +27,9 @@
                       :search           nil
                       :content          nil}))
 
+(quill/new-instance)
 (defonce initial-content
-  (->> "console"
+  (->> "contents"
        (.getElementById js/document)
        (.-innerHTML)
        (read-string)))
