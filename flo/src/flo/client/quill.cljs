@@ -2,7 +2,7 @@
   (:require
     [flo.client.functions :refer [json->clj]]
     [clojure.string :as str]
-    [cljsjs/jquery]
+    [cljsjs.jquery]
     [cljsjs.quill]
     [quill-image-resize-module :as resize]))
 
