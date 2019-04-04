@@ -85,9 +85,7 @@
   ;; of resources i.e. resources/public
   (route/resources "/" {:root "public"})
   ;; NOTE: this will deliver your index.html
-  (GET "/" [] (-> (response/resource-response "index.html" {:root "public"})
-                  (response/content-type "text/html")))
-  (GET "/index.html" []
+  (GET "/" []
     {:status  200
      :headers {"Content-Type" "text/html"}
      :body    (html
