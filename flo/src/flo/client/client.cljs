@@ -112,14 +112,15 @@
   (if (:open? @chsk-state)
     (chsk-send! [:flo/save [file-id contents]])))
 
+(def last-save (atom nil))
 (defn detect-change []
   (let [content (quill/get-content)]
-    (locking last-contents
-      (when (= nil @quill/last-contents) (reset! quill/last-contents content))
-      (when (not= content @quill/last-contents)
+    (locking last-save
+      (when (nil? @last-save) (reset! last-save content))
+      (when (not= content @last-save)
         (println "contents changed, saving...")
         (save-contents content)
-        (reset! quill/last-contents content)))))
+        (reset! last-save content)))))
 
 (js/setInterval detect-change 1000)
 

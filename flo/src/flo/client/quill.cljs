@@ -38,8 +38,6 @@
   (reset! instance-editor
     (aget (.. (.getElementById js/document "editor") -children) 0)))
 
-(def last-contents (atom nil))
-
 (defn enable-edit [] (.enable @instance))
 (defn disable-edit [] (.disable @instance))
 
