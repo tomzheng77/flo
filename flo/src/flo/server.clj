@@ -4,7 +4,6 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
-
             [hiccup.core :refer [html]]
             [clojure.core.match :refer [match]]
             [clojure.pprint :refer [pprint]]
@@ -61,7 +60,7 @@
     (recur)))
 
 (add-watch
-  connected-uids "watch"
+  connected-uids :send-contents
   (fn [key ref old new]
     (let [added (set/difference (:any new) (:any old))]
       (doseq [uid added]
@@ -86,7 +85,8 @@
   ;; of resources i.e. resources/public
   (route/resources "/" {:root "public"})
   ;; NOTE: this will deliver your index.html
-  (GET "/" []
+  (GET "/" request
+    (println request)
     {:status  200
      :headers {"Content-Type" "text/html"}
      :session {:uid (.toString (UUID/randomUUID))}

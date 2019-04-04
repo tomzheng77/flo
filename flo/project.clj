@@ -40,7 +40,7 @@
                            ;; in the default browser once Figwheel has
                            ;; started and compiled your application.
                            ;; Comment this out once it no longer serves you.
-                           :open-urls ["http://localhost:3449/index.html"]}
+                           :open-urls ["http://localhost:3449/"]}
 
                 :compiler {:main flo.client
                            :asset-path "js/compiled/out"
