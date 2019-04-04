@@ -1,4 +1,4 @@
-(ns flo.macros)
+(ns flo.client.macros)
 
 (defmacro console-log
   [& args]

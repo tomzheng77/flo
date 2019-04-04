@@ -1,4 +1,4 @@
-(ns flo.client
+(ns flo.client.client
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [cljs.core.async.macros :refer [go]]

@@ -35,14 +35,14 @@
                 ;; The presence of a :figwheel configuration here
                 ;; will cause figwheel to inject the figwheel client
                 ;; into your build
-                :figwheel {:on-jsload "flo.client/on-js-reload"
+                :figwheel {:on-jsload "flo.client.client/on-js-reload"
                            ;; :open-urls will pop open your application
                            ;; in the default browser once Figwheel has
                            ;; started and compiled your application.
                            ;; Comment this out once it no longer serves you.
                            :open-urls ["http://localhost:3449/editor"]}
 
-                :compiler {:main flo.client
+                :compiler {:main flo.client.client
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/flo.js"
                            :output-dir "resources/public/js/compiled/out"
@@ -58,7 +58,7 @@
                {:id "min"
                 :source-paths ["src"]
                 :compiler {:output-to "resources/public/js/compiled/flo.js"
-                           :main flo.client
+                           :main flo.client.client
                            :optimizations :advanced
                            :pretty-print false
                            :npm-deps {:quill-image-resize-module "3.0.0"}
@@ -79,7 +79,7 @@
 
              ;; doesn't work for you just run your own server :) (see lein-ring)
 
-             :ring-handler flo.server/dev-app
+             :ring-handler flo.server.server/dev-app
 
              ;; To be able to open files in your editor from the heads up display
              ;; you will need to put a script on your path.

@@ -1,4 +1,4 @@
-(ns flo.quill
+(ns flo.client.quill
   (:require
     [cljsjs.quill]
     [flo.functions :refer [json->clj]]

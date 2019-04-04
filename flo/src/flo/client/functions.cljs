@@ -1,4 +1,4 @@
-(ns flo.functions)
+(ns flo.client.functions)
 
 (defn json->clj [x & opts]
   (apply js->clj (concat [(.parse js/JSON (.stringify js/JSON x))] opts)))
