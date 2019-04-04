@@ -27,6 +27,12 @@
                       :search           nil
                       :content          nil}))
 
+(defonce initial-content
+  (->> "console"
+       (.getElementById js/document)
+       (.-innerHTML)
+       (read-string)))
+
 (defn goto-search
   [search]
   (if (empty? search)
