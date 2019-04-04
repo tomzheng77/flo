@@ -55,6 +55,11 @@
   ([index length]
    (.setSelection @instance index length)))
 
+(defn set-selection-before []
+  (let [selection (.getSelection @instance)]
+    (when selection
+      (.setSelection @instance (.-index selection)))))
+
 (defn get-bounds [index length]
   (js->clj (.getBounds @instance index length)))
 

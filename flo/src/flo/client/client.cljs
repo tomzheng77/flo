@@ -97,7 +97,8 @@
         (quill/disable-edit))
     (do (swap! state #(-> % (assoc :search nil) (assoc :select 0)))
         (quill/enable-edit)
-        (quill/focus))))
+        (quill/focus)
+        (quill/set-selection-before))))
 
 (defn on-press-key
   [event]
@@ -108,7 +109,8 @@
   (when (= "Escape" (:code event))
     (swap! state #(-> % (assoc :search nil) (assoc :select 0)))
     (quill/enable-edit)
-    (quill/focus))
+    (quill/focus)
+    (quill/set-selection-before))
   (when (:search @state)
     (when (= "Tab" (:key event))
       (swap! state #(-> % (assoc :select (inc (:select %)))))
