@@ -85,7 +85,6 @@
 
 (add-watch state :auto-search
   (fn [_ _ old new]
-    (println new)
     (if (or (not= (:search old) (:search new))
             (not= (:select old) (:select new)))
       (if (:search new)
@@ -102,7 +101,6 @@
 
 (defn on-press-key
   [event]
-  (println event)
   (if (= "ShiftLeft" (:code event))
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))

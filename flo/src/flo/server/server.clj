@@ -20,12 +20,15 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [flo.server.store :refer [store]])
-  (:import (java.util UUID)))
+  (:import (java.util UUID)
+           (java.time LocalDateTime)
+           (java.time.format DateTimeFormatter)))
 
+(def formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss"))
 (defn on-chsk-receive [item]
   (match (:event item)
     [:flo/save [file-id contents]]
-    (do (println file-id contents)
+    (do (println (.format (LocalDateTime/now) formatter) "saving" file-id)
         (swap! store #(assoc % file-id contents)))
     :else nil))
 
