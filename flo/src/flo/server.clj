@@ -33,14 +33,9 @@
   (def chsk-send! send-fn)
   (def connected-uids connected-uids))
 
-(defn read-contents [] (read-string (slurp "contents.edn")))
-(defn write-contents
-  [contents]
-  (spit "contents.edn" (pr-str contents)))
-
 (def store (atom {}))
+(def store-dir (io/file "store"))
 
-(def store-dir "store")
 (let [files (.listFiles (io/file store-dir))]
   (reset! store {})
   (doseq [file files]
@@ -48,37 +43,28 @@
       (let [contents (read-string (slurp file))
             filename (.getName file)
             name (subs filename 0 (- (count filename) 4))]
-        (swap! contents #(assoc % name contents))))))
+        (swap! store #(assoc % name contents))))))
 
 ; this will start a thread which continuously writes
-; the latest version of contents
-(let [contents-last-write (atom [])
+; the latest version of the store
+(let [store-last-write (atom {})
       signals (chan)
       signal-count (atom 0)]
   ; whenever the value of contents changes, add a new signal
   ; the signal can be any value
-  (add-watch store :rewrite
-             (fn [_ _ _ _]
+  (add-watch store :save-store
+    (fn [_ _ _ _]
       (when (> 512 @signal-count)
         (swap! signal-count inc)
         (>!! signals 0))))
   (go-loop []
     (let [_ (<! signals)]
       (swap! signal-count dec)
-      (let [now-contents @store]
-        (when (not= now-contents @contents-last-write)
-          (write-contents now-contents)
-          (reset! contents-last-write now-contents))))
+      (let [now-store @store [_ changed _] (diff @store-last-write now-store)]
+        (doseq [[name contents] changed]
+          (spit (io/file store-dir (str name ".edn")) (pr-str contents)))
+        (reset! store-last-write now-store)))
     (recur)))
-
-(add-watch
-  connected-uids :send-contents
-  (fn [key ref old new]
-    (let [added (set/difference (:any new) (:any old))]
-      (doseq [uid added]
-        (when (not= ::sente/nil-uid uid)
-          (println "sending to" uid)
-          (chsk-send! uid [:flo/load @store]))))))
 
 (defn on-chsk-receive [item]
   (match (:event item)
