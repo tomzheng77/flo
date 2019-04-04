@@ -48,7 +48,7 @@
     (let [index (str/index-of text substr start-index)]
       (if-not index
         output
-        (loop (inc start-index) (conj output {:start index :length (count substr)}))))))
+        (recur (inc start-index) (conj output {:start index :length (count substr)}))))))
 
 (defn goto-search
   [search]
@@ -60,7 +60,7 @@
           (let [occur (concat (find-all text (str "[" s "]"))
                               (find-all text (str "[" s "=]"))
                               (find-all text (str "[" s)))
-                target (head occur)]
+                target (first occur)]
             (if-not target
               (recur (splice-last s))
               (quill/goto (:start target) (:length target)))))))))

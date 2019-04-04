@@ -31,10 +31,8 @@
    [{"align" []}]
    ["clean"]])
 
-(def jquery (js/jQuery))
-
 (defn new-instance []
-  (.remove (jquery ".ql-toolbar"))
+  (.remove (js/$ ".ql-toolbar"))
   (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}} "theme" "snow"})))
   (.on @instance "text-change"
     (fn [new-delta old-delta source]
