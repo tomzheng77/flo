@@ -55,7 +55,7 @@
   ([index length]
    (.setSelection @instance index length)))
 
-(defn set-selection-before []
+(defn set-cursor-at-selection []
   (let [selection (.getSelection @instance)]
     (when selection
       (.setSelection @instance (.-index selection)))))
