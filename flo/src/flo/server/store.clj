@@ -8,7 +8,8 @@
             [clojure.set :as set]
             [clojure.data :refer [diff]]
             [clojure.java.io :as io]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [taoensso.nippy :as nippy]))
 
 ; the API of this module
 ; keys should be strings, values should be serializable with pr-str
@@ -16,12 +17,13 @@
 (def store (atom {}))
 
 (def store-dir (io/file "store"))
+(def suffix ".nippy")
 
 (let [files (.listFiles (io/file store-dir))]
   (reset! store {})
   (doseq [file files]
-    (when (str/ends-with? (.getName file) ".edn")
-      (let [contents (read-string (slurp file))
+    (when (str/ends-with? (.getName file) suffix)
+      (let [contents (nippy/thaw-from-file file)
             filename (.getName file)
             name (subs filename 0 (- (count filename) 4))]
         (swap! store #(assoc % name contents))))))
@@ -43,6 +45,6 @@
       (swap! signal-count dec)
       (let [now-store @store [_ changed _] (diff @store-last-write now-store)]
         (doseq [[name contents] changed]
-          (spit (io/file store-dir (str name ".edn")) (pr-str contents)))
+          (nippy/freeze-to-file (io/file store-dir (str name suffix)) contents))
         (reset! store-last-write now-store)))
     (recur)))
