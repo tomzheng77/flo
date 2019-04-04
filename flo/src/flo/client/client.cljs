@@ -83,11 +83,10 @@
       (when (> 500 delta)
         (on-hit-shift)))))
 
-(when-not js/window.initialized
+; this initializer will be called once per document
+(defn initialize-once []
   (add-event-listener "keydown" on-press-key)
   (add-event-listener "keyup" on-release-key))
-
-(set! js/window.initialized true)
 
 (let [{:keys [chsk ch-recv send-fn state]} (sente/make-channel-socket! "/chsk" nil {:type :auto})]
   (def chsk chsk)
@@ -111,3 +110,5 @@
 (js/setInterval detect-change 1000)
 
 (defn on-js-reload [])
+(when-not js/window.initialized (initialize-once))
+(set! js/window.initialized true)
