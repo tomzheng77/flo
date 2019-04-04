@@ -51,25 +51,47 @@
         output
         (recur (inc start-index) (conj output {:start index :length (count substr)}))))))
 
-(defn goto-search
-  [search]
+(defn intersects [occur-a occur-b]
+  (let [start-a (:start occur-a)
+        start-b (:start occur-b)
+        end-a (+ start-a (:length occur-a))
+        end-b (+ start-b (:length occur-b))]
+    (not (or (<= end-b start-a)
+             (<= end-a start-b)))))
+
+(defn remove-dups [occurs]
+  (loop [seen [] remain occurs]
+    (if (empty? remain)
+      seen
+      (if (some #(intersects % (first remain)) seen)
+        (recur seen (next remain))
+        (recur (conj seen (first remain)) (next remain))))))
+
+(defn navigate [search select]
+  (println "navigate")
   (if (empty? search)
     (quill/set-selection)
     (let [text (quill/get-text)]
       (loop [s search]
         (if (not-empty s)
-          (let [occur (concat (find-all text (str "[" s "]"))
-                              (find-all text (str "[" s "=]"))
-                              (find-all text (str "[" s)))
-                target (first occur)]
+          (let [occur      (concat (find-all text (str "[" s "]"))
+                                   (find-all text (str "[" s "=]"))
+                                   (find-all text (str "[" s)))
+                occur-uniq (remove-dups occur)
+                target     (and (not-empty occur-uniq)
+                                (nth occur-uniq (mod select (count occur-uniq))))]
+            (println occur-uniq)
             (if-not target
               (recur (splice-last s))
               (quill/goto (:start target) (:length target)))))))))
 
 (add-watch state :auto-search
-  (fn [_ _ _ {:keys [search]}]
-    (println "search changed to" search)
-    (when search (goto-search search))))
+  (fn [_ _ old new]
+    (println new)
+    (if (or (not= (:search old) (:search new))
+            (not= (:select old) (:select new)))
+      (if (:search new)
+        (navigate (:search new) (:select new 0))))))
 
 (defn on-hit-shift []
   (if-not (= "" (:search @state))
@@ -82,16 +104,22 @@
 
 (defn on-press-key
   [event]
+  (println event)
   (if (= "ShiftLeft" (:code event))
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))
   (when (:search @state)
-    (if (= "Backspace" (:key event))
+    (when (= "Tab" (:key event))
+      (println "perform swap")
+      (swap! state #(-> % (assoc :select (inc (:select %)))))
+      ((:stop-propagation event))
+      ((:prevent-default event)))
+    (when (= "Backspace" (:key event))
       (swap! state #(-> % (assoc :search (splice-last (:search %)))
                           (assoc :select 0))))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
-      (swap! state #(-> % (assoc % :search (str (:search %) (str/upper-case (:key event))))
-                          (assoc % :select 0))))))
+      (swap! state #(-> % (assoc :search (str (:search %) (str/upper-case (:key event))))
+                          (assoc :select 0))))))
 
 (defn on-release-key
   [event]
