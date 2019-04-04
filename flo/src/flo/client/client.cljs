@@ -57,7 +57,6 @@
     (println "search changed to" search)
     (when search (goto-search search))))
 
-; when the user presses and releases the left shift key in quick succession
 (defn on-hit-shift []
   (if-not (= "" (:search @state))
     (do (swap! state #(assoc % :search ""))
@@ -89,28 +88,15 @@
 
 (set! js/window.initialized true)
 
-; called once received any items from chsk
-(defn on-chsk-receive [item]
-  (match (:event item)
-    [:chsk/recv [:flo/load contents]] (quill/set-content contents)
-    :else nil))
-
-; initialize the socket connection
-(def chsk-state (atom {:open? false}))
 (let [{:keys [chsk ch-recv send-fn state]} (sente/make-channel-socket! "/chsk" nil {:type :auto})]
   (def chsk chsk)
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
-  (def chsk-state state)
-  (go-loop []
-    (let [item (<! ch-chsk)]
-      (on-chsk-receive item))
-    (recur)))
+  (def chsk-state state))
 
-; sends a message to the server via socket to save the contents
-(defn save-contents [contents]
+(defn save-content [content]
   (if (:open? @chsk-state)
-    (chsk-send! [:flo/save [file-id contents]])))
+    (chsk-send! [:flo/save [file-id content]])))
 
 (def last-save (atom nil))
 (defn detect-change []
@@ -118,8 +104,7 @@
     (locking last-save
       (when (nil? @last-save) (reset! last-save content))
       (when (not= content @last-save)
-        (println "contents changed, saving...")
-        (save-contents content)
+        (save-content content)
         (reset! last-save content)))))
 
 (js/setInterval detect-change 1000)
