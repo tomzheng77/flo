@@ -49,11 +49,11 @@
     (let [index (str/index-of text substr start-index)]
       (if-not index
         output
-        (recur (inc start-index) (conj output {:start index :length (count substr)}))))))
+        (recur (inc start-index) (conj output {:index index :length (count substr)}))))))
 
 (defn intersects [occur-a occur-b]
-  (let [start-a (:start occur-a)
-        start-b (:start occur-b)
+  (let [start-a (:index occur-a)
+        start-b (:index occur-b)
         end-a (+ start-a (:length occur-a))
         end-b (+ start-b (:length occur-b))]
     (not (or (<= end-b start-a)
@@ -81,7 +81,7 @@
                                 (nth occur-uniq (mod select (count occur-uniq))))]
             (if-not target
               (recur (splice-last s))
-              (quill/goto (:start target) (:length target)))))))))
+              (quill/goto (:index target) (:length target)))))))))
 
 (add-watch state :auto-search
   (fn [_ _ old new]
