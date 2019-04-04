@@ -29,7 +29,7 @@
          :content          nil}))
 
 (defonce configuration
-  (->> "contents"
+  (->> "init"
        (.getElementById js/document)
        (.-innerHTML)
        (read-string)))
@@ -37,6 +37,7 @@
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 (quill/new-instance)
+(quill/set-content initial-content)
 
 (println "file:" file-id)
 (println "initial content:" initial-content)
@@ -91,7 +92,7 @@
 ; called once received any items from chsk
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:chsk/recv [:flo/load contents]] (quill/set-contents contents)
+    [:chsk/recv [:flo/load contents]] (quill/set-content contents)
     :else nil))
 
 ; initialize the socket connection
@@ -114,13 +115,13 @@
     (chsk-send! [:flo/save [file-id contents]])))
 
 (defn detect-change []
-  (let [contents (quill/get-contents)]
+  (let [content (quill/get-content)]
     (locking last-contents
-      (when (= nil @quill/last-contents) (reset! quill/last-contents contents))
-      (when (not= contents @quill/last-contents)
+      (when (= nil @quill/last-contents) (reset! quill/last-contents content))
+      (when (not= content @quill/last-contents)
         (println "contents changed, saving...")
-        (save-contents contents)
-        (reset! quill/last-contents contents)))))
+        (save-contents content)
+        (reset! quill/last-contents content)))))
 
 (js/setInterval detect-change 1000)
 

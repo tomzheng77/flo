@@ -9,7 +9,7 @@
   (.compose old-delta new-delta))
 
 ; read-only atom containing the contents displayed in quill
-(def contents (atom {}))
+(def content (atom {}))
 
 (def instance (atom nil))
 (def instance-editor (atom nil))
@@ -34,7 +34,7 @@
   (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}} "theme" "snow"})))
   (.on @instance "text-change"
     (fn [new-delta old-delta source]
-      (reset! contents (json->clj (compose-delta old-delta new-delta)))))
+      (reset! content (json->clj (compose-delta old-delta new-delta)))))
   (reset! instance-editor
     (aget (.. (.getElementById js/document "editor") -children) 0)))
 
@@ -45,8 +45,8 @@
 
 (defn get-text [] (.getText @instance))
 
-(defn get-contents [] (json->clj (.getContents @instance)))
-(defn set-contents [contents]
+(defn get-content [] (json->clj (.getContents @instance)))
+(defn set-content [contents]
   (.setContents @instance (clj->js contents)))
 
 (defn set-selection

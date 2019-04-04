@@ -67,7 +67,7 @@
                     [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
                     [:title "FloNote"]]
                    [:body
-                    [:pre#contents {:style "display: none"} (pr-str {:file-id file-id :content content})]
+                    [:pre#init {:style "display: none"} (pr-str {:file-id file-id :content content})]
                     [:div#editor {:style "height: 500px"}]
                     [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
