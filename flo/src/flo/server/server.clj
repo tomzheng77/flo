@@ -38,7 +38,9 @@
 
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/save [file-id contents]] (swap! store #(assoc % file-id contents))
+    [:flo/save [file-id contents]]
+      (do (println file-id contents)
+          (swap! store #(assoc % file-id contents)))
     :else nil))
 
 (defonce start-loop

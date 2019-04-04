@@ -27,6 +27,7 @@
 (defonce state
   (atom {:last-shift-press nil
          :search           nil
+         :select           nil
          :content          nil}))
 
 (defonce configuration
@@ -72,9 +73,11 @@
 
 (defn on-hit-shift []
   (if-not (= "" (:search @state))
-    (do (swap! state #(assoc % :search ""))
+    (do (swap! state #(-> % (assoc :search "")
+                            (assoc :select 0)))
         (quill/disable-edit))
-    (do (swap! state #(assoc % :search nil))
+    (do (swap! state #(-> % (assoc :search nil)
+                            (assoc :select 0)))
         (quill/enable-edit))))
 
 (defn on-press-key
@@ -84,9 +87,11 @@
     (swap! state #(assoc % :last-shift-press nil)))
   (when (:search @state)
     (if (= "Backspace" (:key event))
-      (swap! state #(assoc % :search (splice-last (:search %)))))
+      (swap! state #(-> % (assoc :search (splice-last (:search %)))
+                          (assoc :select 0))))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
-      (swap! state #(assoc % :search (str (:search %) (str/upper-case (:key event))))))))
+      (swap! state #(-> % (assoc % :search (str (:search %) (str/upper-case (:key event))))
+                          (assoc % :select 0))))))
 
 (defn on-release-key
   [event]
