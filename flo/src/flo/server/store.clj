@@ -10,7 +10,11 @@
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
+; the API of this module
+; keys should be strings, values should be serializable with pr-str
+; it will be read upon startup, writes are automatic
 (def store (atom {}))
+
 (def store-dir (io/file "store"))
 
 (let [files (.listFiles (io/file store-dir))]
@@ -30,10 +34,10 @@
   ; whenever the value of contents changes, add a new signal
   ; the signal can be any value
   (add-watch store :save-store
-             (fn [_ _ _ _]
-               (when (> 512 @signal-count)
-                 (swap! signal-count inc)
-                 (>!! signals 0))))
+    (fn [_ _ _ _]
+      (when (> 512 @signal-count)
+        (swap! signal-count inc)
+        (>!! signals 0))))
   (go-loop []
     (let [_ (<! signals)]
       (swap! signal-count dec)
