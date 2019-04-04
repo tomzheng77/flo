@@ -22,28 +22,23 @@
             [flo.server.store :refer [store]])
   (:import (java.util UUID)))
 
-(let [{:keys [ch-recv
-              send-fn
-              connected-uids
+(defn on-chsk-receive [item]
+  (match (:event item)
+    [:flo/save [file-id contents]]
+    (do (println file-id contents)
+        (swap! store #(assoc % file-id contents)))
+    :else nil))
+
+(let [{:keys [ch-recv send-fn connected-uids
               ajax-post-fn
               ajax-get-or-ws-handshake-fn]}
-
       (sente/make-channel-socket! (get-sch-adapter) {:csrf-token-fn nil})]
 
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
-  (def connected-uids connected-uids))
-
-(defn on-chsk-receive [item]
-  (match (:event item)
-    [:flo/save [file-id contents]]
-      (do (println file-id contents)
-          (swap! store #(assoc % file-id contents)))
-    :else nil))
-
-(defonce start-loop
+  (def connected-uids connected-uids)
   (go-loop []
     (let [item (<! ch-chsk)]
       (on-chsk-receive item))
