@@ -1,7 +1,7 @@
 (ns flo.client.quill
   (:require
     [cljsjs.quill]
-    [flo.functions :refer [json->clj]]
+    [flo.client.functions :refer [json->clj]]
     [clojure.string :as str]
     [quill-image-resize-module :as resize]))
 

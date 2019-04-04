@@ -2,10 +2,10 @@
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [cljs.core.async.macros :refer [go]]
-    [flo.macros :refer [console-log]])
+    [flo.client.macros :refer [console-log]])
   (:require
-    [flo.functions :refer [json->clj current-time-millis splice-last add-event-listener]]
-    [flo.quill :as quill]
+    [flo.client.functions :refer [json->clj current-time-millis splice-last add-event-listener]]
+    [flo.client.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
@@ -85,21 +85,17 @@
 
 ; initialize the socket connection
 (def chsk-state (atom {:open? false}))
-(go (let [csrf-token (-> (<! (http/get "/login"))
-                         (:body)
-                         (read-string)
-                         (:csrf-token))]
-
-      (let [{:keys [chsk ch-recv send-fn state]}
-            (sente/make-channel-socket! "/chsk" nil {:type :auto})]
-        (def chsk chsk)
-        (def ch-chsk ch-recv)
-        (def chsk-send! send-fn)
-        (def chsk-state state)
-        (go-loop []
-          (let [item (<! ch-chsk)]
-            (on-chsk-receive item))
-          (recur)))))
+(go (let [csrf-token nil]
+    (let [{:keys [chsk ch-recv send-fn state]}
+          (sente/make-channel-socket! "/chsk" nil {:type :auto})]
+      (def chsk chsk)
+      (def ch-chsk ch-recv)
+      (def chsk-send! send-fn)
+      (def chsk-state state)
+      (go-loop []
+        (let [item (<! ch-chsk)]
+          (on-chsk-receive item))
+        (recur)))))
 
 ; sends a message to the server via socket to save the contents
 (defn save-contents [contents]
