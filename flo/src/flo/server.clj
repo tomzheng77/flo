@@ -14,7 +14,9 @@
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.anti-forgery :as anti-forgery :refer [wrap-anti-forgery]]
             [clojure.core.async :as async :refer [chan <! <!! >! >!! put! chan go go-loop]]
-            [clojure.set :as set])
+            [clojure.set :as set]
+            [clojure.java.io :as io]
+            [clojure.string :as str])
   (:import (java.util UUID)))
 
 (let [{:keys [ch-recv
@@ -36,7 +38,17 @@
   [contents]
   (spit "contents.edn" (pr-str contents)))
 
-(def contents (atom (read-contents)))
+(def store (atom {}))
+
+(def store-dir "store")
+(let [files (.listFiles (io/file store-dir))]
+  (reset! store {})
+  (doseq [file files]
+    (when (str/ends-with? (.getName file) ".edn")
+      (let [contents (read-string (slurp file))
+            filename (.getName file)
+            name (subs filename 0 (- (count filename) 4))]
+        (swap! contents #(assoc % name contents))))))
 
 ; this will start a thread which continuously writes
 ; the latest version of contents
@@ -45,15 +57,15 @@
       signal-count (atom 0)]
   ; whenever the value of contents changes, add a new signal
   ; the signal can be any value
-  (add-watch contents :rewrite
-    (fn [_ _ _ _]
+  (add-watch store :rewrite
+             (fn [_ _ _ _]
       (when (> 512 @signal-count)
         (swap! signal-count inc)
         (>!! signals 0))))
   (go-loop []
     (let [_ (<! signals)]
       (swap! signal-count dec)
-      (let [now-contents @contents]
+      (let [now-contents @store]
         (when (not= now-contents @contents-last-write)
           (write-contents now-contents)
           (reset! contents-last-write now-contents))))
@@ -66,11 +78,11 @@
       (doseq [uid added]
         (when (not= ::sente/nil-uid uid)
           (println "sending to" uid)
-          (chsk-send! uid [:flo/load @contents]))))))
+          (chsk-send! uid [:flo/load @store]))))))
 
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/save c] (reset! contents c)
+    [:flo/save c] (reset! store c)
     :else nil))
 
 (defonce start-loop
@@ -85,23 +97,25 @@
   ;; of resources i.e. resources/public
   (route/resources "/" {:root "public"})
   ;; NOTE: this will deliver your index.html
-  (GET "/" request
-    (println request)
-    {:status  200
-     :headers {"Content-Type" "text/html"}
-     :session {:uid (.toString (UUID/randomUUID))}
-     :body    (html
-                "<!DOCTYPE html>\n"
-                [:html {:lang "en"}
-                 [:head
-                  [:meta {:charset "UTF-8"}]
-                  [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-                  [:link {:rel "icon" :href "https://clojurescript.org/images/cljs-logo-icon-32.png"}]
-                  [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
-                  [:title "FloNote"]]
-                 [:body
-                  [:div#editor {:style "height: 500px"}]
-                  [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])})
+  (GET "/editor" request
+    (let [file (get (:query-params request) "file" "default")
+          data (get @store file {})]
+      {:status  200
+       :headers {"Content-Type" "text/html"}
+       :session {:uid (.toString (UUID/randomUUID))}
+       :body    (html
+                  "<!DOCTYPE html>\n"
+                  [:html {:lang "en"}
+                   [:head
+                    [:meta {:charset "UTF-8"}]
+                    [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
+                    [:link {:rel "icon" :href "https://clojurescript.org/images/cljs-logo-icon-32.png"}]
+                    [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
+                    [:title "FloNote"]]
+                   [:body
+                    [:pre#contents {:style "visibility: hidden"} (pr-str data)]
+                    [:div#editor {:style "height: 500px"}]
+                    [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post req))
   (route/not-found "Not Found"))
