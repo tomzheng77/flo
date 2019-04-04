@@ -19,6 +19,7 @@
 (def store-dir (io/file "store"))
 (def suffix ".nippy")
 
+(.mkdirs store-dir)
 (let [files (.listFiles (io/file store-dir))]
   (reset! store {})
   (doseq [file files]
