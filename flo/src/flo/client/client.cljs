@@ -13,6 +13,7 @@
     [cljs.core.async :as async :refer [<! >! put! chan]]
     [taoensso.sente :as sente :refer [cb-success?]]
     [clojure.string :as str]
+    [cljsjs/jquery]
     [cljsjs.quill]
     [quill-image-resize-module]))
 
@@ -48,9 +49,9 @@
     (quill/set-selection)
       (loop [s search]
         (or (>= 0 (count s))
-            (quill/goto-substr (str "[" s "]"))
-            (quill/goto-substr (str "[" s "=]"))
-            (quill/goto-substr (str "[" s))
+            (quill/find-and-goto (str "[" s "]"))
+            (quill/find-and-goto (str "[" s "=]"))
+            (quill/find-and-goto (str "[" s))
             (recur (splice-last s))))))
 
 (add-watch state :auto-search

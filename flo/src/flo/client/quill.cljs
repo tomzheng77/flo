@@ -1,8 +1,9 @@
 (ns flo.client.quill
   (:require
-    [cljsjs.quill]
     [flo.client.functions :refer [json->clj]]
     [clojure.string :as str]
+    [cljsjs/jquery]
+    [cljsjs.quill]
     [quill-image-resize-module :as resize]))
 
 (defn compose-delta [old-delta new-delta]
@@ -30,7 +31,10 @@
    [{"align" []}]
    ["clean"]])
 
+(def jquery (js/jQuery))
+
 (defn new-instance []
+  (.remove (jquery ".ql-toolbar"))
   (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}} "theme" "snow"})))
   (.on @instance "text-change"
     (fn [new-delta old-delta source]
@@ -58,12 +62,13 @@
 (defn scroll-by [x y]
   (.scrollBy @instance-editor x y))
 
-(defn goto-substr
+(defn goto [index length]
+  (set-selection index length)
+  (let [bounds (get-bounds index length)]
+    (scroll-by (get bounds "left")
+               (get bounds "top"))))
+
+(defn find-and-goto
   [substr]
   (let [index (str/index-of (get-text) substr) length (count substr)]
-    (when index
-      (set-selection index length)
-      (let [bounds (get-bounds index length)]
-        (scroll-by (get bounds "left")
-                   (get bounds "top")))
-      index)))
+    (when index (goto index length) index)))
