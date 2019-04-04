@@ -42,6 +42,7 @@
 
 (defn enable-edit [] (.enable @instance))
 (defn disable-edit [] (.disable @instance))
+(defn focus [] (.focus @instance))
 
 (defn get-text [] (.getText @instance))
 

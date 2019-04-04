@@ -12,7 +12,5 @@
   (println "adding event listener for" type)
   (js/document.body.addEventListener type
     (fn [event]
-      (let [clj-event {:code (. event -code) :key (. event -key)
-                       :stop-propagation (. event -stopPropagation)
-                       :prevent-default (. event -preventDefault)}]
+      (let [clj-event {:code (. event -code) :key (. event -key) :original event}]
         (listener clj-event)))))

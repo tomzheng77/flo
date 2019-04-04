@@ -68,7 +68,6 @@
         (recur (conj seen (first remain)) (next remain))))))
 
 (defn navigate [search select]
-  (println "navigate")
   (if (empty? search)
     (quill/set-selection)
     (let [text (quill/get-text)]
@@ -80,7 +79,6 @@
                 occur-uniq (remove-dups occur)
                 target     (and (not-empty occur-uniq)
                                 (nth occur-uniq (mod select (count occur-uniq))))]
-            (println occur-uniq)
             (if-not target
               (recur (splice-last s))
               (quill/goto (:start target) (:length target)))))))))
@@ -95,12 +93,11 @@
 
 (defn on-hit-shift []
   (if-not (= "" (:search @state))
-    (do (swap! state #(-> % (assoc :search "")
-                            (assoc :select 0)))
+    (do (swap! state #(-> % (assoc :search "") (assoc :select 0)))
         (quill/disable-edit))
-    (do (swap! state #(-> % (assoc :search nil)
-                            (assoc :select 0)))
-        (quill/enable-edit))))
+    (do (swap! state #(-> % (assoc :search nil) (assoc :select 0)))
+        (quill/enable-edit)
+        (quill/focus))))
 
 (defn on-press-key
   [event]
@@ -108,12 +105,14 @@
   (if (= "ShiftLeft" (:code event))
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))
+  (when (= "Escape" (:code event))
+    (swap! state #(-> % (assoc :search nil) (assoc :select 0)))
+    (quill/enable-edit)
+    (quill/focus))
   (when (:search @state)
     (when (= "Tab" (:key event))
-      (println "perform swap")
       (swap! state #(-> % (assoc :select (inc (:select %)))))
-      ((:stop-propagation event))
-      ((:prevent-default event)))
+      (.preventDefault (:original event)))
     (when (= "Backspace" (:key event))
       (swap! state #(-> % (assoc :search (splice-last (:search %)))
                           (assoc :select 0))))
