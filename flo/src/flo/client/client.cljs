@@ -61,7 +61,8 @@
                               (find-all text (str "[" s "=]"))
                               (find-all text (str "[" s)))
                 target (head occur)]
-            (when target
+            (if-not target
+              (recur (splice-last s))
               (quill/goto (:start target) (:length target)))))))))
 
 (add-watch state :auto-search
