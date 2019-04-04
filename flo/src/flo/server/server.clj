@@ -4,7 +4,7 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
-            [hiccup.core :refer [html]]
+            [hiccup.page :refer [html5]]
             [clojure.core.match :refer [match]]
             [clojure.pprint :refer [pprint]]
             [taoensso.sente :as sente]
@@ -58,8 +58,7 @@
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session {:uid (.toString (UUID/randomUUID))}
-       :body    (html
-                  "<!DOCTYPE html>\n"
+       :body    (html5
                   [:html {:lang "en"}
                    [:head
                     [:meta {:charset "UTF-8"}]
