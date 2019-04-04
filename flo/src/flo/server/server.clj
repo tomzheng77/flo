@@ -5,6 +5,7 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
             [hiccup.page :refer [html5]]
+            [garden.core :refer [css]]
             [clojure.core.match :refer [match]]
             [clojure.pprint :refer [pprint]]
             [taoensso.sente :as sente]
@@ -50,6 +51,17 @@
   (route/resources "/" {:root "public"})
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post req))
+  (GET "/style.css" []
+    {:status  200
+     :headers {"Content-Type" "text/css"}
+     :body (css [:body {:margin "0"
+                        :display "flex"
+                        :flex-direction "column"
+                        :justify-content "center"}]
+                [:html :body {:height "100%"}]
+                [:.ql-toolbar {:flex-shrink "0"}]
+                [:.ql-container {:height "auto"}]
+                [:#editor {:flex-grow "1"}])})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get @store file-id {})]
@@ -63,10 +75,11 @@
                     [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
                     [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
                     [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
+                    [:link {:href "style.css" :rel "stylesheet"}]
                     [:title "FloNote"]]
-                   [:body {:style "margin: 0"}
+                   [:body
                     [:pre#init {:style "display: none"} (pr-str {:file-id file-id :content content})]
-                    [:div#editor {:style "height: 500px"}]
+                    [:div#editor]
                     [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
   (route/not-found "Not Found"))
 
