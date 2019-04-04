@@ -15,3 +15,5 @@ pom.xml
 /.rebel_readline_history
 /.idea
 /*.iml
+/tmp
+/node_modules
