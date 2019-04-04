@@ -63,7 +63,7 @@
                    [:head
                     [:meta {:charset "UTF-8"}]
                     [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-                    [:link {:rel "icon" :href "https://clojurescript.org/images/cljs-logo-icon-32.png"}]
+                    [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
                     [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
                     [:title "FloNote"]]
                    [:body
