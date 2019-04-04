@@ -97,17 +97,15 @@
 
 ; initialize the socket connection
 (def chsk-state (atom {:open? false}))
-(go (let [csrf-token nil]
-    (let [{:keys [chsk ch-recv send-fn state]}
-          (sente/make-channel-socket! "/chsk" nil {:type :auto})]
-      (def chsk chsk)
-      (def ch-chsk ch-recv)
-      (def chsk-send! send-fn)
-      (def chsk-state state)
-      (go-loop []
-        (let [item (<! ch-chsk)]
-          (on-chsk-receive item))
-        (recur)))))
+(let [{:keys [chsk ch-recv send-fn state]} (sente/make-channel-socket! "/chsk" nil {:type :auto})]
+  (def chsk chsk)
+  (def ch-chsk ch-recv)
+  (def chsk-send! send-fn)
+  (def chsk-state state)
+  (go-loop []
+    (let [item (<! ch-chsk)]
+      (on-chsk-receive item))
+    (recur)))
 
 ; sends a message to the server via socket to save the contents
 (defn save-contents [contents]
