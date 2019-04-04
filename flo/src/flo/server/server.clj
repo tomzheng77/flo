@@ -46,12 +46,10 @@
       (on-chsk-receive item))
     (recur)))
 
-(defroutes
-  app-routes
-  ;; NOTE: this will deliver all of your assets from the public directory
-  ;; of resources i.e. resources/public
+(defroutes app-routes
   (route/resources "/" {:root "public"})
-  ;; NOTE: this will deliver your index.html
+  (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
+  (POST "/chsk" req (ring-ajax-post req))
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get @store file-id {})]
@@ -70,8 +68,6 @@
                     [:pre#init {:style "display: none"} (pr-str {:file-id file-id :content content})]
                     [:div#editor {:style "height: 500px"}]
                     [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
-  (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
-  (POST "/chsk" req (ring-ajax-post req))
   (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel
