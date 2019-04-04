@@ -15,6 +15,7 @@
                  [cljsjs/react-dom "16.8.3-0"]
                  [cljsjs/quill "1.3.6-0"]
                  [cljsjs/jquery "3.2.1-0"]
+                 [clj-commons/cljss "1.6.4"]
                  [sablono "0.8.5"]
                  [com.taoensso/sente "1.14.0-RC2"]
                  [ring "1.7.1"]
@@ -22,7 +23,8 @@
                  [compojure "1.6.1"]
                  [cljs-http "0.1.46"]
                  [org.clojure/core.match "0.3.0-alpha5"]
-                 [hiccup "1.0.5"]]
+                 [hiccup "1.0.5"]
+                 [garden "1.3.6"]]
 
   :plugins [[lein-figwheel "0.5.19-SNAPSHOT"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]

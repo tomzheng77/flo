@@ -64,7 +64,7 @@
                     [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
                     [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
                     [:title "FloNote"]]
-                   [:body
+                   [:body {:style "margin: 0"}
                     [:pre#init {:style "display: none"} (pr-str {:file-id file-id :content content})]
                     [:div#editor {:style "height: 500px"}]
                     [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
