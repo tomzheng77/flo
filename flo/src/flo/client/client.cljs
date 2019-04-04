@@ -49,6 +49,7 @@
       (loop [s search]
         (or (>= 0 (count s))
             (quill/goto-substr (str "[" s "]"))
+            (quill/goto-substr (str "[" s "=]"))
             (quill/goto-substr (str "[" s))
             (recur (splice-last s))))))
 
