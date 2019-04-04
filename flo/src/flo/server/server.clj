@@ -37,7 +37,7 @@
 
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/save name contents] (swap! store #(assoc % name contents))
+    [:flo/save [file-id contents]] (swap! store #(assoc % file-id contents))
     :else nil))
 
 (defonce start-loop
@@ -53,8 +53,8 @@
   (route/resources "/" {:root "public"})
   ;; NOTE: this will deliver your index.html
   (GET "/editor" request
-    (let [file (get (:query-params request) "file" "default")
-          data (get @store file {})]
+    (let [file-id (get (:query-params request) "id" "default")
+          content (get @store file-id {})]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session {:uid (.toString (UUID/randomUUID))}
@@ -67,7 +67,7 @@
                     [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
                     [:title "FloNote"]]
                    [:body
-                    [:pre#contents {:style "display: none"} (pr-str data)]
+                    [:pre#contents {:style "display: none"} (pr-str {:file-id file-id :content content})]
                     [:div#editor {:style "height: 500px"}]
                     [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))

@@ -23,16 +23,23 @@
    :search           "AA"                                   ; the active label being searched, nil means no search
    :content          {}})                                   ; the current contents of the editor
 
-(defonce state (atom {:last-shift-press nil
-                      :search           nil
-                      :content          nil}))
+(defonce state
+  (atom {:last-shift-press nil
+         :search           nil
+         :content          nil}))
 
-(quill/new-instance)
-(defonce initial-content
+(defonce configuration
   (->> "contents"
        (.getElementById js/document)
        (.-innerHTML)
        (read-string)))
+
+(def file-id (:file-id configuration))
+(def initial-content (:content configuration))
+(quill/new-instance)
+
+(println "file:" file-id)
+(println "initial content:" initial-content)
 
 (defn goto-search
   [search]
@@ -48,10 +55,6 @@
   (fn [_ _ _ {:keys [search]}]
     (println "search changed to" search)
     (when search (goto-search search))))
-
-(add-watch quill/contents :quill-contents
-  (fn [_ _ _ new]
-    (println new)))
 
 ; when the user presses and releases the left shift key in quick succession
 (defn on-hit-shift []
@@ -108,7 +111,7 @@
 ; sends a message to the server via socket to save the contents
 (defn save-contents [contents]
   (if (:open? @chsk-state)
-    (chsk-send! [:flo/save contents])))
+    (chsk-send! [:flo/save [file-id contents]])))
 
 (defn detect-change []
   (let [contents (quill/get-contents)]
