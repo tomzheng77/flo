@@ -43,16 +43,26 @@
 (println "file:" file-id)
 (println "initial content:" initial-content)
 
+(defn find-all [text substr]
+  (loop [start-index 0 output []]
+    (let [index (str/index-of text substr start-index)]
+      (if-not index
+        output
+        (loop (inc start-index) (conj output {:start index :length (count substr)}))))))
+
 (defn goto-search
   [search]
   (if (empty? search)
     (quill/set-selection)
+    (let [text (quill/get-text)]
       (loop [s search]
-        (or (>= 0 (count s))
-            (quill/find-and-goto (str "[" s "]"))
-            (quill/find-and-goto (str "[" s "=]"))
-            (quill/find-and-goto (str "[" s))
-            (recur (splice-last s))))))
+        (if (not-empty s)
+          (let [occur (concat (find-all text (str "[" s "]"))
+                              (find-all text (str "[" s "=]"))
+                              (find-all text (str "[" s)))
+                target (head occur)]
+            (when target
+              (quill/goto (:start target) (:length target)))))))))
 
 (add-watch state :auto-search
   (fn [_ _ _ {:keys [search]}]
