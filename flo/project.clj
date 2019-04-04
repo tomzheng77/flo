@@ -14,6 +14,7 @@
                  [cljsjs/react "16.8.3-0"]
                  [cljsjs/react-dom "16.8.3-0"]
                  [cljsjs/quill "1.3.6-0"]
+                 [cljsjs/jquery "3.2.1-0"]
                  [sablono "0.8.5"]
                  [com.taoensso/sente "1.14.0-RC2"]
                  [ring "1.7.1"]
