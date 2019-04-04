@@ -65,8 +65,9 @@
   (fn [key ref old new]
     (let [added (set/difference (:any new) (:any old))]
       (doseq [uid added]
-        (println "sending to" uid)
-        (chsk-send! uid [:flo/load @contents])))))
+        (when (not= ::sente/nil-uid uid)
+          (println "sending to" uid)
+          (chsk-send! uid [:flo/load @contents]))))))
 
 (defn on-chsk-receive [item]
   (match (:event item)
