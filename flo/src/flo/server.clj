@@ -88,6 +88,7 @@
   (GET "/" []
     {:status  200
      :headers {"Content-Type" "text/html"}
+     :session {:uid (.toString (UUID/randomUUID))}
      :body    (html
                 "<!DOCTYPE html>\n"
                 [:html {:lang "en"}
@@ -100,12 +101,6 @@
                  [:body
                   [:div#editor {:style "height: 500px"}]
                   [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])})
-  (GET "/login" req
-    (let [csrf-token (force anti-forgery/*anti-forgery-token*)]
-      {:status  200
-       :headers {"Content-Type" "text/plain"}
-       :body    (pr-str {:csrf-token csrf-token})
-       :session {:uid (.toString (UUID/randomUUID))}}))
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post req))
   (route/not-found "Not Found"))
