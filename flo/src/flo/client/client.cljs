@@ -13,6 +13,7 @@
     [cljs.core.async :as async :refer [<! >! put! chan]]
     [taoensso.sente :as sente :refer [cb-success?]]
     [clojure.string :as str]
+    [cljsjs.quill]
     [quill-image-resize-module]))
 
 (enable-console-print!)
