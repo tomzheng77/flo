@@ -107,7 +107,6 @@
                     [:div#editor]
                     [:div#status]
                     [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
-                    [:script {:src "js/flo.js" :type "text/javascript"}]
                     [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
   (route/not-found "Not Found"))
 
