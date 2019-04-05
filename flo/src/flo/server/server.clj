@@ -20,7 +20,8 @@
             [clojure.data :refer [diff]]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [flo.server.store :refer [store]])
+            [flo.server.store :refer [store]]
+            [org.httpkit.server :as ks])
   (:import (java.util UUID)
            (java.time LocalDateTime)
            (java.time.format DateTimeFormatter)))
@@ -116,3 +117,6 @@
       (wrap-reload)
       (wrap-keyword-params)
       (wrap-params)))
+
+(defn -main [& args]
+  (ks/run-server dev-app {:port 3450}))
