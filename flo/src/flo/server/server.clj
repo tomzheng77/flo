@@ -49,6 +49,11 @@
       (on-chsk-receive item))
     (recur)))
 
+(defn indent-styles [initial step]
+  [[:li {:padding-left (str initial "em") :list-style "none"}]
+   (for [i (range 1 9)]
+     [(str ".ql-indent-" i) {:padding-left (str (+ initial (* step i)) "em")}])])
+
 (defroutes app-routes
   (route/resources "/" {:root "public"})
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
@@ -68,15 +73,7 @@
                  [:.ql-editor
                   [:ol :ul {:padding-left "0"}
                    [:li:before {:content "'-'"}]
-                   [:li {:padding-left "1em" :list-style "none"}]
-                   [:.ql-indent-1 {:padding-left "3em"}]
-                   [:.ql-indent-2 {:padding-left "5em"}]
-                   [:.ql-indent-3 {:padding-left "7em"}]
-                   [:.ql-indent-4 {:padding-left "9em"}]
-                   [:.ql-indent-5 {:padding-left "11em"}]
-                   [:.ql-indent-6 {:padding-left "13em"}]
-                   [:.ql-indent-7 {:padding-left "15em"}]
-                   [:.ql-indent-8 {:padding-left "17em"}]]]]
+                   (indent-styles 1 2)]]]
 
                 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
                 [:#status {:height "40px"
