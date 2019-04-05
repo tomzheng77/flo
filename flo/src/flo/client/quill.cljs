@@ -31,13 +31,21 @@
    [{"align" []}]
    ["clean"]])
 
+(defn highlight-tags []
+  (let [text (get-text)]
+    (doseq [match (find-all text #"\[[A-Z0-9]+=?\]")]
+      (println match)
+      (.formatText @instance (:start match) (:length match) (clj->js {"bold" true "color" "#3DA1D2"}))
+      (.formatText @instance (:end match) 1 (clj->js {"bold" false "color" nil})))))
+
 (defn new-instance []
   (.remove (js/$ ".ql-toolbar"))
-  (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}
-                                                                "syntax" true} "theme" "snow"})))
+  (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {} "syntax" true} "theme" "snow"})))
   (.on @instance "text-change"
     (fn [new-delta old-delta source]
-      (reset! content (json->clj (compose-delta old-delta new-delta)))))
+      (reset! content (json->clj (compose-delta old-delta new-delta)))
+      (if (= "user" source)
+        (highlight-tags))))
   (reset! instance-editor
     (aget (.. (.getElementById js/document "editor") -children) 0)))
 
@@ -72,12 +80,6 @@
   (let [bounds (get-bounds index length)]
     (scroll-by (get bounds "left")
                (get bounds "top"))))
-
-(defn highlight-tags []
-  (let [text (get-text)]
-    (doseq [match (find-all text #"\[[A-Z0-9]+=?\]*")]
-      (.formatText @instance (:start match) (- (:length match) 1)
-                   (clj->js {"bold" true "color" "#3DA1D2"})))))
 
 (defn find-and-goto
   [substr]

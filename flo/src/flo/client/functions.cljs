@@ -18,7 +18,7 @@
 
 ; https://stackoverflow.com/questions/18735665/how-can-i-get-the-positions-of-regex-matches-in-clojurescript
 (defn re-pos [re s]
-  (let [re (js/RegExp. (.-source re) "g")]
+  (let [re (js/RegExp. (.-source re) "gms")]
     (loop [res {}]
       (if-let [m (.exec re s)]
         (recur (assoc res (.-index m) (first m)))
