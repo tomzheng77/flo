@@ -31,6 +31,7 @@
 
 (timbre/merge-config!
   {:level      :debug
+   :hostname_  "local"
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
 (defn on-chsk-receive [item]
