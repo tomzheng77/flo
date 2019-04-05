@@ -1,6 +1,6 @@
 (ns flo.client.quill
   (:require
-    [flo.client.functions :refer [json->clj]]
+    [flo.client.functions :refer [json->clj find-all]]
     [clojure.string :as str]
     [cljsjs.jquery]
     [cljsjs.quill]
@@ -72,6 +72,16 @@
   (let [bounds (get-bounds index length)]
     (scroll-by (get bounds "left")
                (get bounds "top"))))
+
+;quill.formatText(0, 5, {
+;  'bold': false,
+;  'color': 'rgb(0, 0, 255)'
+;});
+(defn bold-tags []
+  (let [text (get-text)]
+    (doseq [match (find-all text #"\[[A-Z0-9]+=?\]")]
+      (.formatText @instance (:start match) (:length match)
+                   (clj->js {"bold" true "color" "#3DA1D2"})))))
 
 (defn find-and-goto
   [substr]

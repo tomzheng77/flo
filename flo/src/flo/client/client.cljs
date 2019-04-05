@@ -4,7 +4,7 @@
     [cljs.core.async.macros :refer [go]]
     [flo.client.macros :refer [console-log]])
   (:require
-    [flo.client.functions :refer [json->clj current-time-millis splice-last add-event-listener]]
+    [flo.client.functions :refer [json->clj current-time-millis splice-last add-event-listener find-all]]
     [flo.client.quill :as quill]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -46,13 +46,6 @@
 
 (println "file:" file-id)
 (println "initial content:" initial-content)
-
-(defn find-all [text substr]
-  (loop [start-index 0 output []]
-    (let [index (str/index-of text substr start-index)]
-      (if-not index
-        output
-        (recur (inc start-index) (conj output {:index index :length (count substr)}))))))
 
 (defn intersects [occur-a occur-b]
   (let [start-a (:index occur-a)
@@ -152,6 +145,7 @@
 
 (def last-save (atom nil))
 (defn detect-change []
+  (quill/bold-tags)
   (let [content (quill/get-content)]
     (locking last-save
       (when (nil? @last-save) (reset! last-save content))
