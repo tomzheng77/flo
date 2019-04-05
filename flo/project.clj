@@ -34,6 +34,9 @@
   :uberjar-name "flo.jar"
   :main ^:skip-aot flo.server.server
 
+  ; https://github.com/technomancy/leiningen/issues/2166
+  :auto-clean false
+
   :source-paths ["src"]
 
   :cljsbuild {:builds
