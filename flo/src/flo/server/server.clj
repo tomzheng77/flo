@@ -22,16 +22,21 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [flo.server.store :refer [store]]
-            [org.httpkit.server :as ks])
+            [org.httpkit.server :as ks]
+            [taoensso.timbre :as timbre :refer [trace debug info error]]
+            [taoensso.timbre.appenders.core :as appenders])
   (:import (java.util UUID)
            (java.time LocalDateTime)
            (java.time.format DateTimeFormatter)))
 
-(def formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss"))
+(timbre/merge-config!
+  {:level      :trace
+   :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
+
 (defn on-chsk-receive [item]
   (match (:event item)
     [:flo/save [file-id contents]]
-    (do (println (.format (LocalDateTime/now) formatter) "saving" file-id)
+    (do (debug "saving" file-id)
         (swap! store #(assoc % file-id contents)))
     :else nil))
 

@@ -9,7 +9,8 @@
             [clojure.data :refer [diff]]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [taoensso.nippy :as nippy]))
+            [taoensso.nippy :as nippy]
+            [taoensso.timbre :as timbre :refer [trace debug info error]]))
 
 ; the API of this module
 ; keys should be strings, values should be serializable with pr-str
@@ -27,7 +28,7 @@
       (let [contents (nippy/thaw-from-file file)
             filename (.getName file)
             name (subs filename 0 (- (count filename) (count suffix)))]
-        (println "loading" name "from store")
+        (debug "loading" name "from store")
         (swap! store #(assoc % name contents))))))
 
 ; this will start a thread which continuously writes
@@ -49,6 +50,6 @@
         (doseq [[name contents] changed]
           (let [file (io/file store-dir (str name suffix))]
             (nippy/freeze-to-file file contents)
-            (println "written" name "to store, len = " (.length file))))
+            (debug "written" name "to store, len = " (.length file))))
         (reset! store-last-write now-store)))
     (recur)))
