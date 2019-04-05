@@ -31,24 +31,6 @@
    [{"align" []}]
    ["clean"]])
 
-(defn highlight-tags []
-  (let [text (get-text)]
-    (doseq [match (find-all text #"\[[A-Z0-9]+=?\]")]
-      (println match)
-      (.formatText @instance (:start match) (:length match) (clj->js {"bold" true "color" "#3DA1D2"}))
-      (.formatText @instance (:end match) 1 (clj->js {"bold" false "color" nil})))))
-
-(defn new-instance []
-  (.remove (js/$ ".ql-toolbar"))
-  (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {} "syntax" true} "theme" "snow"})))
-  (.on @instance "text-change"
-    (fn [new-delta old-delta source]
-      (reset! content (json->clj (compose-delta old-delta new-delta)))
-      (if (= "user" source)
-        (highlight-tags))))
-  (reset! instance-editor
-    (aget (.. (.getElementById js/document "editor") -children) 0)))
-
 (defn enable-edit [] (.enable @instance))
 (defn disable-edit [] (.disable @instance))
 (defn focus [] (.focus @instance))
@@ -85,3 +67,18 @@
   [substr]
   (let [index (str/index-of (get-text) substr) length (count substr)]
     (when index (goto index length) index)))
+
+(defn highlight-tags []
+  (let [text (get-text)]
+    (doseq [match (find-all text #"\[[A-Z0-9]+=?\]")]
+      (.formatText @instance (:start match) (:length match) (clj->js {"bold" true "color" "#3DA1D2"}))
+      (.formatText @instance (:end match) 1 (clj->js {"bold" false "color" nil})))))
+
+(defn new-instance []
+  (.remove (js/$ ".ql-toolbar"))
+  (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {} "syntax" true} "theme" "snow"})))
+  (.on @instance "text-change"
+       (fn [new-delta old-delta source]
+         (reset! content (json->clj (compose-delta old-delta new-delta)))))
+  (reset! instance-editor
+          (aget (.. (.getElementById js/document "editor") -children) 0)))

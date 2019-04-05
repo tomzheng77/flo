@@ -117,7 +117,10 @@
                           (assoc :select 0))))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
       (swap! state #(-> % (assoc :search (str (:search %) (str/upper-case (:key event))))
-                          (assoc :select 0))))))
+                          (assoc :select 0)))))
+  (when (and (:ctrl-key event) (= "h" (:key event)))
+    (quill/highlight-tags)
+    (.preventDefault (:original event))))
 
 (defn on-release-key
   [event]

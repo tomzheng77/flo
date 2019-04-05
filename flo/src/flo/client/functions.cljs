@@ -13,7 +13,11 @@
   (println "adding event listener for" type)
   (js/document.body.addEventListener type
     (fn [event]
-      (let [clj-event {:code (. event -code) :key (. event -key) :original event}]
+      (let [clj-event {:code (. event -code)
+                       :key (. event -key)
+                       :ctrl-key (. event -ctrlKey)
+                       :shift-key (. event -shiftKey)
+                       :original event}]
         (listener clj-event)))))
 
 ; https://stackoverflow.com/questions/18735665/how-can-i-get-the-positions-of-regex-matches-in-clojurescript
