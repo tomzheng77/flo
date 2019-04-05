@@ -1,4 +1,5 @@
 (ns flo.server.server
+  (:gen-class)
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.reload :refer [wrap-reload]]
