@@ -33,7 +33,8 @@
 
 (defn new-instance []
   (.remove (js/$ ".ql-toolbar"))
-  (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}} "theme" "snow"})))
+  (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {}
+                                                                "syntax" true} "theme" "snow"})))
   (.on @instance "text-change"
     (fn [new-delta old-delta source]
       (reset! content (json->clj (compose-delta old-delta new-delta)))))

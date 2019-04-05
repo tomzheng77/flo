@@ -89,11 +89,13 @@
                     [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
                     [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
                     [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
+                    [:link {:href "css/highlight/monokai-sublime.css" :rel "stylesheet"}]
                     [:link {:href "style.css" :rel "stylesheet"}]
                     [:title "FloNote"]]
                    [:body
                     [:pre#init {:style "display: none"} (pr-str {:file-id file-id :content content})]
                     [:div#editor]
+                    [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
                     [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
   (route/not-found "Not Found"))
 
