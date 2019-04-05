@@ -37,6 +37,8 @@
        (.-innerHTML)
        (read-string)))
 
+(def status-bar (.getElementById js/document "status"))
+
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 (quill/new-instance)
@@ -86,10 +88,13 @@
 
 (add-watch state :auto-search
   (fn [_ _ old new]
+    (set! (.-innerHTML status-bar) (str "Search: " (pr-str (:search new))))
     (if (or (not= (:search old) (:search new))
             (not= (:select old) (:select new)))
       (if (:search new)
         (navigate (:search new) (:select new 0))))))
+
+(reset! state @state)
 
 (defn on-hit-shift []
   (if-not (= "" (:search @state))

@@ -63,7 +63,8 @@
                 [:html :body {:height "100%"}]
                 [:.ql-toolbar {:flex-shrink "0"}]
                 [:.ql-container {:height "auto"}]
-                [:#editor {:flex-grow "1"}
+                [:#editor {:flex-grow "1" :flex-shrink "1" :display "block"
+                           :border-bottom "none"}
                  [:.ql-editor
                   [:ol :ul {:padding-left "0"}
                    [:li:before {:content "'-'"}]
@@ -75,7 +76,17 @@
                    [:.ql-indent-5 {:padding-left "11em"}]
                    [:.ql-indent-6 {:padding-left "13em"}]
                    [:.ql-indent-7 {:padding-left "15em"}]
-                   [:.ql-indent-8 {:padding-left "17em"}]]]])})
+                   [:.ql-indent-8 {:padding-left "17em"}]]]]
+
+                ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
+                [:#status {:height "40px"
+                           :background-color "#3DA1D2"
+                           :line-height "40px"
+                           :color "#FFF"
+                           :font-family "Monospace"
+                           :text-indent "10px"
+                           :flex-grow "0"
+                           :flex-shrink "0"}])})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get @store file-id {})]
@@ -95,6 +106,7 @@
                    [:body
                     [:pre#init {:style "display: none"} (pr-str {:file-id file-id :content content})]
                     [:div#editor]
+                    [:div#status]
                     [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
                     [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
   (route/not-found "Not Found"))
