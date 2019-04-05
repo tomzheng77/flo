@@ -1,6 +1,7 @@
 (ns flo.client.quill
   (:require
     [flo.client.functions :refer [json->clj find-all]]
+    [clojure.data :refer [diff]]
     [clojure.string :as str]
     [cljsjs.jquery]
     [cljsjs.quill]
@@ -68,11 +69,20 @@
   (let [index (str/index-of (get-text) substr) length (count substr)]
     (when index (goto index length) index)))
 
+(defn format-changed [old-format new-format]
+  (let [[old new same] (diff old-format new-format)]
+    (some (fn [[k v]] (or (some? v) (and old (old k)))) new)))
+
+(defn format-text [start length format]
+  (let [old-format (js->clj (.getFormat @instance start length))]
+    (when (format-changed old-format format)
+      (.formatText @instance start length (clj->js format)))))
+
 (defn highlight-tags []
   (let [text (get-text)]
     (doseq [match (find-all text #"\[[A-Z0-9]+=?\]")]
-      (.formatText @instance (:start match) (:length match) (clj->js {"bold" true "color" "#3DA1D2"}))
-      (.formatText @instance (:end match) 1 (clj->js {"bold" false "color" nil})))))
+      (format-text (:start match) (:length match) {"bold" true "color" "#3da1d2"})
+      (format-text (:end match) 1 {"bold" nil "color" nil}))))
 
 (defn new-instance []
   (.remove (js/$ ".ql-toolbar"))
