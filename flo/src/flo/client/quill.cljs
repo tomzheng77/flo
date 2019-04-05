@@ -78,7 +78,7 @@
   (.remove (js/$ ".ql-toolbar"))
   (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {} "syntax" true} "theme" "snow"})))
   (.on @instance "text-change"
-       (fn [new-delta old-delta source]
-         (reset! content (json->clj (compose-delta old-delta new-delta)))))
+    (fn [new-delta old-delta source]
+      (reset! content (json->clj (compose-delta old-delta new-delta)))))
   (reset! instance-editor
           (aget (.. (.getElementById js/document "editor") -children) 0)))
