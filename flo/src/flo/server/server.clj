@@ -30,7 +30,7 @@
            (java.time.format DateTimeFormatter)))
 
 (timbre/merge-config!
-  {:level      :trace
+  {:level      :debug
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
 (defn on-chsk-receive [item]
