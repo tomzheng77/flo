@@ -63,7 +63,19 @@
                 [:html :body {:height "100%"}]
                 [:.ql-toolbar {:flex-shrink "0"}]
                 [:.ql-container {:height "auto"}]
-                [:#editor {:flex-grow "1"}])})
+                [:#editor {:flex-grow "1"}
+                 [:.ql-editor
+                  [:ol :ul {:padding-left "0"}
+                   [:li:before {:content "'-'"}]
+                   [:li {:padding-left "1em" :list-style "none"}]
+                   [:.ql-indent-1 {:padding-left "3em"}]
+                   [:.ql-indent-2 {:padding-left "5em"}]
+                   [:.ql-indent-3 {:padding-left "7em"}]
+                   [:.ql-indent-4 {:padding-left "9em"}]
+                   [:.ql-indent-5 {:padding-left "11em"}]
+                   [:.ql-indent-6 {:padding-left "13em"}]
+                   [:.ql-indent-7 {:padding-left "15em"}]
+                   [:.ql-indent-8 {:padding-left "17em"}]]]])})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get @store file-id {})]
