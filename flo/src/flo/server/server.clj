@@ -10,6 +10,7 @@
             [clojure.pprint :refer [pprint]]
             [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit :refer [get-sch-adapter]]
+            [taoensso.sente.packers.transit :as transit]
             [org.httpkit.server :as ks]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :refer [wrap-params]]
@@ -35,7 +36,8 @@
 (let [{:keys [ch-recv send-fn connected-uids
               ajax-post-fn
               ajax-get-or-ws-handshake-fn]}
-      (sente/make-channel-socket! (get-sch-adapter) {:csrf-token-fn nil})]
+      (sente/make-channel-socket! (get-sch-adapter)
+        {:csrf-token-fn nil :packer (transit/get-transit-packer)})]
 
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)

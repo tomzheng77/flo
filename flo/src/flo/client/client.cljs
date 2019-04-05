@@ -12,6 +12,7 @@
     [cljs-http.client :as http]
     [cljs.core.async :as async :refer [<! >! put! chan]]
     [taoensso.sente :as sente :refer [cb-success?]]
+    [taoensso.sente.packers.transit :as transit]
     [clojure.string :as str]
     [cljsjs.jquery]
     [cljsjs.quill]
@@ -132,7 +133,9 @@
   (add-event-listener "keydown" on-press-key)
   (add-event-listener "keyup" on-release-key))
 
-(let [{:keys [chsk ch-recv send-fn state]} (sente/make-channel-socket! "/chsk" nil {:type :auto})]
+(let [{:keys [chsk ch-recv send-fn state]}
+      (sente/make-channel-socket! "/chsk" nil
+        {:type :auto :packer (transit/get-transit-packer)})]
   (def chsk chsk)
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
