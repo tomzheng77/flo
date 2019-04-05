@@ -47,7 +47,8 @@
       (swap! signal-count dec)
       (let [now-store @store [_ changed _] (diff @store-last-write now-store)]
         (doseq [[name contents] changed]
-          (println "writing" name "to store")
-          (nippy/freeze-to-file (io/file store-dir (str name suffix)) contents))
+          (let [file (io/file store-dir (str name suffix))]
+            (nippy/freeze-to-file file contents)
+            (println "written" name "to store, len = " (.length file))))
         (reset! store-last-write now-store)))
     (recur)))
