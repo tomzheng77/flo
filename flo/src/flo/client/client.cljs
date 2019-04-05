@@ -145,7 +145,7 @@
 
 (def last-save (atom nil))
 (defn detect-change []
-  (quill/bold-tags)
+  (quill/highlight-tags)
   (let [content (quill/get-content)]
     (locking last-save
       (when (nil? @last-save) (reset! last-save content))

@@ -73,14 +73,10 @@
     (scroll-by (get bounds "left")
                (get bounds "top"))))
 
-;quill.formatText(0, 5, {
-;  'bold': false,
-;  'color': 'rgb(0, 0, 255)'
-;});
-(defn bold-tags []
+(defn highlight-tags []
   (let [text (get-text)]
-    (doseq [match (find-all text #"\[[A-Z0-9]+=?\]")]
-      (.formatText @instance (:start match) (:length match)
+    (doseq [match (find-all text #"\[[A-Z0-9]+=?\]*")]
+      (.formatText @instance (:start match) (- (:length match) 1)
                    (clj->js {"bold" true "color" "#3DA1D2"})))))
 
 (defn find-and-goto
