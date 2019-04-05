@@ -46,10 +46,11 @@
   (go-loop []
     (let [_ (<! signals)]
       (swap! signal-count dec)
-      (let [now-store @store [_ changed _] (diff @store-last-write now-store)]
-        (doseq [[name contents] changed]
-          (let [file (io/file store-dir (str name suffix))]
-            (nippy/freeze-to-file file contents)
-            (debug "written" name "to store, len =" (.length file))))
+      (let [now-store @store]
+        (doseq [[name content] now-store]
+          (when-not (= content (@store-last-write name))
+            (let [file (io/file store-dir (str name suffix))]
+              (nippy/freeze-to-file file content)
+              (debug "written" name "to store, len =" (.length file)))))
         (reset! store-last-write now-store)))
     (recur)))
