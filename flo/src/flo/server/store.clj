@@ -26,7 +26,8 @@
     (when (str/ends-with? (.getName file) suffix)
       (let [contents (nippy/thaw-from-file file)
             filename (.getName file)
-            name (subs filename 0 (- (count filename) 4))]
+            name (subs filename 0 (- (count filename) (count suffix)))]
+        (println "loading" name "from store")
         (swap! store #(assoc % name contents))))))
 
 ; this will start a thread which continuously writes
