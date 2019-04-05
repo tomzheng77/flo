@@ -50,6 +50,6 @@
         (doseq [[name contents] changed]
           (let [file (io/file store-dir (str name suffix))]
             (nippy/freeze-to-file file contents)
-            (debug "written" name "to store, len = " (.length file))))
+            (debug "written" name "to store, len =" (.length file))))
         (reset! store-last-write now-store)))
     (recur)))
