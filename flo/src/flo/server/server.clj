@@ -30,8 +30,8 @@
            (java.time.format DateTimeFormatter)))
 
 (timbre/merge-config!
-  {:level      :debug
-   :hostname_  "local"
+  {:hostname_  "local"
+   :level      :debug
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
 (defn on-chsk-receive [item]
