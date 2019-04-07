@@ -21,23 +21,27 @@
     #(conj % {:name name :time time})))
 
 (defn handle-request [edn]
-  (when (= :add-note (:type edn))
+  (case (:type edn)
+    :add-note
     (let [note (:note edn)]
       (assert (string? note))
-      (add-note note)))
-  (when (= :add-verification (:type edn))
+      (add-note note))
+
+    :add-verification
     (locking verifications
       (let [name (:name edn)
             time (:time edn)]
         (assert (string? name))
         (assert (not-any? #(= name (:name %)) @verifications))
         (assert (instance? LocalDateTime time))
-        (add-verification name time))))
-  (when (= :verify (:type edn))
+        (add-verification name time)))
+
+    :verify
     (locking verifications
       (let [name (:name edn)]
-        (swap! verifications (fn [vs] (filter #(not= name (:name %)) vs))))))
-  (when (= :status (:type edn))
+        (swap! verifications (fn [vs] (filter #(not= name (:name %)) vs)))))
+
+    :status
     (locking verifications
       (if (not-empty @verifications)
         {:verifications @verifications}
