@@ -59,8 +59,12 @@
           (reset! notes [])
           (reset! verifications []))))))
 
+(def stop-fn (atom nil))
 (defn run []
-  (start-http-server c/orbit-port handle-request)
+  (locking stop-fn
+    (if @stop-fn (@stop-fn))
+    (->> (start-http-server c/orbit-port handle-request)
+         (reset! stop-fn)))
   (info "started HTTP server")
   (let [timer (new Timer)]
     (.schedule timer (proxy [TimerTask] [] (run [] (check-verifications))) 0 1000)))
