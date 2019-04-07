@@ -13,10 +13,11 @@
       (fn [request]
         (let [body (c/decrypt (slurp (.bytes (:body request)) :encoding "UTF-8"))]
           (locking lock
-            (try (let [edn (read-string body)]
+            (try (let [edn (read-string body)
+                       out (handler edn)]
                    {:status  200
                     :headers {"Content-Type" "text/plain"}
-                    :body    (c/encrypt (pr-str (handler edn)))})
+                    :body    (c/encrypt (pr-str out))})
                  (catch Throwable e
                    {:status  400
                     :headers {"Content-Type" "text/plain"}
