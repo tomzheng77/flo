@@ -3,7 +3,8 @@
             [limiter.constants :as c]
             [java-time-literals.core]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
-            [taoensso.timbre.appenders.core :as appenders])
+            [taoensso.timbre.appenders.core :as appenders]
+            [clojure.core.match :refer [match]])
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
 
@@ -25,7 +26,7 @@
 
 (defn handle-request [edn]
   (info "received request" edn)
-  (case (:type edn)
+  (match (:type edn)
     :add-note
     (let [note (:note edn)]
       (assert (string? note))
