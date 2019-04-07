@@ -1,7 +1,9 @@
 (ns limiter.orbit
   (:require [limiter.http :refer [start-http-server]]
             [limiter.constants :as c]
-            [java-time-literals.core])
+            [java-time-literals.core]
+            [taoensso.timbre :as timbre :refer [trace debug info error]]
+            [taoensso.timbre.appenders.core :as appenders])
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
 
