@@ -1,6 +1,7 @@
 (ns limiter.orbit
   (:require [limiter.http :refer [start-http-server]]
-            [limiter.constants :as c])
+            [limiter.constants :as c]
+            [java-time-literals.core])
   (:import (java.time LocalDateTime)
            (java.util Timer TimerTask)))
 
@@ -50,7 +51,7 @@
 (defn check-verifications []
   (locking verifications
     (let [time (LocalDateTime/now)]
-      (let [overdue (filter #(.isBefore time (:time %)) @verifications)]
+      (let [overdue (filter #(.isBefore (:time %) time) @verifications)]
         (when (not-empty overdue)
           (reset! notes [])
           (reset! verifications []))))))
