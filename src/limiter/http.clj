@@ -8,7 +8,7 @@
   "starts a generic HTTP server at the given port using the provided handler
   the handler takes in the request EDN and returns a response map"
   [port handler]
-  (let [lock (new Object)]
+  (let [lock (atom {})]
     (ks/run-server
       (fn [request]
         (let [body (c/decrypt (slurp (.bytes (:body request)) :encoding "UTF-8"))]
