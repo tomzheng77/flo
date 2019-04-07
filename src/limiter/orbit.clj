@@ -60,5 +60,6 @@
 
 (defn run []
   (start-http-server c/orbit-port handle-request)
+  (info "started HTTP server")
   (let [timer (new Timer)]
     (.schedule timer (proxy [TimerTask] [] (run [] (check-verifications))) 0 1000)))
