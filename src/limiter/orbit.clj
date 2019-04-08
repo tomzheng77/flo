@@ -31,7 +31,7 @@
     (let [note (:note edn)]
       (assert (string? note))
       (let [new-notes (add-note note)]
-        (if (not-empty verifications)
+        (if (not-empty @verifications)
           nil
           new-notes)))
 
