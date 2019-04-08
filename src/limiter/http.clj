@@ -11,11 +11,9 @@
   (let [lock (atom {})]
     (ks/run-server
       (fn [request]
-        (let [body (c/decrypt (slurp (.bytes (:body request)) :encoding "UTF-8"))]
-          (locking lock
-            {:status  200
-             :headers {"Content-Type" "text/plain"}
-             :body    "nope"})))
+        {:status  200
+         :headers {"Content-Type" "text/plain"}
+         :body    "nope"})
       {:port port})))
 
 (defn unwrap [connection]
