@@ -13,7 +13,7 @@
       (fn [request]
         {:status  200
          :headers {"Content-Type" "text/plain"}
-         :body    "nope"})
+         :body    (c/encrypt "hello")})
       {:port port})))
 
 (defn unwrap [connection]
