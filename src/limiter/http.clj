@@ -8,13 +8,12 @@
   "starts a generic HTTP server at the given port using the provided handler
   the handler takes in the request EDN and returns a response map"
   [port handler]
-  (let [lock (atom {})]
-    (ks/run-server
-      (fn [request]
-        {:status  200
-         :headers {"Content-Type" "text/plain"}
-         :body    (c/encrypt "hello")})
-      {:port port})))
+  (ks/run-server
+    (fn [request]
+      {:status  200
+       :headers {"Content-Type" "text/plain"}
+       :body    (c/encrypt "hello")})
+    {:port port}))
 
 (defn unwrap [connection]
   (let [response @connection]
