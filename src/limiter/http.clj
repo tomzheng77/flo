@@ -11,35 +11,34 @@
   (let [lock (atom {})]
     (ks/run-server
       (fn [request]
-        (let [body (c/decrypt (slurp (.bytes (:body request)) :encoding "UTF-8"))]
-          (locking lock
-            (try (let [edn (read-string body)
-                       out (handler edn)
-                       encrypted (c/encrypt (pr-str out))]
-                   {:status  200
-                    :headers {"Content-Type" "text/plain"}
-                    :body    encrypted})
-                 (catch Throwable e
-                   {:status  400
-                    :headers {"Content-Type" "text/plain"}
-                    :body    (c/encrypt (pr-str {:error (.getMessage e)
-                                                 :stack (map str (.getStackTrace e))}))})))))
+        (locking lock
+          (try (let [edn (c/decrypt (.bytes (:body request)))
+                     out (handler edn)
+                     encrypted (c/encrypt (pr-str out))]
+                 {:status  200
+                  :headers {"Content-Type" "text/plain"}
+                  :body    encrypted})
+               (catch Throwable e
+                 {:status  400
+                  :headers {"Content-Type" "text/plain"}
+                  :body    (c/encrypt (pr-str {:error (.getMessage e)
+                                               :stack (map str (.getStackTrace e))}))}))))
       {:port port})))
 
 (defn unwrap [connection]
   (let [response @connection]
     (if (:body response)
-      (read-string (c/decrypt (:body response)))
+      (c/decrypt (:body response))
       response)))
 
 (defn send-server
   [edn]
   (let [path (str "http://127.0.0.1:" c/server-port)]
     (unwrap
-      (kc/post path {:body (c/encrypt (pr-str edn))}))))
+      (kc/post path {:body (c/encrypt edn)}))))
 
 (defn send-orbit
   [edn]
   (let [path (str "http://" c/orbit-address ":" c/orbit-port)]
     (unwrap
-      (kc/post path {:body (c/encrypt (pr-str edn))}))))
+      (kc/post path {:body (c/encrypt edn)}))))

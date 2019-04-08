@@ -1,7 +1,7 @@
 (ns limiter.constants
   (:require [clojure.string :as str]
             [clojure.set :refer [union]]
-            [lock-key.core :as lock])
+            [taoensso.nippy :as nippy])
   (:import (java.io File)
            (java.util.regex Pattern)
            (java.nio.charset Charset)))
@@ -9,7 +9,6 @@
 (def encoding "UTF-8")
 (def charset (Charset/forName encoding))
 
-(def secret-key "z&YwCvso;>MTt0ll&lfL)h^mps{]*Q{+")
 (def file-separator (File/separator))
 (def path-separator (File/pathSeparator))
 
@@ -36,5 +35,6 @@
 (def primary-log (str home "/limiter.log"))
 (def primary-edn (str home "/limiter.edn"))
 
-(defn encrypt [string] (lock/encrypt-as-base64 string secret-key))
-(defn decrypt [base64] (lock/decrypt-from-base64 base64 secret-key))
+(def password "z&YwCvso;>MTt0ll&lfL)h^mps{]*Q{+")
+(defn encrypt [edn] (nippy/freeze edn {:password [:salted password]}))
+(defn decrypt [bytes] (nippy/thaw bytes {:password [:salted password]}))
