@@ -13,17 +13,12 @@
       (fn [request]
         (let [body (c/decrypt (slurp (.bytes (:body request)) :encoding "UTF-8"))]
           (locking lock
-            (try (let [edn (read-string body)
-                       out (handler edn)
-                       encrypted (c/encrypt (pr-str out))]
-                   {:status  200
-                    :headers {"Content-Type" "text/plain"}
-                    :body    encrypted})
-                 (catch Throwable e
-                   {:status  400
-                    :headers {"Content-Type" "text/plain"}
-                    :body    (c/encrypt (pr-str {:error (.getMessage e)
-                                                 :stack (map str (.getStackTrace e))}))})))))
+            (let [edn (read-string body)
+                  out (handler edn)
+                  encrypted (c/encrypt (pr-str out))]
+              {:status  200
+               :headers {"Content-Type" "text/plain"}
+               :body    encrypted}))))
       {:port port})))
 
 (defn unwrap [connection]
