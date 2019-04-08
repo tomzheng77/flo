@@ -18,6 +18,7 @@
                  [cheshire "5.8.1"]
                  [java-time-literals "2018-04-06"]
                  [org.javassist/javassist "3.24.1-GA"]
+                 [com.taoensso/nippy "2.14.0"]
                  [com.taoensso/encore "2.108.1"]
                  [com.taoensso/timbre "4.10.0"]
                  [com.taoensso/sente "1.14.0-RC2"]
