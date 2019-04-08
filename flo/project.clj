@@ -79,6 +79,7 @@
                            :optimizations :advanced
                            :pretty-print false
                            :npm-deps {:quill-image-resize-module "3.0.0"}
+                           :externs ["externs.js"]
                            :install-deps true}}]}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"

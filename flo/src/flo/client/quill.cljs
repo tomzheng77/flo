@@ -91,4 +91,4 @@
     (fn [new-delta old-delta source]
       (reset! content (json->clj (compose-delta old-delta new-delta)))))
   (reset! instance-editor
-          (aget (.. (.getElementById js/document "editor") -children) 0)))
+    (aget (.. (.getElementById js/document "editor") -children) 0)))
