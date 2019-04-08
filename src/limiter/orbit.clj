@@ -30,7 +30,7 @@
     :add-note
     (let [note (:note edn)]
       (assert (string? note))
-      (add-note note))
+      (add-note note) nil)
 
     :add-verification
     (locking verifications
