@@ -13,12 +13,9 @@
       (fn [request]
         (let [body (c/decrypt (slurp (.bytes (:body request)) :encoding "UTF-8"))]
           (locking lock
-            (let [edn (read-string body)
-                  out (handler edn)
-                  encrypted (c/encrypt (pr-str out))]
-              {:status  200
-               :headers {"Content-Type" "text/plain"}
-               :body    encrypted}))))
+            {:status  200
+             :headers {"Content-Type" "text/plain"}
+             :body    "nope"})))
       {:port port})))
 
 (defn unwrap [connection]
