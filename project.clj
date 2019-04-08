@@ -10,7 +10,6 @@
                  [org.apache.commons/commons-lang3 "3.8.1"]
                  [org.apache.commons/commons-exec "1.3"]
                  [commons-io/commons-io "2.6"]
-                 [lock-key "1.5.0"]
                  [clj-time "0.15.0"]
                  [ring "1.7.0"]
                  [compojure "1.6.1"]
