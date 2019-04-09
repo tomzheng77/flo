@@ -35,9 +35,9 @@
   (s/call "chown" (str user ":" user) (canonical-path file))
   (s/call "chmod" perm (canonical-path file)))
 
-(defn- user-755 [file] (ch file c/user "755"))
-(defn- root-755 [file] (ch file "root" "755"))
-(defn- root-700 [file] (ch file "root" "700"))
+(defn user-755 [file] (ch file c/user "755"))
+(defn root-755 [file] (ch file "root" "755"))
+(defn root-700 [file] (ch file "root" "700"))
 
 (defn remove-wheel [] (change-groups #(disj % "wheel")))
 (defn add-wheel [] (change-groups #(conj % "wheel")))
