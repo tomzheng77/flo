@@ -125,6 +125,7 @@
     (let [name (:name edn)]
       (assert (string? name))
       (let [dir (io/file c/user-projects name)]
+        (assert (not (.exists dir)))
         (.mkdirs dir)
         (user-755 dir))))
 
