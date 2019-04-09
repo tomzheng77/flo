@@ -127,7 +127,7 @@
       (let [dir (io/file c/user-projects name)]
         (assert (not (.exists dir)))
         (.mkdirs dir)
-        (user-755 dir))))
+        (user-755 dir)))
 
     :new-program
     (let [path (:path edn)
@@ -141,7 +141,7 @@
         (Files/createSymbolicLink
           (.toPath link)
           (.toPath program)
-          (make-array FileAttribute 0)))
+          (make-array FileAttribute 0))))
 
     :restart-proxy
     (future (proxy/start-server))
