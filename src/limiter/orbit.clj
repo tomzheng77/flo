@@ -25,7 +25,7 @@
     #(conj % {:name name :time time})))
 
 (defn handle-request [edn]
-  (info "received request" edn)
+  (info "received request, type = " (:type edn))
   (match (:type edn)
     :add-note
     (let [note (:note edn)]
