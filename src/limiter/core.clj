@@ -53,13 +53,16 @@
   (spit c/primary-edn (limiter/stringify limiters)))
 
 (defn activate-limiter
-  [limiter]
+  [limiter previous]
   (if (:is-last limiter)
     (do (clear-all-restrictions)
         (reset! proxy/block-host #{}))
     (do (remove-wheel)
         (lock-home)
         (reset! proxy/block-host (into #{} (:block-host limiter)))
+        ; restart the proxy if block-host has changed
+        (when (not= (:block-host limiter) (:block-host previous))
+          (proxy/start-server))
         (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (if (:block-login limiter)
           (do (disable-login)
@@ -114,8 +117,8 @@
         (swap! notified #(conj % in-1-minute))))
     (locking prev-limiter
       (when (not (= @prev-limiter limiter))
-        (reset! prev-limiter limiter)
-        (activate-limiter limiter)))
+        (activate-limiter limiter @prev-limiter)
+        (reset! prev-limiter limiter)))
     (swap! limiters #(drop-before % now))))
 
 (defn handle-request
