@@ -13,7 +13,7 @@
   ([dir report]
    (doseq [process report]
      (if (str/starts-with? (:exe process) (canonical-path dir))
-       (s/call "kill" (:pid process))))))
+       (s/call "kill" (str (:pid process)))))))
 
 (defn lock-home []
   (s/call "chown" "-R" "root:root" c/home)
