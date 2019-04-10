@@ -60,7 +60,7 @@
     (let [time (LocalDateTime/now)]
       (let [overdue (filter #(.isBefore (:time %) time) @verifications)]
         (when (not-empty overdue)
-          (info "overdue" overdue)
+          (info "overdue" (vec overdue))
           (reset! notes [])
           (reset! verifications []))))))
 
