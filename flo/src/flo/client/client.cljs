@@ -16,7 +16,8 @@
     [clojure.string :as str]
     [cljsjs.jquery]
     [cljsjs.quill]
-    [quill-image-resize-module]))
+    [quill-image-resize-module]
+    [goog.crypt.base64 :as b64]))
 
 (enable-console-print!)
 
@@ -35,6 +36,7 @@
   (->> "init"
        (.getElementById js/document)
        (.-innerHTML)
+       (b64/decodeString)
        (read-string)))
 
 (def status-bar (.getElementById js/document "status"))

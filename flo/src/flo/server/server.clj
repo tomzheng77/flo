@@ -6,6 +6,7 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
             [hiccup.page :refer [html5]]
+            [hiccup.util :refer [escape-html]]
             [garden.core :refer [css]]
             [clojure.core.match :refer [match]]
             [clojure.pprint :refer [pprint]]
@@ -25,9 +26,12 @@
             [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders])
-  (:import (java.util UUID)
+  (:import (java.util UUID Base64)
            (java.time LocalDateTime)
            (java.time.format DateTimeFormatter)))
+
+(defn base64-encode [to-encode]
+  (.encodeToString (Base64/getEncoder) (.getBytes to-encode)))
 
 (timbre/merge-config!
   {:level      :debug
@@ -108,7 +112,7 @@
                     [:link {:href "style.css" :rel "stylesheet"}]
                     [:title "FloNote"]]
                    [:body
-                    [:pre#init {:style "display: none"} (pr-str {:file-id file-id :content content})]
+                    [:pre#init {:style "display: none"} (base64-encode (pr-str {:file-id file-id :content content}))]
                     [:div#editor]
                     [:div#status]
                     [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
