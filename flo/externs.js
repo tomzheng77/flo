@@ -7,4 +7,5 @@ Quill.prototype.getText = function() {};
 Quill.prototype.getContents = function() {};
 Quill.prototype.setContents = function() {};
 Quill.prototype.getBounds = function() {};
+Quill.prototype.getFormat = function() {};
 Quill.prototype.formatText = function() {};
