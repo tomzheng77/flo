@@ -73,8 +73,10 @@
         (if (not-empty s)
           (let [occur      (concat (find-all text (str "[" s "]"))
                                    (find-all text (str "[" s "=]"))
+                                   (find-all text (str "[=" s "]"))
+                                   (find-all text (str "[=" s "=]"))
                                    (find-all text (str "[" s)))
-                occur-uniq (remove-dups occur)
+                occur-uniq (sort-by :start (remove-dups occur))
                 target     (and (not-empty occur-uniq)
                                 (nth occur-uniq (mod select (count occur-uniq))))]
             (if-not target

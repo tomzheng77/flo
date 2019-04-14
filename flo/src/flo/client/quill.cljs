@@ -80,7 +80,7 @@
 
 (defn highlight-tags []
   (let [text (get-text)]
-    (doseq [match (find-all text #"\[[A-Z0-9]+=?\]")]
+    (doseq [match (find-all text #"\[=?[A-Z0-9]+=?\]")]
       (format-text (:start match) (:length match) {"bold" true "color" "#3da1d2"})
       (format-text (:end match) 1 {"bold" nil "color" nil}))))
 
