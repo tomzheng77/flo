@@ -62,7 +62,7 @@
   (set-selection index length)
   (let [bounds (get-bounds index length)]
     (scroll-by (get bounds "left")
-               (- 200 (get bounds "top")))))
+               (- (get bounds "top") 200))))
 
 (defn find-and-goto
   [substr]
