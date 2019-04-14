@@ -61,7 +61,7 @@
 (defn goto [index length]
   (set-selection index length)
   (let [bounds (get-bounds index length)
-        height (.-clientHeight instance-editor)]
+        height (.-clientHeight @instance-editor)]
     (scroll-by (get bounds "left")
                (- (get bounds "top") (/ height 4)))))
 
