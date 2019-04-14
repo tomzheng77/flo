@@ -60,9 +60,10 @@
 
 (defn goto [index length]
   (set-selection index length)
-  (let [bounds (get-bounds index length)]
+  (let [bounds (get-bounds index length)
+        height (.-clientHeight instance-editor)]
     (scroll-by (get bounds "left")
-               (- (get bounds "top") 200))))
+               (- (get bounds "top") (/ height 4)))))
 
 (defn find-and-goto
   [substr]
