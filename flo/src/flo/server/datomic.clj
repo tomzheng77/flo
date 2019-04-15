@@ -6,17 +6,17 @@
 (def conn (d/connect db-uri))
 
 ; create the note schema
-(def note-schema [{:db/ident :note/name
-                   :db/valueType :db.type/string
+(def note-schema [{:db/ident       :note/name
+                   :db/valueType   :db.type/string
                    :db/cardinality :db.cardinality/one
-                   :db/doc "unique name of the note"}
-                  {:db/ident :note/time-created
-                   :db/valueType :db.type/instant
+                   :db/doc         "unique name of the note"}
+                  {:db/ident       :note/time-created
+                   :db/valueType   :db.type/instant
                    :db/cardinality :db.cardinality/one
-                   :db/doc "time when the note was first created"}
-                  {:db/ident :note/content
-                   :db/valueType :db.type/bytes
+                   :db/doc         "time when the note was first created"}
+                  {:db/ident       :note/content
+                   :db/valueType   :db.type/bytes
                    :db/cardinality :db.cardinality/one
-                   :db/doc "nippy serialized delta format"}])
+                   :db/doc         "nippy serialized delta format"}])
 
 (d/transact conn note-schema)
