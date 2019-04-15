@@ -89,7 +89,7 @@
                   :flex-grow        "0"
                   :flex-shrink      "0"}]))
 
-(def index-html
+(defn index-html [init-data]
   (html5
     [:html {:lang "en"}
      [:head
@@ -101,7 +101,8 @@
       [:link {:href "style.css" :rel "stylesheet"}]
       [:title "FloNote"]]
      [:body
-      [:pre#init {:style "display: none"} (base64-encode (pr-str {:file-id file-id :content content}))]
+      [:pre#init {:style "display: none"} (base64-encode (pr-str init-data))]
+      [:div#app]
       [:div#editor]
       [:div#status]
       [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
@@ -121,7 +122,7 @@
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session {:uid (.toString (UUID/randomUUID))}
-       :body    index-html}))
+       :body    (index-html {:file-id file-id :content content})}))
   (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel
