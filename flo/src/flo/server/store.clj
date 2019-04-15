@@ -78,7 +78,7 @@
 (defn get-note-at [name at]
   (let [date (ldt-to-date at)]
     (assert (not (nil? date)))
-    (get-note name (d/as-of (get-conn) date))))
+    (get-note name (d/as-of (d/db (get-conn)) date))))
 
 (defn get-note-creation [name]
   (let [db (d/db (get-conn))]
