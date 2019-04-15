@@ -33,6 +33,7 @@
                  [org.slf4j/log4j-over-slf4j "1.7.14"]
                  [org.slf4j/jul-to-slf4j "1.7.14"]
                  [org.slf4j/jcl-over-slf4j "1.7.14"]
+                 [com.google.guava/guava "27.1-jre"]
 
                  ; requires datomic/bin/maven-install
                  [com.datomic/datomic-pro "0.9.5786"]]
