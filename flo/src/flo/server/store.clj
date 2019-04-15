@@ -36,27 +36,38 @@
                  :db/doc         "nippy serialized delta format"}]]
     (d/transact @conn schema)))
 
-(defn note-content-q [name]
-  '[:find ?content
+(defn all-notes-q []
+  '[:find ?e ?name ?content
     :where
-    [?e :note/name name]
+    [?e :note/name ?name]
+    [?e :note/content ?content]])
+
+(defn note-content-q [name]
+  `[:find ?content
+    :where
+    [?e :note/name ~name]
     [?e :note/content ?content]])
 
 (defn note-creation-q [name]
-  '[:find ?content
+  `[:find ?tx-time
     :where
-    [?e :note/name name]
-    [?e :note/content ?content]])
+    [?e :note/name ~name ?tx]
+    [?tx :db/txInstant ?tx-time]])
+
+(defn get-all-notes []
+  (connect-if-nil)
+  (let [db (d/db @conn)]
+    (d/q (all-notes-q) db)))
 
 (defn get-note [name]
   (connect-if-nil)
   (let [db (d/db @conn)]
-    (d/q (note-content-q name) db)))
+    (ffirst (d/q (note-content-q name) db))))
 
 (defn get-note-creation [name]
   (connect-if-nil)
   (let [db (d/db @conn)]
-    (d/q (note-content-q name) db)))
+    (ffirst (d/q (note-creation-q name) db))))
 
 (defn set-note [name content]
   (connect-if-nil)
