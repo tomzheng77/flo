@@ -12,7 +12,9 @@
             [taoensso.nippy :as nippy]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [datomic.api :as d])
-  (:import (java.io ByteArrayOutputStream)))
+  (:import (java.io ByteArrayOutputStream)
+           (java.time LocalDateTime ZoneId)
+           (java.util Date)))
 
 (def conn (atom nil))
 
@@ -64,6 +66,22 @@
   (let [db (d/db @conn)]
     (ffirst (d/q (note-content-q name) db))))
 
+; Date in = new Date();
+; LocalDateTime ldt = LocalDateTime.ofInstant(in.toInstant(), ZoneId.systemDefault());
+; Date out = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+(defn ldt-to-date [ldt]
+  (cond
+    (instance? LocalDateTime ldt)
+    (Date/from (.toInstant (.atZone ldt (ZoneId/systemDefault))))
+    (instance? Date ldt) ldt))
+
+(defn get-note-at [name at]
+  (let [date (ldt-to-date at)]
+    (assert (not (nil? date)))
+    (connect-if-nil)
+    (let [db (d/as-of @conn date)]
+      (ffirst (d/q (note-content-q name) db)))))
+
 (defn get-note-creation [name]
   (connect-if-nil)
   (let [db (d/db @conn)]
@@ -71,7 +89,7 @@
 
 (defn set-note [name content]
   (connect-if-nil)
-  (d/transact-async @conn [{:note/name name :note/content content}]))
+  (d/transact-async @conn [{:note/name name :note/content (nippy/freeze content)}]))
 
 (defn file->bytes [file]
   (with-open [in (io/input-stream file)
