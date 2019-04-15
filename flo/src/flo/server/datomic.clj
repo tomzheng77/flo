@@ -1,5 +1,6 @@
 (ns flo.server.datomic
-  (:require [datomic.api :as d]))
+  (:require [datomic.api :as d])
+  (:import (java.util Date)))
 
 (def db-uri "datomic:dev://localhost:4334/hello")
 (d/create-database db-uri)
@@ -19,4 +20,12 @@
                    :db/cardinality :db.cardinality/one
                    :db/doc         "nippy serialized delta format"}])
 
-(d/transact conn note-schema)
+@(d/transact conn note-schema)
+
+(def notes [{:note/name         "hello"
+             :note/time-created (new Date)
+             :note/content      (.getBytes "content" "UTF-8")}])
+
+@(d/transact conn notes)
+(def all-notes-q '[:find ?e :where [?e :note/name]])
+(println (d/q all-movies-q db))
