@@ -61,10 +61,12 @@
   (let [db (d/db @conn)]
     (d/q (all-notes-q) db)))
 
-(defn get-note [name]
-  (connect-if-nil)
-  (let [db (d/db @conn)]
-    (ffirst (d/q (note-content-q name) db))))
+(defn get-note
+  ([name] (get-note name (d/db @conn)))
+  ([name db]
+   (connect-if-nil)
+   (let [content-raw (ffirst (d/q (note-content-q name) db))]
+     (if content-raw (nippy/thaw content-raw)))))
 
 ; Date in = new Date();
 ; LocalDateTime ldt = LocalDateTime.ofInstant(in.toInstant(), ZoneId.systemDefault());
@@ -79,8 +81,7 @@
   (let [date (ldt-to-date at)]
     (assert (not (nil? date)))
     (connect-if-nil)
-    (let [db (d/as-of @conn date)]
-      (ffirst (d/q (note-content-q name) db)))))
+    (get-note name (d/as-of @conn date))))
 
 (defn get-note-creation [name]
   (connect-if-nil)
