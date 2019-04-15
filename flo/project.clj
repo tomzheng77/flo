@@ -32,7 +32,10 @@
                  [com.fzakaria/slf4j-timbre "0.3.12"]
                  [org.slf4j/log4j-over-slf4j "1.7.14"]
                  [org.slf4j/jul-to-slf4j "1.7.14"]
-                 [org.slf4j/jcl-over-slf4j "1.7.14"]]
+                 [org.slf4j/jcl-over-slf4j "1.7.14"]
+
+                 ; requires datomic/bin/maven-install
+                 [com.datomic/datomic-pro "0.9.5786"]]
 
   :plugins [[lein-figwheel "0.5.19-SNAPSHOT"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
