@@ -40,27 +40,47 @@
            :content          nil}))
 
 (def status (r/atom nil))
+(def drag-active? (r/atom false))
+(add-watch drag-active? :hover
+  (fn [a b c d]
+    (println a b c d)))
 
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
    [:div#editor]
-   [:div#status {:style {:height           "40px"
-                         :background-color "#3DA1D2"
-                         :line-height      "40px"
-                         :color            "#FFF"
-                         :font-family      "Monospace"
-                         :text-indent      "10px"
-                         :flex-grow        "0"
-                         :flex-shrink      "0"}} @status]])
+   [:div {:style {:height           "40px"
+                  :background-color "red"
+                  :line-height      "40px"
+                  :color            "#FFF"
+                  :font-family      "Monospace"
+                  :text-indent      "10px"
+                  :flex-grow        "0"
+                  :flex-shrink      "0"}}
+    [:div {:style {:height           "100%"
+                   :width            "100px"
+                   :background-color "yellow"
+                   :cursor           "pointer"}
+           :on-mouse-down #(reset! drag-active? true)
+           :on-mouse-up  #(reset! drag-active? false)}]]
+   [:div {:style {:height           "40px"
+                  :background-color "#3DA1D2"
+                  :line-height      "40px"
+                  :color            "#FFF"
+                  :font-family      "Monospace"
+                  :text-indent      "10px"
+                  :flex-grow        "0"
+                  :flex-shrink      "0"}} @status]])
 
 (r/render [app] (js/document.getElementById "app"))
 
+(def time-created (:time-created configuration))
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 (quill/new-instance)
 (quill/set-content initial-content)
 
+(println "time created:" time-created)
 (println "file:" file-id)
 (println "initial content:" initial-content)
 
@@ -132,10 +152,16 @@
       (when (> 200 delta)
         (on-hit-shift)))))
 
+(defn on-mouse-move
+  [event]
+  (println event))
+
 ; this initializer will be called once per document
 (defn initialize-once []
+  ; or in the form of document.onmousemove = handleMouseMove;
   (add-event-listener "keydown" on-press-key)
-  (add-event-listener "keyup" on-release-key))
+  (add-event-listener "keyup" on-release-key)
+  (add-event-listener "mousemove" on-mouse-move))
 
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk" nil

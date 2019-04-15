@@ -9,15 +9,49 @@
 
 (defn current-time-millis [] (.getTime (new js/Date)))
 
+;if (event.pageX == null && event.clientX != null) {
+;    eventDoc = (event.target && event.target.ownerDocument) || document;
+;    doc = eventDoc.documentElement;
+;    body = eventDoc.body;
+;
+;    event.pageX = event.clientX +
+;      (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+;      (doc && doc.clientLeft || body && body.clientLeft || 0);
+;    event.pageY = event.clientY +
+;      (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+;      (doc && doc.clientTop  || body && body.clientTop  || 0 );
+;}
+(defn assign-document-scroll [event]
+  (if (and (nil? (.-pageX event)) (not (nil? (.-clientX event))))
+    (let [event-doc (or (and (.-target event) (.. event -target -ownerDocument)) js/document)
+          doc (.-documentElement event-doc)
+          body (.-body event-doc)]
+      (set! (.-pageX event)
+            (- (+ (.-clientX event)
+                   (or (and doc (.-scrollLeft doc)) (and body (.-scrollLeft body)) 0))
+               (or (and doc (.-clientLeft doc)) (and body (.-clientLeft body)) 0)))
+      (set! (.-pageY event)
+            (- (+ (.-clientY event)
+                   (or (and doc (.-scrollTop doc)) (and body (.-scrollTop body)) 0))
+               (or (and doc (.-clientTop doc)) (and body (.-clientTop body)) 0))))))
+
+(defn to-clj-event [event]
+  (assign-document-scroll event)
+  {:code (. event -code)
+   :key (. event -key)
+   :ctrl-key (. event -ctrlKey)
+   :shift-key (. event -shiftKey)
+   :original event
+   :page-x (. event -pageX)
+   :page-y (. event -pageY)
+   :mouse-x (. event -pageX)
+   :mouse-y (. event -pageY)})
+
 (defn add-event-listener [type listener]
   (println "adding event listener for" type)
   (js/document.body.addEventListener type
     (fn [event]
-      (let [clj-event {:code (. event -code)
-                       :key (. event -key)
-                       :ctrl-key (. event -ctrlKey)
-                       :shift-key (. event -shiftKey)
-                       :original event}]
+      (let [clj-event (to-clj-event event)]
         (listener clj-event)))))
 
 ; https://stackoverflow.com/questions/18735665/how-can-i-get-the-positions-of-regex-matches-in-clojurescript

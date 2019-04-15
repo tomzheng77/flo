@@ -22,7 +22,7 @@
             [clojure.data :refer [diff]]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [flo.server.store :refer [get-note set-note]]
+            [flo.server.store :refer [get-note set-note get-note-created]]
             [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders])
@@ -37,6 +37,8 @@
 
 (defn on-chsk-receive [item]
   (match (:event item)
+    [:flo/seek [time]]
+    (println time)
     [:flo/save [file-id content]]
     (do (debug "saving" file-id)
         (set-note file-id content))
@@ -106,11 +108,13 @@
      :body    style-css})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
-          content (get-note file-id)]
+          content (get-note file-id)
+          time-created (get-note-created file-id)]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session {:uid (.toString (UUID/randomUUID))}
-       :body    (index-html {:file-id file-id :content content})}))
+       :body    (index-html {:file-id file-id :content content
+                             :time-created (.getTime time-created)})}))
   (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel

@@ -50,7 +50,7 @@
     [?e :note/name ~name]
     [?e :note/content ?content]])
 
-(defn note-creation-q [name]
+(defn note-created-q [name]
   `[:find ?tx-time
     :where
     [?e :note/name ~name ?tx]
@@ -80,9 +80,9 @@
     (assert (not (nil? date)))
     (get-note name (d/as-of (d/db (get-conn)) date))))
 
-(defn get-note-creation [name]
+(defn get-note-created [name]
   (let [db (d/db (get-conn))]
-    (ffirst (d/q (note-creation-q name) db))))
+    (ffirst (d/q (note-created-q name) db))))
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
