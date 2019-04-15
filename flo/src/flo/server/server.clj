@@ -22,7 +22,7 @@
             [clojure.data :refer [diff]]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [flo.server.store :refer [store]]
+            [flo.server.store :refer [get-note set-note]]
             [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders])
@@ -39,9 +39,9 @@
 
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/save [file-id contents]]
+    [:flo/save [file-id content]]
     (do (debug "saving" file-id)
-        (swap! store #(assoc % file-id contents)))
+        (set-note file-id content))
     :else nil))
 
 (let [{:keys [ch-recv send-fn connected-uids
@@ -98,7 +98,7 @@
                               :flex-shrink      "0"}])})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
-          content (get @store file-id {})]
+          content (get-note file-id)]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session {:uid (.toString (UUID/randomUUID))}

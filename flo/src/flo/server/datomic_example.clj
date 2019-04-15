@@ -38,5 +38,11 @@
                      [?e :note/time-created ?time-created]
                      [?e :note/content ?content]])
 
+  (defn note-content-q [name]
+    '[:find ?content
+      :where
+      [?e :note/name name]
+      [?e :note/content ?content]])
+
   (def db (d/db conn))
   (println (count (d/q all-notes-q db))))

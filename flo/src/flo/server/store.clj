@@ -10,47 +10,58 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [taoensso.nippy :as nippy]
-            [taoensso.timbre :as timbre :refer [trace debug info error]]))
+            [taoensso.timbre :as timbre :refer [trace debug info error]])
+  (:import (java.util Date)
+           (java.io ByteArrayOutputStream)))
 
-; the API of this module
-; keys should be strings, values should be serializable with pr-str
-; it will be read upon startup, writes are automatic
+(def db-uri "datomic:dev://localhost:4334/flo")
+(d/create-database db-uri)
+(def conn (d/connect db-uri))
+
+(def schema
+  [{:db/ident       :note/name
+    :db/unique      :db.unique/identity
+    :db/valueType   :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc         "unique name of the note"}
+   {:db/ident       :note/content
+    :db/valueType   :db.type/bytes
+    :db/cardinality :db.cardinality/one
+    :db/doc         "nippy serialized delta format"}])
+
+(d/transact conn note-schema)
+
 (def store (atom {}))
 
-(def store-dir (io/file "store"))
-(def suffix ".nippy")
+(defn note-content-q [name]
+  '[:find ?content
+    :where
+    [?e :note/name name]
+    [?e :note/content ?content]])
 
-(.mkdirs store-dir)
+(def get-note [name]
+  (let [db (d/db conn)]
+    (d/q (note-content-q name) db)))
+
+(def get-note-creation [name]
+  (let [db (d/db conn)]
+    (d/q (note-content-q name) db)))
+
+(def set-note [name content]
+  (d/transact-async conn [{:note/name name :note/content content}]))
+
+(defn file->bytes [file]
+  (with-open [in (io/input-stream file)
+              out (new ByteArrayOutputStream)]
+    (io/copy in out)
+    (.toByteArray out)))
+
+(def store-dir (io/file "store"))
 (let [files (.listFiles (io/file store-dir))]
-  (reset! store {})
   (doseq [file files]
     (when (str/ends-with? (.getName file) suffix)
-      (let [contents (nippy/thaw-from-file file)
+      (let [content (file->bytes file)
             filename (.getName file)
             name (subs filename 0 (- (count filename) (count suffix)))]
         (debug "loading" name "from store")
-        (swap! store #(assoc % name contents))))))
-
-; this will start a thread which continuously writes
-; the latest version of the store
-(let [store-last-write (atom {})
-      signals (chan)
-      signal-count (atom 0)]
-  ; whenever the value of contents changes, add a new signal
-  ; the signal can be any value
-  (add-watch store :save-store
-    (fn [_ _ _ _]
-      (when (> 512 @signal-count)
-        (swap! signal-count inc)
-        (>!! signals 0))))
-  (go-loop []
-    (let [_ (<! signals)]
-      (swap! signal-count dec)
-      (let [now-store @store]
-        (doseq [[name content] now-store]
-          (when-not (= content (@store-last-write name))
-            (let [file (io/file store-dir (str name suffix))]
-              (nippy/freeze-to-file file content)
-              (debug "written" name "to store, len =" (.length file)))))
-        (reset! store-last-write now-store)))
-    (recur)))
+        (d/transact-async conn [{:note/name name :note/content content}])))))
