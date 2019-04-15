@@ -28,6 +28,13 @@
 
 @(d/transact conn notes)
 
-(def all-notes-q '[:find ?e :where [?e :note/name]])
+(def all-notes-q '[:find ?e ?name ?time-created ?content
+                   :where
+                   [?e :note/name ?name]
+                   [?e :note/time-created ?time-created]
+                   [?e :note/content ?content]])
+
 (def db (d/db conn))
+(println (d/q all-notes-q db))
+(println (d/q all-notes-q db))
 (println (d/q all-notes-q db))
