@@ -28,4 +28,4 @@
 
 @(d/transact conn notes)
 (def all-notes-q '[:find ?e :where [?e :note/name]])
-(println (d/q all-movies-q db))
+(println (d/q all-notes-q db))
