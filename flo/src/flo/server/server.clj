@@ -103,8 +103,6 @@
      [:body
       [:pre#init {:style "display: none"} (base64-encode (pr-str init-data))]
       [:div#app]
-      [:div#editor]
-      [:div#status]
       [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
       [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]]))
 

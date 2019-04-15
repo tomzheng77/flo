@@ -17,7 +17,8 @@
     [cljsjs.jquery]
     [cljsjs.quill]
     [quill-image-resize-module]
-    [goog.crypt.base64 :as b64]))
+    [goog.crypt.base64 :as b64]
+    [reagent.core :as r]))
 
 (enable-console-print!)
 
@@ -39,8 +40,14 @@
        (b64/decodeString)
        (read-string)))
 
-(def status-bar (.getElementById js/document "status"))
+(defn app []
+  [:div#app-inner
+   [:div#editor]
+   [:div#status]])
 
+(r/render [app] (js/document.getElementById "app"))
+
+(def status-bar (.getElementById js/document "status"))
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 (quill/new-instance)
