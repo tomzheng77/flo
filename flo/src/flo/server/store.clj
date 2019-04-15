@@ -10,7 +10,8 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [taoensso.nippy :as nippy]
-            [taoensso.timbre :as timbre :refer [trace debug info error]])
+            [taoensso.timbre :as timbre :refer [trace debug info error]]
+            [datomic.api :as d])
   (:import (java.util Date)
            (java.io ByteArrayOutputStream)))
 
