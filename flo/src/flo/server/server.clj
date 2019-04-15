@@ -72,30 +72,30 @@
   (GET "/style.css" []
     {:status  200
      :headers {"Content-Type" "text/css"}
-     :body (css [:body {:margin "0"
-                        :display "flex"
-                        :flex-direction "column"
-                        :justify-content "center"}]
-                [:html :body {:height "100%"}]
-                [:.ql-toolbar {:flex-shrink "0"}]
-                [:.ql-container {:height "auto"}]
-                [:.ql-syntax {:font-size "11px" :opacity 0.8}]
-                [:#editor {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}
-                 ["::selection" {:background-color "#3DA1D2" :color "#FFF"}]
-                 [:.ql-editor
-                  [:ol :ul {:padding-left "0"}
-                   [:li:before {:content "'-'"}]
-                   (indent-styles 1 2)]]]
+     :body    (css [:body {:margin          "0"
+                           :display         "flex"
+                           :flex-direction  "column"
+                           :justify-content "center"}]
+                   [:html :body {:height "100%"}]
+                   [:.ql-toolbar {:flex-shrink "0"}]
+                   [:.ql-container {:height "auto"}]
+                   [:#editor [:.ql-editor [:.ql-syntax {:font-size "11px" :opacity 1}]]]
+                   [:#editor {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}
+                    ["::selection" {:background-color "#3DA1D2" :color "#FFF"}]
+                    [:.ql-editor
+                     [:ol :ul {:padding-left "0"}
+                      [:li:before {:content "'-'"}]
+                      (indent-styles 1 2)]]]
 
-                ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
-                [:#status {:height "40px"
-                           :background-color "#3DA1D2"
-                           :line-height "40px"
-                           :color "#FFF"
-                           :font-family "Monospace"
-                           :text-indent "10px"
-                           :flex-grow "0"
-                           :flex-shrink "0"}])})
+                   ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
+                   [:#status {:height           "40px"
+                              :background-color "#3DA1D2"
+                              :line-height      "40px"
+                              :color            "#FFF"
+                              :font-family      "Monospace"
+                              :text-indent      "10px"
+                              :flex-grow        "0"
+                              :flex-shrink      "0"}])})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get @store file-id {})]
