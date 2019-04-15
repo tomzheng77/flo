@@ -21,7 +21,7 @@
     (d/create-database db-uri)
     (reset! conn (d/connect db-uri))))
 
-(defn connect-if-nil
+(defn connect-if-nil []
   (if (nil? @conn) (connect)))
 
 (defn init-schema []
