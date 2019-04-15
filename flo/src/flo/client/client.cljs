@@ -40,14 +40,14 @@
        (b64/decodeString)
        (read-string)))
 
+(def status (r/atom nil))
 (defn app []
   [:div#app-inner
    [:div#editor]
-   [:div#status]])
+   [:div#status @status]])
 
 (r/render [app] (js/document.getElementById "app"))
 
-(def status-bar (.getElementById js/document "status"))
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 (quill/new-instance)
@@ -92,7 +92,7 @@
 
 (add-watch state :auto-search
   (fn [_ _ old new]
-    (set! (.-innerHTML status-bar) (str "Search: " (pr-str (:search new))))
+    (reset! status (str "Search: " (pr-str (:search new))))
     (if (or (not= (:search old) (:search new))
             (not= (:select old) (:select new)))
       (if (:search new)
