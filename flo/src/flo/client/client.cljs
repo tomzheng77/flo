@@ -6,7 +6,7 @@
   (:require
     [flo.client.quill :as quill]
     [flo.client.functions :refer [json->clj current-time-millis splice-last add-event-listener find-all
-                                  intersects remove-overlaps]]
+                                  intersects remove-overlaps to-clj-event]]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
@@ -16,6 +16,7 @@
     [clojure.string :as str]
     [cljsjs.jquery]
     [cljsjs.quill]
+    [cljsjs.moment]
     [quill-image-resize-module]
     [goog.crypt.base64 :as b64]
     [reagent.core :as r]))
@@ -27,6 +28,14 @@
         (.-innerHTML)
         (b64/decodeString)
         (read-string)))
+
+(def time-created (:time-created configuration))
+(def file-id (:file-id configuration))
+(def initial-content (:content configuration))
+
+(println "time created:" time-created)
+(println "file:" file-id)
+(println "initial content:" initial-content)
 
 (def example-state
   {:last-shift-press 0                                      ; the time when the shift key was last pressed
@@ -40,49 +49,53 @@
            :content          nil}))
 
 (def status (r/atom nil))
-(def drag-active? (r/atom false))
-(add-watch drag-active? :hover
-  (fn [a b c d]
+(def drag-position (r/atom 100))
+(def drag-start (r/atom nil))
+(add-watch drag-start :hover
+           (fn [a b c d]
     (println a b c d)))
 
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
    [:div#editor]
-   [:div {:style {:height           "40px"
+   [:div {:style {:height           "30px"
                   :background-color "red"
-                  :line-height      "40px"
                   :color            "#FFF"
                   :font-family      "Monospace"
                   :text-indent      "10px"
                   :flex-grow        "0"
                   :flex-shrink      "0"}}
     [:div {:style {:height           "100%"
-                   :width            "100px"
+                   :width            "80px"
+                   :text-indent      "0"
+                   :text-align       "center"
                    :background-color "yellow"
-                   :cursor           "pointer"}
-           :on-mouse-down #(reset! drag-active? true)
-           :on-mouse-up  #(reset! drag-active? false)}]]
-   [:div {:style {:height           "40px"
+                   :color            "black"
+                   :cursor           "pointer"
+                   :user-select      "none"
+                   :line-height "15px"
+                   :font-size 8
+                   :margin-left      @drag-position}
+           :on-mouse-down (fn [event]
+                            (let [clj-event (to-clj-event event)]
+                              (reset! drag-start {:x (:mouse-x clj-event)
+                                                  :y (:mouse-y clj-event)
+                                                  :position @drag-position})))}
+     (.format (js/moment (+ time-created (* 5000 @drag-position))) "YYYY-MM-DD h:mm:ss a")]]
+   [:div {:style {:height           "30px"
                   :background-color "#3DA1D2"
-                  :line-height      "40px"
+                  :line-height      "30px"
                   :color            "#FFF"
                   :font-family      "Monospace"
+                  :font-size        "10px"
                   :text-indent      "10px"
                   :flex-grow        "0"
                   :flex-shrink      "0"}} @status]])
 
 (r/render [app] (js/document.getElementById "app"))
-
-(def time-created (:time-created configuration))
-(def file-id (:file-id configuration))
-(def initial-content (:content configuration))
 (quill/new-instance)
 (quill/set-content initial-content)
-
-(println "time created:" time-created)
-(println "file:" file-id)
-(println "initial content:" initial-content)
 
 (defn navigate [search select]
   (if (empty? search)
@@ -154,14 +167,22 @@
 
 (defn on-mouse-move
   [event]
-  (println event))
+  (let [mouse-x (:mouse-x event)
+        active-drag @drag-start]
+    (if active-drag
+      (let [dx (- mouse-x (:x active-drag))
+            start-position (:position active-drag)
+            width (.-innerWidth js/window)]
+        (reset! drag-position (min (max 0 (+ dx start-position))
+                                   (- width 80)))))))
 
 ; this initializer will be called once per document
 (defn initialize-once []
   ; or in the form of document.onmousemove = handleMouseMove;
   (add-event-listener "keydown" on-press-key)
   (add-event-listener "keyup" on-release-key)
-  (add-event-listener "mousemove" on-mouse-move))
+  (set! (.-onmousemove js/document) (fn [event] (on-mouse-move (to-clj-event event))))
+  (set! (.-onmouseup js/document) #(reset! drag-start nil)))
 
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk" nil
