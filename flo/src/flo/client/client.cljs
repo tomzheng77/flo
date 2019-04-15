@@ -30,10 +30,12 @@
         (read-string)))
 
 (def time-created (:time-created configuration))
+(def time-now (.getTime (new js/Date)))
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 
 (println "time created:" time-created)
+(println "time now:" time-now)
 (println "file:" file-id)
 (println "initial content:" initial-content)
 
