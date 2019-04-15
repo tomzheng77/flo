@@ -26,9 +26,7 @@
             [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders])
-  (:import (java.util UUID Base64)
-           (java.time LocalDateTime)
-           (java.time.format DateTimeFormatter)))
+  (:import (java.util UUID Base64)))
 
 (defn base64-encode [to-encode]
   (.encodeToString (Base64/getEncoder) (.getBytes to-encode)))

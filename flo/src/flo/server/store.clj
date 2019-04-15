@@ -12,27 +12,29 @@
             [taoensso.nippy :as nippy]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [datomic.api :as d])
-  (:import (java.util Date)
-           (java.io ByteArrayOutputStream)))
+  (:import (java.io ByteArrayOutputStream)))
 
-(def db-uri "datomic:dev://localhost:4334/flo")
-(d/create-database db-uri)
-(def conn (d/connect db-uri))
+(def conn (atom nil))
 
-(def schema
-  [{:db/ident       :note/name
-    :db/unique      :db.unique/identity
-    :db/valueType   :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/doc         "unique name of the note"}
-   {:db/ident       :note/content
-    :db/valueType   :db.type/bytes
-    :db/cardinality :db.cardinality/one
-    :db/doc         "nippy serialized delta format"}])
+(defn connect []
+  (let [db-uri "datomic:dev://localhost:4334/flo"]
+    (d/create-database db-uri)
+    (reset! conn (d/connect db-uri))))
 
-(d/transact conn schema)
+(defn connect-if-nil
+  (if (nil? @conn) (connect)))
 
-(def store (atom {}))
+(defn init-schema []
+  (let [schema [{:db/ident       :note/name
+                 :db/unique      :db.unique/identity
+                 :db/valueType   :db.type/string
+                 :db/cardinality :db.cardinality/one
+                 :db/doc         "unique name of the note"}
+                {:db/ident       :note/content
+                 :db/valueType   :db.type/bytes
+                 :db/cardinality :db.cardinality/one
+                 :db/doc         "nippy serialized delta format"}]]
+    (d/transact @conn schema)))
 
 (defn note-content-q [name]
   '[:find ?content
@@ -40,16 +42,25 @@
     [?e :note/name name]
     [?e :note/content ?content]])
 
-(def get-note [name]
-  (let [db (d/db conn)]
+(defn note-creation-q [name]
+  '[:find ?content
+    :where
+    [?e :note/name name]
+    [?e :note/content ?content]])
+
+(defn get-note [name]
+  (connect-if-nil)
+  (let [db (d/db @conn)]
     (d/q (note-content-q name) db)))
 
-(def get-note-creation [name]
-  (let [db (d/db conn)]
+(defn get-note-creation [name]
+  (connect-if-nil)
+  (let [db (d/db @conn)]
     (d/q (note-content-q name) db)))
 
-(def set-note [name content]
-  (d/transact-async conn [{:note/name name :note/content content}]))
+(defn set-note [name content]
+  (connect-if-nil)
+  (d/transact-async @conn [{:note/name name :note/content content}]))
 
 (defn file->bytes [file]
   (with-open [in (io/input-stream file)
@@ -57,12 +68,15 @@
     (io/copy in out)
     (.toByteArray out)))
 
-(def store-dir (io/file "store"))
-(let [files (.listFiles (io/file store-dir))]
-  (doseq [file files]
-    (when (str/ends-with? (.getName file) suffix)
-      (let [content (file->bytes file)
-            filename (.getName file)
-            name (subs filename 0 (- (count filename) (count suffix)))]
-        (debug "loading" name "from store")
-        (d/transact-async conn [{:note/name name :note/content content}])))))
+(defn load-store []
+  (connect-if-nil)
+  (let [store-dir (io/file "store")
+        nippy-suffix ".nippy"
+        files (.listFiles (io/file store-dir))]
+    (doseq [file files]
+      (when (str/ends-with? (.getName file) nippy-suffix)
+        (let [content (file->bytes file)
+              filename (.getName file)
+              name (subs filename 0 (- (count filename) (count nippy-suffix)))]
+          (debug "loading" name "from store")
+          (d/transact-async @conn [{:note/name name :note/content content}]))))))
