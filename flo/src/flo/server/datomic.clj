@@ -2,7 +2,8 @@
   (:require [datomic.api :as d])
   (:import (java.util Date)))
 
-(def db-uri "datomic:dev://localhost:4334/hello")
+(def db-uri "datomic:dev://localhost:4334/example")
+(d/delete-database db-uri)
 (d/create-database db-uri)
 (def conn (d/connect db-uri))
 
@@ -23,7 +24,7 @@
 
 @(d/transact conn note-schema)
 
-(def notes [{:note/name         "hello"
+(def notes [{:note/name         "this is a note"
              :note/time-created (new Date)
              :note/content      (.getBytes "content" "UTF-8")}])
 
