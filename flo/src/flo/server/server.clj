@@ -63,6 +63,50 @@
    (for [i (range 1 9)]
      [(str ".ql-indent-" i) {:padding-left (str (+ initial (* step i)) "em")}])])
 
+(def style-css
+  (css [:body {:margin          "0"
+               :display         "flex"
+               :flex-direction  "column"
+               :justify-content "center"}]
+       [:html :body {:height "100%"}]
+       [:.ql-toolbar {:flex-shrink "0"}]
+       [:.ql-container {:height "auto"}]
+       [:#editor [:.ql-editor [:.ql-syntax {:font-size "11px" :opacity 1}]]]
+       [:#editor {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}
+        ["::selection" {:background-color "#3DA1D2" :color "#FFF"}]
+        [:.ql-editor
+         [:ol :ul {:padding-left "0"}
+          [:li:before {:content "'-'"}]
+          (indent-styles 1 2)]]]
+
+       ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
+       [:#status {:height           "40px"
+                  :background-color "#3DA1D2"
+                  :line-height      "40px"
+                  :color            "#FFF"
+                  :font-family      "Monospace"
+                  :text-indent      "10px"
+                  :flex-grow        "0"
+                  :flex-shrink      "0"}]))
+
+(def index-html
+  (html5
+    [:html {:lang "en"}
+     [:head
+      [:meta {:charset "UTF-8"}]
+      [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
+      [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
+      [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
+      [:link {:href "css/highlight/monokai-sublime.css" :rel "stylesheet"}]
+      [:link {:href "style.css" :rel "stylesheet"}]
+      [:title "FloNote"]]
+     [:body
+      [:pre#init {:style "display: none"} (base64-encode (pr-str {:file-id file-id :content content}))]
+      [:div#editor]
+      [:div#status]
+      [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
+      [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]]))
+
 (defroutes app-routes
   (route/resources "/" {:root "public"})
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
@@ -70,52 +114,14 @@
   (GET "/style.css" []
     {:status  200
      :headers {"Content-Type" "text/css"}
-     :body    (css [:body {:margin          "0"
-                           :display         "flex"
-                           :flex-direction  "column"
-                           :justify-content "center"}]
-                   [:html :body {:height "100%"}]
-                   [:.ql-toolbar {:flex-shrink "0"}]
-                   [:.ql-container {:height "auto"}]
-                   [:#editor [:.ql-editor [:.ql-syntax {:font-size "11px" :opacity 1}]]]
-                   [:#editor {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}
-                    ["::selection" {:background-color "#3DA1D2" :color "#FFF"}]
-                    [:.ql-editor
-                     [:ol :ul {:padding-left "0"}
-                      [:li:before {:content "'-'"}]
-                      (indent-styles 1 2)]]]
-
-                   ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
-                   [:#status {:height           "40px"
-                              :background-color "#3DA1D2"
-                              :line-height      "40px"
-                              :color            "#FFF"
-                              :font-family      "Monospace"
-                              :text-indent      "10px"
-                              :flex-grow        "0"
-                              :flex-shrink      "0"}])})
+     :body    style-css})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get-note file-id)]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session {:uid (.toString (UUID/randomUUID))}
-       :body    (html5
-                  [:html {:lang "en"}
-                   [:head
-                    [:meta {:charset "UTF-8"}]
-                    [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-                    [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
-                    [:link {:href "css/quill.snow.css" :rel "stylesheet"}]
-                    [:link {:href "css/highlight/monokai-sublime.css" :rel "stylesheet"}]
-                    [:link {:href "style.css" :rel "stylesheet"}]
-                    [:title "FloNote"]]
-                   [:body
-                    [:pre#init {:style "display: none"} (base64-encode (pr-str {:file-id file-id :content content}))]
-                    [:div#editor]
-                    [:div#status]
-                    [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
-                    [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]])}))
+       :body    index-html}))
   (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel
