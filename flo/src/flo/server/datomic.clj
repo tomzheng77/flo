@@ -22,12 +22,16 @@
                    :db/cardinality :db.cardinality/one
                    :db/doc         "nippy serialized delta format"}])
 
-@(d/transact conn note-schema)
+(println "ins schema" @(d/transact conn note-schema))
+(println "ins schema" @(d/transact conn note-schema))
+(println "ins schema" @(d/transact conn note-schema))
 
 (def notes [{:note/name         "this is a note"
              :note/time-created (new Date)
              :note/content      (.getBytes "content" "UTF-8")}])
 
+@(d/transact conn notes)
+@(d/transact conn notes)
 @(d/transact conn notes)
 
 (def all-notes-q '[:find ?e ?name ?time-created ?content
