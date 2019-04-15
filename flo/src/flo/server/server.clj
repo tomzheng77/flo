@@ -77,17 +77,7 @@
         [:.ql-editor
          [:ol :ul {:padding-left "0"}
           [:li:before {:content "'-'"}]
-          (indent-styles 1 2)]]]
-
-       ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
-       [:#status {:height           "40px"
-                  :background-color "#3DA1D2"
-                  :line-height      "40px"
-                  :color            "#FFF"
-                  :font-family      "Monospace"
-                  :text-indent      "10px"
-                  :flex-grow        "0"
-                  :flex-shrink      "0"}]))
+          (indent-styles 1 2)]]]))
 
 (defn index-html [init-data]
   (html5

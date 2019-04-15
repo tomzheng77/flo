@@ -46,3 +46,19 @@
       {:index index :length (count substr)
        :start index :end (+ index (count substr))
        :substr substr})))
+
+(defn intersects [occur-a occur-b]
+  (let [start-a (:index occur-a)
+        start-b (:index occur-b)
+        end-a (+ start-a (:length occur-a))
+        end-b (+ start-b (:length occur-b))]
+    (not (or (<= end-b start-a)
+             (<= end-a start-b)))))
+
+(defn remove-overlaps [occurs]
+  (loop [seen [] remain occurs]
+    (if (empty? remain)
+      seen
+      (if (some #(intersects % (first remain)) seen)
+        (recur seen (next remain))
+        (recur (conj seen (first remain)) (next remain))))))

@@ -4,13 +4,13 @@
     [cljs.core.async.macros :refer [go]]
     [flo.client.macros :refer [console-log]])
   (:require
-    [flo.client.functions :refer [json->clj current-time-millis splice-last add-event-listener find-all]]
     [flo.client.quill :as quill]
+    [flo.client.functions :refer [json->clj current-time-millis splice-last add-event-listener find-all
+                                  intersects remove-overlaps]]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
-    [cljs-http.client :as http]
-    [cljs.core.async :as async :refer [<! >! put! chan]]
+    [cljs.core.async :refer [<! >! put! chan]]
     [taoensso.sente :as sente :refer [cb-success?]]
     [taoensso.sente.packers.transit :as transit]
     [clojure.string :as str]
@@ -21,6 +21,12 @@
     [reagent.core :as r]))
 
 (enable-console-print!)
+(defonce configuration
+   (->> "init"
+        (.getElementById js/document)
+        (.-innerHTML)
+        (b64/decodeString)
+        (read-string)))
 
 (def example-state
   {:last-shift-press 0                                      ; the time when the shift key was last pressed
@@ -28,23 +34,25 @@
    :content          {}})                                   ; the current contents of the editor
 
 (defonce state
-  (atom {:last-shift-press nil
-         :search           nil
-         :select           nil
-         :content          nil}))
-
-(defonce configuration
-  (->> "init"
-       (.getElementById js/document)
-       (.-innerHTML)
-       (b64/decodeString)
-       (read-string)))
+  (r/atom {:last-shift-press nil
+           :search           nil
+           :select           nil
+           :content          nil}))
 
 (def status (r/atom nil))
+
+; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
    [:div#editor]
-   [:div#status @status]])
+   [:div#status {:style {:height           "40px"
+                         :background-color "#3DA1D2"
+                         :line-height      "40px"
+                         :color            "#FFF"
+                         :font-family      "Monospace"
+                         :text-indent      "10px"
+                         :flex-grow        "0"
+                         :flex-shrink      "0"}} @status]])
 
 (r/render [app] (js/document.getElementById "app"))
 
@@ -55,22 +63,6 @@
 
 (println "file:" file-id)
 (println "initial content:" initial-content)
-
-(defn intersects [occur-a occur-b]
-  (let [start-a (:index occur-a)
-        start-b (:index occur-b)
-        end-a (+ start-a (:length occur-a))
-        end-b (+ start-b (:length occur-b))]
-    (not (or (<= end-b start-a)
-             (<= end-a start-b)))))
-
-(defn remove-dups [occurs]
-  (loop [seen [] remain occurs]
-    (if (empty? remain)
-      seen
-      (if (some #(intersects % (first remain)) seen)
-        (recur seen (next remain))
-        (recur (conj seen (first remain)) (next remain))))))
 
 (defn navigate [search select]
   (if (empty? search)
@@ -83,7 +75,7 @@
                                    (find-all text (str "[=" s "]"))
                                    (find-all text (str "[=" s "=]"))
                                    (find-all text (str "[" s)))
-                occur-uniq (sort-by :start (remove-dups occur))
+                occur-uniq (sort-by :start (remove-overlaps occur))
                 target     (and (not-empty occur-uniq)
                                 (nth occur-uniq (mod select (count occur-uniq))))]
             (if-not target
