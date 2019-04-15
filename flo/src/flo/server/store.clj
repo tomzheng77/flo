@@ -30,7 +30,7 @@
     :db/cardinality :db.cardinality/one
     :db/doc         "nippy serialized delta format"}])
 
-(d/transact conn note-schema)
+(d/transact conn schema)
 
 (def store (atom {}))
 
