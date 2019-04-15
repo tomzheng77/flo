@@ -8,6 +8,7 @@
 
 ; create the note schema
 (def note-schema [{:db/ident       :note/name
+                   :db/unique      :db.unique/identity
                    :db/valueType   :db.type/string
                    :db/cardinality :db.cardinality/one
                    :db/doc         "unique name of the note"}
