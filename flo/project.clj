@@ -15,6 +15,8 @@
                  [cljsjs/react-dom "16.8.3-0"]
                  [cljsjs/quill "1.3.6-0"]
                  [cljsjs/jquery "3.2.1-0"]
+                 [cljsjs/moment "2.24.0-0"]
+                 [reagent "0.8.1"]
                  [clj-commons/cljss "1.6.4"]
                  [sablono "0.8.5"]
                  [ring "1.7.1"]
