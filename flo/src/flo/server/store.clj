@@ -23,8 +23,8 @@
     (d/create-database db-uri)
     (reset! conn (d/connect db-uri))))
 
-(defn connect-if-nil []
-  (if (nil? @conn) (connect)))
+(defn get-conn []
+  (if (nil? @conn) (connect) @conn))
 
 (defn init-schema []
   (let [schema [{:db/ident       :note/name
@@ -36,7 +36,7 @@
                  :db/valueType   :db.type/bytes
                  :db/cardinality :db.cardinality/one
                  :db/doc         "nippy serialized delta format"}]]
-    (d/transact @conn schema)))
+    (d/transact (get-conn) schema)))
 
 (defn all-notes-q []
   '[:find ?e ?name ?content
@@ -57,14 +57,12 @@
     [?tx :db/txInstant ?tx-time]])
 
 (defn get-all-notes []
-  (connect-if-nil)
-  (let [db (d/db @conn)]
+  (let [db (d/db (get-conn))]
     (d/q (all-notes-q) db)))
 
 (defn get-note
-  ([name] (get-note name (d/db @conn)))
+  ([name] (get-note name (d/db (get-conn))))
   ([name db]
-   (connect-if-nil)
    (let [content-raw (ffirst (d/q (note-content-q name) db))]
      (if content-raw (nippy/thaw content-raw)))))
 
@@ -80,17 +78,14 @@
 (defn get-note-at [name at]
   (let [date (ldt-to-date at)]
     (assert (not (nil? date)))
-    (connect-if-nil)
-    (get-note name (d/as-of @conn date))))
+    (get-note name (d/as-of (get-conn) date))))
 
 (defn get-note-creation [name]
-  (connect-if-nil)
-  (let [db (d/db @conn)]
+  (let [db (d/db (get-conn))]
     (ffirst (d/q (note-creation-q name) db))))
 
 (defn set-note [name content]
-  (connect-if-nil)
-  (d/transact-async @conn [{:note/name name :note/content (nippy/freeze content)}]))
+  (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
 
 (defn file->bytes [file]
   (with-open [in (io/input-stream file)
@@ -99,7 +94,6 @@
     (.toByteArray out)))
 
 (defn load-store []
-  (connect-if-nil)
   (let [store-dir (io/file "store")
         nippy-suffix ".nippy"
         files (.listFiles (io/file store-dir))]
@@ -109,4 +103,4 @@
               filename (.getName file)
               name (subs filename 0 (- (count filename) (count nippy-suffix)))]
           (debug "loading" name "from store")
-          (d/transact-async @conn [{:note/name name :note/content content}]))))))
+          (d/transact-async (get-conn) [{:note/name name :note/content content}]))))))
