@@ -130,7 +130,7 @@
   [event]
   (if (= "ShiftLeft" (:code event))
     (let [delta (- (current-time-millis) (:last-shift-press @state 0))]
-      (when (> 500 delta)
+      (when (> 200 delta)
         (on-hit-shift)))))
 
 ; this initializer will be called once per document

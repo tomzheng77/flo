@@ -79,6 +79,7 @@
                 [:html :body {:height "100%"}]
                 [:.ql-toolbar {:flex-shrink "0"}]
                 [:.ql-container {:height "auto"}]
+                [:.ql-syntax {:font-size "11px" :opacity 0.8}]
                 [:#editor {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}
                  ["::selection" {:background-color "#3DA1D2" :color "#FFF"}]
                  [:.ql-editor
