@@ -64,11 +64,11 @@
      [(str ".ql-indent-" i) {:padding-left (str (+ initial (* step i)) "em")}])])
 
 (def style-css
-  (css [:body {:margin          "0"
-               :display         "flex"
-               :flex-direction  "column"
-               :justify-content "center"}]
-       [:html :body {:height "100%"}]
+  (css [:#app-inner {:margin          "0"
+                     :display         "flex"
+                     :flex-direction  "column"
+                     :justify-content "center"}]
+       [:html :body :#app :#app-inner {:margin 0 :height "100%"}]
        [:.ql-toolbar {:flex-shrink "0"}]
        [:.ql-container {:height "auto"}]
        [:#editor [:.ql-editor [:.ql-syntax {:font-size "11px" :opacity 1}]]]
