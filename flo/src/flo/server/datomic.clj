@@ -27,5 +27,7 @@
              :note/content      (.getBytes "content" "UTF-8")}])
 
 @(d/transact conn notes)
+
 (def all-notes-q '[:find ?e :where [?e :note/name]])
+(def db (d/db conn))
 (println (d/q all-notes-q db))
