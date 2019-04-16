@@ -56,7 +56,13 @@
 (def drag-width (r/atom 80))
 (def drag-timestamp (r/atom nil))
 (def drag-start (r/atom nil))
-(def history (r/atom []))
+(def history (r/atom (avl/sorted-map)))
+
+(add-watch history :history-changed
+           (fn [_ _ _ new]
+             (let [size (count new)]
+               (if (> size 10)
+                 (println (nth new 9))))))
 
 (defn drag-button []
   (let [timestamp (or @drag-timestamp @time-last-save)
@@ -206,13 +212,6 @@
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
   (def chsk-state state))
-
-(def history (r/atom (avl/sorted-map)))
-(add-watch history :history-changed
-  (fn [_ _ _ new]
-    (let [size (count new)]
-      (if (> size 10)
-        (println (nth new 9))))))
 
 (go-loop []
   (let [item (<! ch-chsk)]
