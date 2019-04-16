@@ -40,6 +40,7 @@
 
 (defn get-content [] (json->clj (.getContents @instance)))
 (defn set-content [contents]
+  (.setText @instance "")
   (.setContents @instance (clj->js contents)))
 
 (defn set-selection
