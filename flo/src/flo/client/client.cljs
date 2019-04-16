@@ -225,7 +225,7 @@
 
 (add-watch drag-timestamp :drag-changed
   (fn [_ _ _ timestamp]
-    (chsk-send! [:flo/seek (js/Math.round timestamp)])))
+    (chsk-send! [:flo/seek [file-id (js/Math.round timestamp)]])))
 
 (js/setInterval detect-change 1000)
 

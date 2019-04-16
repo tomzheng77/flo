@@ -37,8 +37,8 @@
 
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/seek timestamp]
-    (do (swap! seek-location #(assoc % (:uid item) timestamp)))
+    [:flo/seek [file-id timestamp]]
+    (do (swap! seek-location #(assoc % (:uid item) [file-id timestamp])))
     [:flo/save [file-id content]]
     (do (debug "saving" file-id)
         (set-note file-id content))
@@ -64,8 +64,8 @@
   (go (while (= init-id @run-iteration-id)
         (locking seek-location
           (when (not-empty @seek-location)
-            (doseq [[k v] @seek-location]
-              (chsk-send! k [:flo/history v]))
+            (doseq [[uid [file-id timestamp]] @seek-location]
+              (chsk-send! uid [:flo/history [file-id timestamp]]))
             (reset! seek-location {})))
         (Thread/sleep 50))))
 
