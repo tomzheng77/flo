@@ -174,18 +174,20 @@
       (println "show latest"))))
 
 (add-watch state :disable-edit
-  (fn [_ _ _ new]
-    (if (or (:search new) (:drag-timestamp new))
-      (quill/disable-edit)
-      (do (quill/enable-edit)
-          (quill/focus)
-          (quill/set-cursor-at-selection)))))
+  (fn [_ _ old new]
+    (if (or (not= (:search old) (:search new)) (not= (:drag-timestamp old) (:drag-timestamp new)))
+      (if (or (:search new) (:drag-timestamp new))
+        (quill/disable-edit)
+        (do (quill/enable-edit)
+            (quill/focus)
+            (quill/set-cursor-at-selection))))))
 
 (add-watch state :auto-search
   (fn [_ _ old new]
     (if (or (not= (:search old) (:search new))
             (not= (:select old) (:select new)))
       (if (:search new)
+        (println "navigate")
         (navigate (:search new) (:select new 0))))))
 
 (reset! state @state)
