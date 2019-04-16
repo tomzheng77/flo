@@ -48,11 +48,7 @@
   (r/atom {:last-shift-press nil
            :search           nil
            :select           nil
-           :content          nil
-           :window-width     (.-innerWidth js/window)
-           :drag-width       80
-           :drag-position    (- (.-innerWidth js/window) 80)
-           :drag-start       nil}))
+           :content          nil}))
 
 (def window-width (r/atom (.-innerWidth js/window)))
 (def drag-width (r/atom 80))
