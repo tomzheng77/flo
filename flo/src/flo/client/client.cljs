@@ -58,6 +58,10 @@
 (def drag-width (r/atom 80))
 (def drag-position (r/atom (- @window-width @drag-width)))
 (def drag-start (r/atom nil))
+(add-watch window-width :window-width-changed
+  (fn [_ _ _ new] (println new)
+    (if (> (+ @drag-position @drag-width) new)
+      (reset! drag-position (- new @drag-width)))))
 
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
