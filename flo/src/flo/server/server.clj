@@ -18,16 +18,12 @@
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.anti-forgery :as anti-forgery :refer [wrap-anti-forgery]]
             [clojure.core.async :as async :refer [chan <! <!! >! >!! put! chan go go-loop]]
-            [clojure.set :as set]
             [clojure.data :refer [diff]]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
             [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [flo.server.store :refer [get-note set-note get-note-created get-note-updated]]
-            [flo.server.static :refer [style-css index-html]])
-  (:import (java.util UUID Base64)))
+            [flo.server.static :refer [style-css index-html]]))
 
 (timbre/merge-config!
   {:level      :debug
