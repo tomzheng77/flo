@@ -70,38 +70,39 @@
   (let [timestamp (or @drag-timestamp @time-last-save)
         drag-position (/ (* (- timestamp @time-start) (- @window-width @drag-width))
                          (- @time-last-save @time-start))]
-    [:div {:style {:height           "100%"
-                   :text-indent      "0"
-                   :text-align       "center"
-                   :background-color "yellow"
-                   :color            "black"
-                   :cursor           "pointer"
-                   :user-select      "none"
-                   :line-height      "15px"
-                   :font-size        8
-                   :width            @drag-width
-                   :margin-left      drag-position}
+    [:div {:style         {:height           "100%"
+                           :text-indent      "0"
+                           :text-align       "center"
+                           :background-color "#ffe795"
+                           :font-family      "Monospace"
+                           :padding-top      "2px"
+                           :padding-bottom   "2px"
+                           :color            "#000"
+                           :cursor           "pointer"
+                           :user-select      "none"
+                           :line-height      "10px"
+                           :font-size        8
+                           :width            @drag-width
+                           :margin-left      drag-position}
            :on-mouse-down (fn [event]
                             (let [clj-event (to-clj-event event)]
-                              (reset! drag-start {:x (:mouse-x clj-event)
-                                                  :y (:mouse-y clj-event)
+                              (reset! drag-start {:x        (:mouse-x clj-event)
+                                                  :y        (:mouse-y clj-event)
                                                   :position drag-position})))}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 (defn drag-bar []
-  [:div {:style {:height           "30px"
-                 :background-color "red"
-                 :color            "#FFF"
-                 :font-family      "Monospace"
-                 :text-indent      "10px"
+  [:div {:style {:height           "24px"
+                 :background-color "#ffdf70"
                  :flex-grow        "0"
-                 :flex-shrink      "0"}}
+                 :flex-shrink      "0"
+                 :overflow         "hidden"}}
    [drag-button]])
 
 (defn status-bar []
-  [:div {:style {:height           "30px"
+  [:div {:style {:height           "24px"
                  :background-color "#3DA1D2"
-                 :line-height      "30px"
+                 :line-height      "24px"
                  :color            "#FFF"
                  :font-family      "Monospace"
                  :font-size        "10px"
@@ -117,8 +118,8 @@
                   :flex-direction "column"}} [:div#editor]]
    [:div {:style {:flex-grow 1 :display (if @drag-timestamp "flex" "none")
                   :flex-direction "column"}} [:div#editor-read-only]]
-   [drag-bar]
-   [status-bar]])
+   [status-bar]
+   [drag-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
 (quill/new-instance)
