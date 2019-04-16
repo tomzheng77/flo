@@ -64,7 +64,7 @@
 (def drag-timestamp (r/cursor state [:drag-timestamp]))
 (def drag-start (r/cursor state [:drag-start]))
 (def history (r/cursor state [:history]))
-(reset! time-start (max (- @time-last-save 500) time-created))
+(reset! time-start (max (- @time-last-save 10800) time-created))
 
 (add-watch history :history-changed
            (fn [_ _ _ new]
@@ -74,8 +74,8 @@
 
 (defn drag-button []
   (let [timestamp (or @drag-timestamp @time-last-save)
-        drag-position (/ (* (- timestamp time-created) (- @window-width @drag-width))
-                         (- @time-last-save time-created))]
+        drag-position (/ (* (- timestamp @time-start) (- @window-width @drag-width))
+                         (- @time-last-save @time-start))]
     [:div {:style {:height           "100%"
                    :text-indent      "0"
                    :text-align       "center"
@@ -234,7 +234,7 @@
             width @window-width]
         (let [drag-position (min (max 0 (+ dx start-position)) (- width 80))
               max-drag-position (- @window-width @drag-width)
-              new-drag-timestamp (+ time-created (/ (* (- @time-last-save time-created) drag-position) max-drag-position))]
+              new-drag-timestamp (+ @time-start (/ (* (- @time-last-save @time-start) drag-position) max-drag-position))]
           (if (= drag-position max-drag-position)
             (reset! drag-timestamp nil)
             (reset! drag-timestamp new-drag-timestamp)))))))
