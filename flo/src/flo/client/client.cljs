@@ -50,7 +50,6 @@
            :select           nil
            :content          nil}))
 
-(def status (r/atom nil))
 (def window-width (r/atom (.-innerWidth js/window)))
 (def drag-width (r/atom 80))
 (def drag-position (r/atom (- @window-width @drag-width)))
@@ -96,7 +95,7 @@
                   :font-size        "10px"
                   :text-indent      "10px"
                   :flex-grow        "0"
-                  :flex-shrink      "0"}} @status]])
+                  :flex-shrink      "0"}} (str "Search: " (pr-str (:search @state)))]])
 
 (r/render [app] (js/document.getElementById "app"))
 (quill/new-instance)
@@ -122,7 +121,6 @@
 
 (add-watch state :auto-search
   (fn [_ _ old new]
-    (reset! status (str "Search: " (pr-str (:search new))))
     (if (or (not= (:search old) (:search new))
             (not= (:select old) (:select new)))
       (if (:search new)
