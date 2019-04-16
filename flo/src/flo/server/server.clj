@@ -43,7 +43,7 @@
 (defn on-chsk-receive [item]
   (match (:event item)
     [:flo/seek timestamp]
-    (swap! seek-location #(assoc % (:client-id item) timestamp))
+    (do (swap! seek-location #(assoc % (:uid item) timestamp)))
     [:flo/save [file-id content]]
     (do (debug "saving" file-id)
         (set-note file-id content))
