@@ -154,13 +154,16 @@
           (recur lo (dec mid) best))))))
 
 (add-watch state :show-history
-  (fn [_ _ old new]
-    (if (or (not= (:drag-timestamp old) (:drag-timestamp new))
-            (not= (:history old) (:history new)))
-      (let [timestamp (:drag-timestamp new) history (:history new)]
-        (when timestamp
-          (let [[_ note] (avl/nearest history <= timestamp)]
-            (quill-ro/set-content note)))))))
+  (let [last-show-note (atom nil)]
+    (fn [_ _ old new]
+      (if (or (not= (:drag-timestamp old) (:drag-timestamp new))
+              (not= (:history old) (:history new)))
+        (let [timestamp (:drag-timestamp new) history (:history new)]
+          (when timestamp
+            (let [[_ note] (avl/nearest history <= timestamp)]
+              (when (not= last-show-note note)
+                (reset! last-show-note note)
+                (quill-ro/set-content note)))))))))
 
 (add-watch state :cancel-history
   (fn [_ _ old new]
