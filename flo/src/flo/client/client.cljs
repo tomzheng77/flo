@@ -30,11 +30,13 @@
         (read-string)))
 
 (def time-created (:time-created configuration))
-(def time-last-save (r/atom (current-time-millis)))
+(def time-updated (:time-updated configuration))
+(def time-last-save (r/atom time-updated))
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 
 (println "time created:" time-created)
+(println "time updated:" time-updated)
 (println "time last save:" time-last-save)
 (println "file:" file-id)
 (println "initial content:" initial-content)
