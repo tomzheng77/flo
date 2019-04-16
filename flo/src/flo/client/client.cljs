@@ -73,11 +73,12 @@
     [:div {:style         {:height           "100%"
                            :text-indent      "0"
                            :text-align       "center"
-                           :background-color "#ffe795"
+                           ;:background-color "#ffe795"
+                           :background-color "#9e2023"
                            :font-family      "Monospace"
                            :padding-top      "2px"
                            :padding-bottom   "2px"
-                           :color            "#000"
+                           :color            "#FFF"
                            :cursor           "pointer"
                            :user-select      "none"
                            :line-height      "10px"
@@ -93,7 +94,8 @@
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
-                 :background-color "#ffdf70"
+                 ;:background-color "#ffdf70"
+                 :background-color "#9e4446"
                  :flex-grow        "0"
                  :flex-shrink      "0"
                  :overflow         "hidden"}}
