@@ -261,6 +261,7 @@
 (defn save-content [content]
   (println content)
   (if (:open? @chsk-state)
+    (reset! time-last-save (current-time-millis))
     (chsk-send! [:flo/save [file-id content]])))
 
 (def last-save (atom nil))
