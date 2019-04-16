@@ -77,27 +77,34 @@
                                                   :position drag-position})))}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
+(defn drag-bar []
+  [:div {:style {:height           "30px"
+                 :background-color "red"
+                 :color            "#FFF"
+                 :font-family      "Monospace"
+                 :text-indent      "10px"
+                 :flex-grow        "0"
+                 :flex-shrink      "0"}}
+   [drag-button]])
+
+(defn status-bar []
+  [:div {:style {:height           "30px"
+                 :background-color "#3DA1D2"
+                 :line-height      "30px"
+                 :color            "#FFF"
+                 :font-family      "Monospace"
+                 :font-size        "10px"
+                 :text-indent      "10px"
+                 :flex-grow        "0"
+                 :flex-shrink      "0"}}
+   (str "Search: " (pr-str (:search @state)))])
+
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
    [:div#editor]
-   [:div {:style {:height           "30px"
-                  :background-color "red"
-                  :color            "#FFF"
-                  :font-family      "Monospace"
-                  :text-indent      "10px"
-                  :flex-grow        "0"
-                  :flex-shrink      "0"}}
-    [drag-button]]
-   [:div {:style {:height           "30px"
-                  :background-color "#3DA1D2"
-                  :line-height      "30px"
-                  :color            "#FFF"
-                  :font-family      "Monospace"
-                  :font-size        "10px"
-                  :text-indent      "10px"
-                  :flex-grow        "0"
-                  :flex-shrink      "0"}} (str "Search: " (pr-str (:search @state)))]])
+   [drag-bar]
+   [status-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
 (quill/new-instance)
