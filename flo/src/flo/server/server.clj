@@ -81,8 +81,8 @@
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get-note file-id)
-          time-created (.getTime (get-note-created file-id))
-          time-updated (.getTime (get-note-updated file-id))
+          time-created (.getTime (or (get-note-created file-id) (new Date)))
+          time-updated (.getTime (or (get-note-updated file-id) (new Date)))
           session {:uid (.toString (UUID/randomUUID))}]
       {:status  200
        :headers {"Content-Type" "text/html"}
