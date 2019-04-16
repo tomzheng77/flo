@@ -16,6 +16,7 @@
                  [cljsjs/quill "1.3.6-0"]
                  [cljsjs/jquery "3.2.1-0"]
                  [cljsjs/moment "2.24.0-0"]
+                 [cljsjs/ace "1.4.2-0"]
                  [reagent "0.8.1"]
                  [clj-commons/cljss "1.6.4"]
                  [sablono "0.8.5"]
