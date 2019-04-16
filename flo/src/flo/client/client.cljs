@@ -53,7 +53,7 @@
 (def status (r/atom nil))
 (def window-width (r/atom (.-innerWidth js/window)))
 (def drag-width (r/atom 80))
-(def drag-position (r/atom 100))
+(def drag-position (r/atom (- @window-width @drag-width)))
 (def drag-start (r/atom nil))
 (add-watch drag-start :hover
            (fn [a b c d]
