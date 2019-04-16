@@ -29,7 +29,6 @@
         (b64/decodeString)
         (read-string)))
 
-(def window-width (r/atom (.-innerWidth js/window)))
 (def time-created (:time-created configuration))
 (def time-now (r/atom (current-time-millis)))
 (def file-id (:file-id configuration))
@@ -52,7 +51,7 @@
            :content          nil}))
 
 (def status (r/atom nil))
-(def window-width (r/atom 100))
+(def window-width (r/atom (.-innerWidth js/window)))
 (def drag-position (r/atom 100))
 (def drag-start (r/atom nil))
 (add-watch drag-start :hover
