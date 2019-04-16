@@ -109,12 +109,14 @@
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get-note file-id)
-          time-created (get-note-created file-id)]
+          time-created (.getTime (get-note-created file-id))
+          time-updated (.getTime (get-note-created file-id))]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session {:uid (.toString (UUID/randomUUID))}
-       :body    (index-html {:file-id file-id :content content
-                             :time-created (.getTime time-created)})}))
+       :body    (index-html {:file-id file-id
+                             :content content
+                             :time-created time-created})}))
   (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel

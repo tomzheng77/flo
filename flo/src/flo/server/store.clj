@@ -56,6 +56,13 @@
     [?e :note/name ~name ?tx]
     [?tx :db/txInstant ?tx-time]])
 
+(defn note-updated-q [name]
+  `[:find ?content ?tx-time
+    :where
+    [?e :note/name ~name]
+    [?e :note/content ?content ?tx]
+    [?tx :db/txInstant ?tx-time]])
+
 (defn get-all-notes []
   (let [db (d/db (get-conn))]
     (d/q (all-notes-q) db)))
@@ -83,6 +90,10 @@
 (defn get-note-created [name]
   (let [db (d/db (get-conn))]
     (ffirst (d/q (note-created-q name) db))))
+
+(defn get-note-updated [name]
+  (let [db (d/db (get-conn))]
+    (vec (d/q (note-updated-q name) db))))
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
