@@ -64,7 +64,7 @@
 (def drag-timestamp (r/cursor state [:drag-timestamp]))
 (def drag-start (r/cursor state [:drag-start]))
 (def history (r/cursor state [:history]))
-(reset! time-start (max (- @time-last-save 10800000) time-created))
+(reset! time-start (min (- @time-last-save 1000) (max (- @time-last-save 10800000) time-created)))
 
 (defn drag-button []
   (let [timestamp (or @drag-timestamp @time-last-save)
