@@ -13,6 +13,7 @@
     [taoensso.sente :as sente :refer [cb-success?]]
     [taoensso.sente.packers.transit :as transit]
     [clojure.string :as str]
+    [clojure.data.avl :as avl]
     [cljsjs.jquery]
     [cljsjs.quill]
     [cljsjs.moment]
@@ -206,10 +207,12 @@
   (def chsk-send! send-fn)
   (def chsk-state state))
 
-(def history (r/atom (sorted-map)))
+(def history (r/atom (avl/sorted-map)))
 (add-watch history :history-changed
   (fn [_ _ _ new]
-    (println new)))
+    (let [size (count new)]
+      (if (> size 10)
+        (println (nth new 9))))))
 
 (go-loop []
   (let [item (<! ch-chsk)]
