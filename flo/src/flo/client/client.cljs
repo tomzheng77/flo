@@ -143,9 +143,9 @@
                 occur-uniq (sort-by :start (remove-overlaps occur))
                 target     (and (not-empty occur-uniq)
                                 (nth occur-uniq (mod select (count occur-uniq))))]
-            (if-not target
-              (recur (splice-last s))
-              (quill/goto (:index target) (:length target)))))))))
+            (if target
+              (quill/goto (:index target) (:length target))
+              (recur (splice-last s)))))))))
 
 (defn last-before [list value]
   (loop [lo 0 hi (dec (count list)) best nil]
