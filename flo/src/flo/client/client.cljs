@@ -264,13 +264,12 @@
 
 (def last-save (atom nil))
 (defn detect-change []
-  (when (nil? @drag-timestamp)
-    (let [content (quill/get-content)]
-      (locking last-save
-        (when (nil? @last-save) (reset! last-save content))
-        (when (not= content @last-save)
-          (save-content content)
-          (reset! last-save content))))))
+  (let [content (quill/get-content)]
+    (locking last-save
+      (when (nil? @last-save) (reset! last-save content))
+      (when (not= content @last-save)
+        (save-content content)
+        (reset! last-save content)))))
 
 (add-watch drag-timestamp :drag-changed
   (fn [_ _ _ timestamp]
