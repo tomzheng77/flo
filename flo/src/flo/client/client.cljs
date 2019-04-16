@@ -1,7 +1,6 @@
 (ns flo.client.client
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
-    [cljs.core.async.macros :refer [go]]
     [flo.client.macros :refer [console-log]])
   (:require
     [flo.client.quill :as quill]
@@ -205,6 +204,11 @@
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
   (def chsk-state state))
+
+(go-loop []
+  (let [item (<! ch-chsk)]
+    (println item))
+  (recur))
 
 (defn save-content [content]
   (if (:open? @chsk-state)

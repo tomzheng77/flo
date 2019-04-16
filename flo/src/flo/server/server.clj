@@ -37,6 +37,8 @@
 
 ; map of client-id => timestamp
 (def seek-location (atom {}))
+(defonce run-iteration-id (atom (UUID/randomUUID)))
+(reset! run-iteration-id (UUID/randomUUID))
 
 (defn on-chsk-receive [item]
   (match (:event item)
@@ -62,6 +64,15 @@
     (let [item (<! ch-chsk)]
       (on-chsk-receive item))
     (recur)))
+
+(let [init-id @run-iteration-id]
+  (go (while (= init-id @run-iteration-id)
+        (locking seek-location
+          (when (not-empty @seek-location)
+            (doseq [[k v] @seek-location]
+              (chsk-send! k [:flo/history v]))
+            (reset! seek-location {})))
+        (Thread/sleep 50))))
 
 (defn indent-styles [initial step]
   [[:li {:padding-left (str initial "em") :list-style "none"}]
@@ -113,10 +124,11 @@
     (let [file-id (get (:query-params request) "id" "default")
           content (get-note file-id)
           time-created (.getTime (get-note-created file-id))
-          time-updated (.getTime (get-note-updated file-id))]
+          time-updated (.getTime (get-note-updated file-id))
+          session {:uid (.toString (UUID/randomUUID))}]
       {:status  200
        :headers {"Content-Type" "text/html"}
-       :session {:uid (.toString (UUID/randomUUID))}
+       :session session
        :body    (index-html {:file-id file-id
                              :content content
                              :time-created time-created
