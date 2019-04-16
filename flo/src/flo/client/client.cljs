@@ -64,6 +64,7 @@
 (def drag-timestamp (r/cursor state [:drag-timestamp]))
 (def drag-start (r/cursor state [:drag-start]))
 (def history (r/cursor state [:history]))
+(reset! time-start (max (- @time-last-save 500) time-created))
 
 (add-watch history :history-changed
            (fn [_ _ _ new]
