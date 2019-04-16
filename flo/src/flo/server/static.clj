@@ -31,9 +31,10 @@
        [:html :body :#app :#app-inner {:margin 0 :height "100%"}]
        [:.ql-toolbar {:flex-shrink "0"}]
        [:.ql-container {:height "auto"}]
-       [:#editor [:.ql-editor [:.ql-syntax {:font-size "11px" :opacity 1}]]]
-       [:#editor {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}
+       [:#editor :#editor-read-only
+        {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}
         ["::selection" {:background-color "#3DA1D2" :color "#FFF"}]
+        [:.ql-editor [:.ql-syntax {:font-size "11px" :opacity 1}]]
         [:.ql-editor
          [:ol :ul {:padding-left "0"}
           [:li:before {:content "'-'"}]

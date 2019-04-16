@@ -4,8 +4,8 @@
     [flo.client.macros :refer [console-log]])
   (:require
     [flo.client.quill :as quill]
-    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all
-                                  intersects remove-overlaps to-clj-event]]
+    [flo.client.quill-read-only :as quill-ro]
+    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
@@ -66,12 +66,6 @@
 (def history (r/cursor state [:history]))
 (reset! time-start (max (- @time-last-save 10800) time-created))
 
-(add-watch history :history-changed
-           (fn [_ _ _ new]
-             (let [size (count new)]
-               (if (> size 10)
-                 (println (nth new 9))))))
-
 (defn drag-button []
   (let [timestamp (or @drag-timestamp @time-last-save)
         drag-position (/ (* (- timestamp @time-start) (- @window-width @drag-width))
@@ -119,13 +113,17 @@
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
-   [:div#editor]
+   [:div {:style {:flex-grow 1 :display (if @drag-timestamp "none" "flex")
+                  :flex-direction "column"}} [:div#editor]]
+   [:div {:style {:flex-grow 1 :display (if @drag-timestamp "flex" "none")
+                  :flex-direction "column"}} [:div#editor-read-only]]
    [drag-bar]
    [status-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
 (quill/new-instance)
 (quill/set-content initial-content)
+(quill-ro/new-instance)
 
 (defn navigate [search select]
   (if (empty? search)
@@ -158,18 +156,16 @@
   (fn [_ _ old new]
     (if (or (not= (:drag-timestamp old) (:drag-timestamp new))
             (not= (:history old) (:history new)))
-      (let [timestamp (:drag-timestamp new)
-            history (:history new)]
+      (let [timestamp (:drag-timestamp new) history (:history new)]
         (when timestamp
           (let [[_ note] (avl/nearest history <= timestamp)]
-            (println note)
-            (quill/disable-edit)
-            (quill/set-content note)))))))
+            (quill-ro/disable-edit)
+            (quill-ro/set-content note)))))))
 
 (add-watch state :cancel-history
   (fn [_ _ old new]
     (if (and (not (:drag-timestamp new)) (:drag-timestamp old))
-      (println "stop history"))))
+      (println "show latest"))))
 
 (add-watch state :disable-edit
   (fn [_ _ _ new]
@@ -262,7 +258,6 @@
   (recur))
 
 (defn save-content [content]
-  (println content)
   (if (:open? @chsk-state)
     (reset! time-last-save (current-time-millis))
     (chsk-send! [:flo/save [file-id content]])))
