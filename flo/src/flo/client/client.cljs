@@ -142,6 +142,35 @@
               (recur (splice-last s))
               (quill/goto (:index target) (:length target)))))))))
 
+(defn last-before [list value]
+  (loop [lo 0 hi (dec (count list)) best nil]
+    (if-not (<= lo hi)
+      (or best [nil nil])
+      (let [mid (/ (+ lo hi) 2)]
+        (if (>= value (nth list mid))
+          (recur (inc mid) hi mid)
+          (recur lo (dec mid) best))))))
+
+(add-watch state :show-history
+  (fn [_ _ old new]
+    (if (or (not= (:drag-timestamp old) (:drag-timestamp new))
+            (not= (:history old) (:history new)))
+      (let [timestamp (:drag-timestamp new)
+            history (:history new)]
+        (when timestamp
+          (let [[_ note] (avl/nearest history <= timestamp)]
+            (println note)
+            (quill/disable-edit)
+            (quill/set-content note)))))))
+
+(add-watch state :disable-edit
+  (fn [_ _ _ new]
+    (if (or (:search new) (:drag-timestamp new))
+      (quill/disable-edit)
+      (do (quill/enable-edit)
+          (quill/focus)
+          (quill/set-cursor-at-selection)))))
+
 (add-watch state :auto-search
   (fn [_ _ old new]
     (if (or (not= (:search old) (:search new))
@@ -153,12 +182,8 @@
 
 (defn on-hit-shift []
   (if-not (= "" (:search @state))
-    (do (swap! state #(-> % (assoc :search "") (assoc :select 0)))
-        (quill/disable-edit))
-    (do (swap! state #(-> % (assoc :search nil) (assoc :select 0)))
-        (quill/enable-edit)
-        (quill/focus)
-        (quill/set-cursor-at-selection))))
+    (swap! state #(-> % (assoc :search "") (assoc :select 0)))
+    (swap! state #(-> % (assoc :search nil) (assoc :select 0)))))
 
 (defn on-press-key
   [event]
@@ -232,12 +257,13 @@
 
 (def last-save (atom nil))
 (defn detect-change []
-  (let [content (quill/get-content)]
-    (locking last-save
-      (when (nil? @last-save) (reset! last-save content))
-      (when (not= content @last-save)
-        (save-content content)
-        (reset! last-save content)))))
+  (when (nil? @drag-timestamp)
+    (let [content (quill/get-content)]
+      (locking last-save
+        (when (nil? @last-save) (reset! last-save content))
+        (when (not= content @last-save)
+          (save-content content)
+          (reset! last-save content))))))
 
 (add-watch drag-timestamp :drag-changed
   (fn [_ _ _ timestamp]
