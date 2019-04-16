@@ -48,15 +48,16 @@
   (r/atom {:last-shift-press nil
            :search           nil
            :select           nil
-           :content          nil}))
+           :content          nil
+           :window-width     (.-innerWidth js/window)
+           :drag-width       80
+           :drag-position    (- (.-innerWidth js/window) 80)
+           :drag-start       nil}))
 
 (def window-width (r/atom (.-innerWidth js/window)))
 (def drag-width (r/atom 80))
 (def drag-position (r/atom (- @window-width @drag-width)))
 (def drag-start (r/atom nil))
-(add-watch drag-start :hover
-           (fn [a b c d]
-    (println a b c d)))
 
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
