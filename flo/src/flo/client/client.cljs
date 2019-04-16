@@ -3,6 +3,7 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require
+    [flo.client.ace :as ace]
     [flo.client.quill :as quill]
     [flo.client.quill-read-only :as quill-ro]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
