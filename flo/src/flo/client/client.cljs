@@ -258,7 +258,7 @@
   (recur))
 
 (defn save-content [content]
-  (if (:open? @chsk-state)
+  (when (:open? @chsk-state)
     (reset! time-last-save (current-time-millis))
     (chsk-send! [:flo/save [file-id content]])))
 
