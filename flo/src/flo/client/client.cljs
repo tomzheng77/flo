@@ -36,7 +36,6 @@
 
 (println "time created:" time-created)
 (println "time updated:" time-updated)
-(println "time last save:" time-last-save)
 (println "file:" file-id)
 (println "initial content:" initial-content)
 
