@@ -22,9 +22,9 @@
             [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
-            [flo.server.store :refer [get-note set-note get-note-created get-note-updated]]
+            [flo.server.store :refer [get-note get-note-at set-note get-note-created get-note-updated]]
             [flo.server.static :refer [style-css index-html]])
-  (:import (java.util UUID)))
+  (:import (java.util UUID Date)))
 
 (timbre/merge-config!
   {:level      :debug
@@ -65,7 +65,8 @@
         (locking seek-location
           (when (not-empty @seek-location)
             (doseq [[uid [file-id timestamp]] @seek-location]
-              (chsk-send! uid [:flo/history [file-id timestamp]]))
+              (let [note (get-note-at file-id timestamp)]
+                (chsk-send! uid [:flo/history [file-id timestamp note]])))
             (reset! seek-location {})))
         (Thread/sleep 50))))
 

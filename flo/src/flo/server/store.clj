@@ -78,6 +78,8 @@
 ; Date out = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
 (defn ldt-to-date [ldt]
   (cond
+    (instance? Long ldt) (new Date ldt)
+    (instance? Integer ldt) (new Date ldt)
     (instance? LocalDateTime ldt)
     (Date/from (.toInstant (.atZone ldt (ZoneId/systemDefault))))
     (instance? Date ldt) ldt))
