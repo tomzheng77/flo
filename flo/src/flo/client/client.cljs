@@ -163,6 +163,11 @@
             (quill/disable-edit)
             (quill/set-content note)))))))
 
+(add-watch state :cancel-history
+  (fn [_ _ old new]
+    (if (and (not (:drag-timestamp new)) (:drag-timestamp old))
+      (println "stop history"))))
+
 (add-watch state :disable-edit
   (fn [_ _ _ new]
     (if (or (:search new) (:drag-timestamp new))
@@ -227,7 +232,9 @@
         (let [drag-position (min (max 0 (+ dx start-position)) (- width 80))
               max-drag-position (- @window-width @drag-width)
               new-drag-timestamp (+ time-created (/ (* (- @time-last-save time-created) drag-position) max-drag-position))]
-          (reset! drag-timestamp new-drag-timestamp))))))
+          (if (= drag-position max-drag-position)
+            (reset! drag-timestamp nil)
+            (reset! drag-timestamp new-drag-timestamp)))))))
 
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
 (set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))
@@ -252,6 +259,7 @@
   (recur))
 
 (defn save-content [content]
+  (println content)
   (if (:open? @chsk-state)
     (chsk-send! [:flo/save [file-id content]])))
 
