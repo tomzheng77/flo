@@ -64,7 +64,7 @@
 (def drag-timestamp (r/cursor state [:drag-timestamp]))
 (def drag-start (r/cursor state [:drag-start]))
 (def history (r/cursor state [:history]))
-(reset! time-start (max (- @time-last-save 10800) time-created))
+(reset! time-start (max (- @time-last-save 10800000) time-created))
 
 (defn drag-button []
   (let [timestamp (or @drag-timestamp @time-last-save)
@@ -161,7 +161,7 @@
         (let [timestamp (:drag-timestamp new) history (:history new)]
           (when timestamp
             (let [[_ note] (avl/nearest history <= timestamp)]
-              (when (not= last-show-note note)
+              (when (not= @last-show-note note)
                 (reset! last-show-note note)
                 (quill-ro/set-content note)))))))))
 
