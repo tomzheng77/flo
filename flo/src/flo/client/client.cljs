@@ -30,12 +30,12 @@
         (read-string)))
 
 (def time-created (:time-created configuration))
-(def time-now (r/atom (current-time-millis)))
+(def time-last-save (r/atom (current-time-millis)))
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 
 (println "time created:" time-created)
-(println "time now:" time-now)
+(println "time last save:" time-last-save)
 (println "file:" file-id)
 (println "initial content:" initial-content)
 
@@ -52,6 +52,7 @@
 
 (def status (r/atom nil))
 (def window-width (r/atom (.-innerWidth js/window)))
+(def drag-width (r/atom 80))
 (def drag-position (r/atom 100))
 (def drag-start (r/atom nil))
 (add-watch drag-start :hover
@@ -70,7 +71,7 @@
                   :flex-grow        "0"
                   :flex-shrink      "0"}}
     [:div {:style {:height           "100%"
-                   :width            "80px"
+                   :width            @drag-width
                    :text-indent      "0"
                    :text-align       "center"
                    :background-color "yellow"
@@ -85,7 +86,8 @@
                               (reset! drag-start {:x (:mouse-x clj-event)
                                                   :y (:mouse-y clj-event)
                                                   :position @drag-position})))}
-     (.format (js/moment (+ time-created (* 5000 @drag-position))) "YYYY-MM-DD h:mm:ss a")]]
+     (let [timestamp (+ time-created (/ (* (- @time-last-save time-created) @drag-position) (- @window-width @drag-width)))]
+       (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a"))]]
    [:div {:style {:height           "30px"
                   :background-color "#3DA1D2"
                   :line-height      "30px"
