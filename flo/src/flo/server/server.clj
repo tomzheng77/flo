@@ -35,10 +35,13 @@
   {:level      :debug
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
+; map of client-id => timestamp
+(def seek-location (atom {}))
+
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/seek [time]]
-    (println time)
+    [:flo/seek timestamp]
+    (swap! seek-location #(assoc % (:client-id item) timestamp))
     [:flo/save [file-id content]]
     (do (debug "saving" file-id)
         (set-note file-id content))

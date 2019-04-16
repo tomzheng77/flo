@@ -219,6 +219,10 @@
         (save-content content)
         (reset! last-save content)))))
 
+(add-watch drag-timestamp :drag-changed
+  (fn [_ _ _ timestamp]
+    (chsk-send! [:flo/seek (js/Math.round timestamp)])))
+
 (js/setInterval detect-change 1000)
 
 (defn on-js-reload [])
