@@ -47,13 +47,6 @@
    :mouse-x (. event -pageX)
    :mouse-y (. event -pageY)})
 
-(defn add-event-listener [type listener]
-  (println "adding event listener for" type)
-  (js/document.body.addEventListener type
-    (fn [event]
-      (let [clj-event (to-clj-event event)]
-        (listener clj-event)))))
-
 ; https://stackoverflow.com/questions/18735665/how-can-i-get-the-positions-of-regex-matches-in-clojurescript
 (defn re-pos [re s]
   (let [re (js/RegExp. (.-source re) "gms")]

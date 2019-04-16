@@ -5,7 +5,7 @@
     [flo.client.macros :refer [console-log]])
   (:require
     [flo.client.quill :as quill]
-    [flo.client.functions :refer [json->clj current-time-millis splice-last add-event-listener find-all
+    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all
                                   intersects remove-overlaps to-clj-event]]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
