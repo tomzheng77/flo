@@ -183,14 +183,11 @@
               new-drag-timestamp (+ time-created (/ (* (- @time-last-save time-created) drag-position) max-drag-position))]
           (reset! drag-timestamp new-drag-timestamp))))))
 
-; this initializer will be called once per document
-(defn initialize-once []
-  ; or in the form of document.onmousemove = handleMouseMove;
-  (add-event-listener "keydown" on-press-key)
-  (add-event-listener "keyup" on-release-key)
-  (set! (.-onmousemove js/document) (fn [event] (on-mouse-move (to-clj-event event))))
-  (set! (.-onmouseup js/document) #(reset! drag-start nil))
-  (set! (.-onresize js/window) #(reset! window-width (.-innerWidth js/window))))
+(set! (.-onkeydown js/document) #(on-press-key (to-clj-event %)))
+(set! (.-onkeyup js/document) #(on-release-key (to-clj-event %)))
+(set! (.-onmousemove js/document) (fn [event] (on-mouse-move (to-clj-event event))))
+(set! (.-onmouseup js/document) #(reset! drag-start nil))
+(set! (.-onresize js/window) #(reset! window-width (.-innerWidth js/window)))
 
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk" nil
@@ -216,5 +213,3 @@
 (js/setInterval detect-change 1000)
 
 (defn on-js-reload [])
-(when-not js/window.initialized (initialize-once))
-(set! js/window.initialized true)
