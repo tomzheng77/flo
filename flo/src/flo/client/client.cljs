@@ -29,8 +29,9 @@
         (b64/decodeString)
         (read-string)))
 
+(def window-width (r/atom (.-innerWidth js/window)))
 (def time-created (:time-created configuration))
-(def time-now (.getTime (new js/Date)))
+(def time-now (r/atom (current-time-millis)))
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 
@@ -51,6 +52,7 @@
            :content          nil}))
 
 (def status (r/atom nil))
+(def window-width (r/atom 100))
 (def drag-position (r/atom 100))
 (def drag-start (r/atom nil))
 (add-watch drag-start :hover
@@ -174,9 +176,8 @@
     (if active-drag
       (let [dx (- mouse-x (:x active-drag))
             start-position (:position active-drag)
-            width (.-innerWidth js/window)]
-        (reset! drag-position (min (max 0 (+ dx start-position))
-                                   (- width 80)))))))
+            width @window-width]
+        (reset! drag-position (min (max 0 (+ dx start-position)) (- width 80)))))))
 
 ; this initializer will be called once per document
 (defn initialize-once []
@@ -184,7 +185,8 @@
   (add-event-listener "keydown" on-press-key)
   (add-event-listener "keyup" on-release-key)
   (set! (.-onmousemove js/document) (fn [event] (on-mouse-move (to-clj-event event))))
-  (set! (.-onmouseup js/document) #(reset! drag-start nil)))
+  (set! (.-onmouseup js/document) #(reset! drag-start nil))
+  (set! (.-onresize js/window) #(reset! window-width (.-innerWidth js/window))))
 
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk" nil
