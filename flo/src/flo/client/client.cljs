@@ -56,12 +56,30 @@
 
 (def window-width (r/atom (.-innerWidth js/window)))
 (def drag-width (r/atom 80))
-(def drag-position (r/atom (- @window-width @drag-width)))
+(def drag-timestamp (r/atom @time-last-save))
 (def drag-start (r/atom nil))
-(add-watch window-width :window-width-changed
-  (fn [_ _ _ new] (println new)
-    (if (> (+ @drag-position @drag-width) new)
-      (reset! drag-position (- new @drag-width)))))
+
+(defn drag-button []
+  (let [timestamp @drag-timestamp
+        drag-position (/ (* (- @drag-timestamp time-created) (- @window-width @drag-width))
+                         (- @time-last-save time-created))]
+    [:div {:style {:height           "100%"
+                   :width            @drag-width
+                   :text-indent      "0"
+                   :text-align       "center"
+                   :background-color "yellow"
+                   :color            "black"
+                   :cursor           "pointer"
+                   :user-select      "none"
+                   :line-height      "15px"
+                   :font-size        8
+                   :margin-left      drag-position}
+           :on-mouse-down (fn [event]
+                            (let [clj-event (to-clj-event event)]
+                              (reset! drag-start {:x (:mouse-x clj-event)
+                                                  :y (:mouse-y clj-event)
+                                                  :position drag-position})))}
+     (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
@@ -74,24 +92,7 @@
                   :text-indent      "10px"
                   :flex-grow        "0"
                   :flex-shrink      "0"}}
-    [:div {:style {:height           "100%"
-                   :width            @drag-width
-                   :text-indent      "0"
-                   :text-align       "center"
-                   :background-color "yellow"
-                   :color            "black"
-                   :cursor           "pointer"
-                   :user-select      "none"
-                   :line-height "15px"
-                   :font-size 8
-                   :margin-left      @drag-position}
-           :on-mouse-down (fn [event]
-                            (let [clj-event (to-clj-event event)]
-                              (reset! drag-start {:x (:mouse-x clj-event)
-                                                  :y (:mouse-y clj-event)
-                                                  :position @drag-position})))}
-     (let [timestamp (+ time-created (/ (* (- @time-last-save time-created) @drag-position) (- @window-width @drag-width)))]
-       (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a"))]]
+    [drag-button]]
    [:div {:style {:height           "30px"
                   :background-color "#3DA1D2"
                   :line-height      "30px"
@@ -181,7 +182,10 @@
       (let [dx (- mouse-x (:x active-drag))
             start-position (:position active-drag)
             width @window-width]
-        (reset! drag-position (min (max 0 (+ dx start-position)) (- width 80)))))))
+        (let [drag-position (min (max 0 (+ dx start-position)) (- width 80))
+              max-drag-position (- @window-width @drag-width)
+              new-drag-timestamp (+ time-created (/ (* (- @time-last-save time-created) drag-position) max-drag-position))]
+          (reset! drag-timestamp new-drag-timestamp))))))
 
 ; this initializer will be called once per document
 (defn initialize-once []
