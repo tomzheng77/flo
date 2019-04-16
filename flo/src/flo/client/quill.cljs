@@ -86,7 +86,7 @@
       (format-text (:end match) 1 {"bold" nil "color" nil}))))
 
 (defn new-instance []
-  (.remove (js/$ ".ql-toolbar"))
+  (.remove (js/$ "#editor .ql-toolbar"))
   (reset! instance (new js/Quill "#editor" (clj->js {"modules" {"toolbar" toolbar-options "imageResize" {} "syntax" true} "theme" "snow"})))
   (.on @instance "text-change"
     (fn [new-delta old-delta source]
