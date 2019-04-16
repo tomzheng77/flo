@@ -52,12 +52,12 @@
 
 (def window-width (r/atom (.-innerWidth js/window)))
 (def drag-width (r/atom 80))
-(def drag-timestamp (r/atom @time-last-save))
+(def drag-timestamp (r/atom nil))
 (def drag-start (r/atom nil))
 
 (defn drag-button []
-  (let [timestamp @drag-timestamp
-        drag-position (/ (* (- @drag-timestamp time-created) (- @window-width @drag-width))
+  (let [timestamp (or @drag-timestamp @time-last-save)
+        drag-position (/ (* (- timestamp time-created) (- @window-width @drag-width))
                          (- @time-last-save time-created))]
     [:div {:style {:height           "100%"
                    :text-indent      "0"
