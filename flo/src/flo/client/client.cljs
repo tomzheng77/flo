@@ -64,7 +64,6 @@
         drag-position (/ (* (- @drag-timestamp time-created) (- @window-width @drag-width))
                          (- @time-last-save time-created))]
     [:div {:style {:height           "100%"
-                   :width            @drag-width
                    :text-indent      "0"
                    :text-align       "center"
                    :background-color "yellow"
@@ -73,6 +72,7 @@
                    :user-select      "none"
                    :line-height      "15px"
                    :font-size        8
+                   :width            @drag-width
                    :margin-left      drag-position}
            :on-mouse-down (fn [event]
                             (let [clj-event (to-clj-event event)]
