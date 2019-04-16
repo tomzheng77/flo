@@ -50,13 +50,18 @@
   (r/atom {:last-shift-press nil
            :search           nil
            :select           nil
-           :content          nil}))
+           :content          nil
+           :window-width     (.-innerWidth js/window)
+           :drag-width       80
+           :drag-timestamp   nil
+           :drag-start       nil
+           :history          (avl/sorted-map)}))
 
-(def window-width (r/atom (.-innerWidth js/window)))
-(def drag-width (r/atom 80))
-(def drag-timestamp (r/atom nil))
-(def drag-start (r/atom nil))
-(def history (r/atom (avl/sorted-map)))
+(def window-width (r/cursor state [:window-width]))
+(def drag-width (r/cursor state [:drag-width]))
+(def drag-timestamp (r/cursor state [:drag-timestamp]))
+(def drag-start (r/cursor state [:drag-start]))
+(def history (r/cursor state [:history]))
 
 (add-watch history :history-changed
            (fn [_ _ _ new]
