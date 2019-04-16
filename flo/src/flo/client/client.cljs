@@ -18,6 +18,7 @@
     [cljsjs.jquery]
     [cljsjs.quill]
     [cljsjs.moment]
+    [cljsjs.ace]
     [quill-image-resize-module]
     [goog.crypt.base64 :as b64]
     [reagent.core :as r]))
