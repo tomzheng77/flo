@@ -4,8 +4,6 @@
     [flo.client.macros :refer [console-log]])
   (:require
     [flo.client.ace :as ace]
-    [flo.client.quill :as quill]
-    [flo.client.quill-read-only :as quill-ro]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -16,10 +14,8 @@
     [clojure.string :as str]
     [clojure.data.avl :as avl]
     [cljsjs.jquery]
-    [cljsjs.quill]
     [cljsjs.moment]
     [cljsjs.ace]
-    [quill-image-resize-module]
     [goog.crypt.base64 :as b64]
     [reagent.core :as r]))
 
@@ -126,25 +122,17 @@
    [drag-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
-(def ace-editor (r/atom (ace/new-instance)))
+(def ace-editor (r/atom (ace/new-instance "editor")))
+(def ace-editor-ro (r/atom (ace/new-instance "editor-read-only")))
+(ace/set-text @ace-editor (or initial-content ""))
+(ace/set-read-only @ace-editor-ro true)
 
-(defn navigate [search select]
-  (if (empty? search)
-    (quill/set-selection)
-    (let [text (quill/get-text)]
-      (loop [s search]
-        (if (not-empty s)
-          (let [occur      (concat (find-all text (str "[" s "]"))
-                                   (find-all text (str "[" s "=]"))
-                                   (find-all text (str "[=" s "]"))
-                                   (find-all text (str "[=" s "=]"))
-                                   (find-all text (str "[" s)))
-                occur-uniq (sort-by :start (remove-overlaps occur))
-                target     (and (not-empty occur-uniq)
-                                (nth occur-uniq (mod select (count occur-uniq))))]
-            (if target
-              (quill/goto (:index target) (:length target))
-              (recur (splice-last s)))))))))
+;(println (new js/ace.Search))
+
+(defn navigate
+  "navigates to the <index> occurrence of the <search> tag"
+  [search index]
+  (.find @ace-editor (str "\\[=?" search "=?\\]") (clj->js {"caseSensitive" true "regExp" true})))
 
 (defn last-before [list value]
   (loop [lo 0 hi (dec (count list)) best nil]
@@ -165,7 +153,7 @@
             (let [[_ note] (avl/nearest history <= timestamp)]
               (when (not= @last-show-note note)
                 (reset! last-show-note note)
-                (quill-ro/set-content note)))))))))
+                (ace/set-text @ace-editor-ro (or note ""))))))))))
 
 (add-watch state :cancel-history
   (fn [_ _ old new]
@@ -176,17 +164,14 @@
   (fn [_ _ old new]
     (if (or (not= (:search old) (:search new)) (not= (:drag-timestamp old) (:drag-timestamp new)))
       (if (or (:search new) (:drag-timestamp new))
-        (quill/disable-edit)
-        (do (quill/enable-edit)
-            (quill/focus)
-            (quill/set-cursor-at-selection))))))
+        (ace/set-read-only @ace-editor true)
+        (ace/set-read-only @ace-editor false)))))
 
 (add-watch state :auto-search
   (fn [_ _ old new]
     (if (or (not= (:search old) (:search new))
             (not= (:select old) (:select new)))
       (if (:search new)
-        (println "navigate")
         (navigate (:search new) (:select new 0))))))
 
 (reset! state @state)
@@ -202,10 +187,7 @@
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))
   (when (= "Escape" (:code event))
-    (swap! state #(-> % (assoc :search nil) (assoc :select 0)))
-    (quill/enable-edit)
-    (quill/focus)
-    (quill/set-cursor-at-selection))
+    (swap! state #(-> % (assoc :search nil) (assoc :select 0))))
   (when (:search @state)
     (when (= "Tab" (:key event))
       (swap! state #(-> % (assoc :select (inc (:select %)))))
@@ -215,10 +197,7 @@
                           (assoc :select 0))))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
       (swap! state #(-> % (assoc :search (str (:search %) (str/upper-case (:key event))))
-                          (assoc :select 0)))))
-  (when (and (:ctrl-key event) (= "h" (:key event)))
-    (quill/highlight-tags)
-    (.preventDefault (:original event))))
+                          (assoc :select 0))))))
 
 (defn on-release-key
   [event]
@@ -271,7 +250,7 @@
 
 (def last-save (atom nil))
 (defn detect-change []
-  (let [content (quill/get-content)]
+  (let [content (ace/get-text @ace-editor)]
     (locking last-save
       (when (nil? @last-save) (reset! last-save content))
       (when (not= content @last-save)
@@ -282,6 +261,6 @@
   (fn [_ _ _ timestamp]
     (chsk-send! [:flo/seek [file-id (js/Math.round timestamp)]])))
 
-;(js/setInterval detect-change 1000)
+(js/setInterval detect-change 1000)
 
 (defn on-js-reload [])
