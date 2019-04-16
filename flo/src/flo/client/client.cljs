@@ -126,10 +126,7 @@
    [drag-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
-(quill/new-instance)
-(quill/set-content initial-content)
-(quill-ro/new-instance)
-(quill-ro/disable-edit)
+(def ace-editor (r/atom (ace/new-instance)))
 
 (defn navigate [search select]
   (if (empty? search)
@@ -285,6 +282,6 @@
   (fn [_ _ _ timestamp]
     (chsk-send! [:flo/seek [file-id (js/Math.round timestamp)]])))
 
-(js/setInterval detect-change 1000)
+;(js/setInterval detect-change 1000)
 
 (defn on-js-reload [])

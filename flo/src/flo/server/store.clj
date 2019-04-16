@@ -19,7 +19,7 @@
 (def conn (atom nil))
 
 (defn connect []
-  (let [db-uri "datomic:dev://localhost:4334/flo"]
+  (let [db-uri "datomic:dev://localhost:4334/flo-ace"]
     (d/create-database db-uri)
     (reset! conn (d/connect db-uri))))
 
@@ -35,7 +35,7 @@
                 {:db/ident       :note/content
                  :db/valueType   :db.type/bytes
                  :db/cardinality :db.cardinality/one
-                 :db/doc         "nippy serialized delta format"}]]
+                 :db/doc         "nippy serialized content"}]]
     (d/transact (get-conn) schema)))
 
 (defn all-notes-q []
