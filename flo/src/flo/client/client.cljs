@@ -124,6 +124,7 @@
 (quill/new-instance)
 (quill/set-content initial-content)
 (quill-ro/new-instance)
+(quill-ro/disable-edit)
 
 (defn navigate [search select]
   (if (empty? search)
@@ -159,7 +160,6 @@
       (let [timestamp (:drag-timestamp new) history (:history new)]
         (when timestamp
           (let [[_ note] (avl/nearest history <= timestamp)]
-            (quill-ro/disable-edit)
             (quill-ro/set-content note)))))))
 
 (add-watch state :cancel-history
