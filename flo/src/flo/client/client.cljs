@@ -31,7 +31,6 @@
 
 (def time-created (:time-created configuration))
 (def time-updated (:time-updated configuration))
-(def time-last-save (r/atom time-updated))
 (def file-id (:file-id configuration))
 (def initial-content (:content configuration))
 
@@ -55,8 +54,12 @@
            :drag-width       80
            :drag-timestamp   nil
            :drag-start       nil
-           :history          (avl/sorted-map)}))
+           :history          (avl/sorted-map)
+           :time-start       time-created
+           :time-last-save   time-updated}))
 
+(def time-start (r/cursor state [:time-start]))
+(def time-last-save (r/cursor state [:time-last-save]))
 (def window-width (r/cursor state [:window-width]))
 (def drag-width (r/cursor state [:drag-width]))
 (def drag-timestamp (r/cursor state [:drag-timestamp]))
