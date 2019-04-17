@@ -158,11 +158,6 @@
           (let [[_ note] (avl/nearest history <= timestamp)]
             (show-history note)))))))
 
-(add-watch state :cancel-history
-  (fn [_ _ old new]
-    (if (and (not (:drag-timestamp new)) (:drag-timestamp old))
-      (println "show latest"))))
-
 (add-watch state :disable-edit
   (fn [_ _ old new]
     (if (or (not= (:search old) (:search new)) (not= (:drag-timestamp old) (:drag-timestamp new)))
