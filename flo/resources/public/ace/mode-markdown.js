@@ -2601,7 +2601,10 @@ var MarkdownHighlightRules = function() {
         }
     }];
 
-    this.$rules["start"].unshift({
+    this.$rules["start"].unshift({ // ---------- [CUSTOM] ----------
+        token : "string.tag",
+        regex : "\\[=?[A-Z0-9]+=?\\]"
+    }, {
         token : "empty_line",
         regex : '^$',
         next: "allowBlock"
@@ -2636,10 +2639,7 @@ var MarkdownHighlightRules = function() {
     });
 
     this.addRules({
-        "basic" : [{ // ---------- [CUSTOM] ----------
-            token : "string.tag",
-            regex : "\\[=?[A-Z0-9]+=?\\]"
-        }, {
+        "basic" : [{
             token : "constant.language.escape",
             regex : /\\[\\`*_{}\[\]()#+\-.!]/
         }, { // code span `
