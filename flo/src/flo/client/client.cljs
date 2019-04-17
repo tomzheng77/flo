@@ -147,7 +147,7 @@
   (let [last-show-note (atom nil)]
     (fn [_ _ old new]
       (if (or (not= (:drag-timestamp old) (:drag-timestamp new))
-              (not= (:history old) (:history new)))
+              (not= (count (:history old)) (count (:history new))))
         (let [timestamp (:drag-timestamp new) history (:history new)]
           (when timestamp
             (let [[_ note] (avl/nearest history <= timestamp)]
