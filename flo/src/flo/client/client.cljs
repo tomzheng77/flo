@@ -144,7 +144,7 @@
           (recur lo (dec mid) best))))))
 
 (def last-history (atom nil))
-(def show-history [note]
+(defn show-history [note]
   (when (not= @last-history note)
     (reset! last-history note)
     (ace/set-text @ace-editor-ro (or note ""))))
