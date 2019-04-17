@@ -242,8 +242,7 @@
   (let [item (<! ch-chsk)]
     (match (:event item)
       [:chsk/recv [:flo/history [fid timestamp note]]]
-      (do (when (nil? @last-history) (show-history note))
-          (swap! history #(assoc % timestamp note)))
+      (swap! history #(assoc % timestamp note))
       :else nil))
   (recur))
 

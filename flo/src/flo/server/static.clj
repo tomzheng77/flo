@@ -10,7 +10,7 @@
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :refer [wrap-params]]
             [clojure.data :refer [diff]]
-            [flo.server.store :refer [get-note set-note get-note-created get-note-updated]]
+            [flo.server.store :refer [get-note-content set-note get-note-created get-note-updated]]
             [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]])
   (:import (java.util Base64)))

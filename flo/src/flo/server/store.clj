@@ -67,11 +67,19 @@
   (let [db (d/db (get-conn))]
     (d/q (all-notes-q) db)))
 
-(defn get-note
-  ([name] (get-note name (d/db (get-conn))))
+(defn get-note-content
+  ([name] (get-note-content name (d/db (get-conn))))
   ([name db]
    (let [content-raw (ffirst (d/q (note-content-q name) db))]
      (if content-raw (nippy/thaw content-raw)))))
+
+(defn get-note-created
+  ([name] (get-note-created name (d/db (get-conn))))
+  ([name db] (ffirst (d/q (note-created-q name) db))))
+
+(defn get-note-updated
+  ([name] (get-note-updated name (d/db (get-conn))))
+  ([name db] (ffirst (d/q (note-updated-q name) db))))
 
 ; Date in = new Date();
 ; LocalDateTime ldt = LocalDateTime.ofInstant(in.toInstant(), ZoneId.systemDefault());
@@ -87,15 +95,9 @@
 (defn get-note-at [name at]
   (let [date (ldt-to-date at)]
     (assert (not (nil? date)))
-    (get-note name (d/as-of (d/db (get-conn)) date))))
-
-(defn get-note-created [name]
-  (let [db (d/db (get-conn))]
-    (ffirst (d/q (note-created-q name) db))))
-
-(defn get-note-updated [name]
-  (let [db (d/db (get-conn))]
-    (ffirst (d/q (note-updated-q name) db))))
+    (let [db (d/as-of (d/db (get-conn)) date)
+          updated (get-note-updated name db)]
+      (if updated {:content (get-note-content name db) :updated updated}))))
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))

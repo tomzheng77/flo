@@ -22,7 +22,7 @@
             [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
-            [flo.server.store :refer [get-note get-note-at set-note get-note-created get-note-updated]]
+            [flo.server.store :refer [get-note-content get-note-at set-note get-note-created get-note-updated]]
             [flo.server.static :refer [style-css index-html]])
   (:import (java.util UUID Date)))
 
@@ -66,7 +66,10 @@
           (when (not-empty @seek-location)
             (doseq [[uid [file-id timestamp]] @seek-location]
               (let [note (get-note-at file-id timestamp)]
-                (chsk-send! uid [:flo/history [file-id timestamp note]])))
+                (when note
+                  (chsk-send! uid [:flo/history [file-id
+                                                 (.getTime (:updated note))
+                                                 (:content note)]]))))
             (reset! seek-location {})))
         (Thread/sleep 50))))
 
@@ -80,7 +83,7 @@
      :body    style-css})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
-          content (get-note file-id)
+          content (get-note-content file-id)
           time-created (.getTime (or (get-note-created file-id) (new Date)))
           time-updated (.getTime (or (get-note-updated file-id) (new Date)))
           session {:uid (.toString (UUID/randomUUID))}]
