@@ -17,7 +17,8 @@
     [cljsjs.moment]
     [cljsjs.ace]
     [goog.crypt.base64 :as b64]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [clojure.set :as set]))
 
 (enable-console-print!)
 (defonce configuration
@@ -45,7 +46,6 @@
 (defonce state
   (r/atom {:last-shift-press nil
            :search           nil
-           :select           nil
            :content          nil
            :window-width     (.-innerWidth js/window)
            :drag-width       80
@@ -62,6 +62,7 @@
 (def drag-timestamp (r/cursor state [:drag-timestamp]))
 (def drag-start (r/cursor state [:drag-start]))
 (def history (r/cursor state [:history]))
+(def search (r/cursor state [:search]))
 (reset! time-start (min (- @time-last-save 1000) (max (- @time-last-save 10800000) time-created)))
 
 (defn drag-button []
@@ -131,8 +132,9 @@
 
 (defn navigate
   "navigates to the <index> occurrence of the <search> tag"
-  [search index]
-  (.find @ace-editor (str "\\[=?" search "=?\\]") (clj->js {"caseSensitive" true "regExp" true})))
+  ([search] (navigate search {}))
+  ([search opts]
+   (.find @ace-editor (str "\\[=?" search "=?\\]") (clj->js (set/union opts {"caseSensitive" true "regExp" true})))))
 
 (defn last-before [list value]
   (loop [lo 0 hi (dec (count list)) best nil]
@@ -165,19 +167,15 @@
         (ace/set-read-only @ace-editor true)
         (ace/set-read-only @ace-editor false)))))
 
-(add-watch state :auto-search
-  (fn [_ _ old new]
-    (if (or (not= (:search old) (:search new))
-            (not= (:select old) (:select new)))
-      (if (:search new)
-        (navigate (:search new) (:select new 0))))))
+(add-watch search :auto-search
+  (fn [_ _ _ new] (navigate new)))
 
 (reset! state @state)
 
 (defn on-hit-shift []
   (if-not (= "" (:search @state))
-    (swap! state #(-> % (assoc :search "") (assoc :select 0)))
-    (swap! state #(-> % (assoc :search nil) (assoc :select 0)))))
+    (reset! search "")
+    (reset! search nil)))
 
 (defn on-press-key
   [event]
@@ -186,16 +184,18 @@
     (swap! state #(assoc % :last-shift-press nil)))
   (when (= "Escape" (:code event))
     (swap! state #(-> % (assoc :search nil) (assoc :select 0))))
-  (when (:search @state)
+  (when @search
+    (when (= "Enter" (:key event))
+      (if (:shift-key event)
+        (navigate @search {"backwards" true})
+        (navigate @search)))
     (when (= "Tab" (:key event))
       (swap! state #(-> % (assoc :select (inc (:select %)))))
       (.preventDefault (:original event)))
     (when (= "Backspace" (:key event))
-      (swap! state #(-> % (assoc :search (splice-last (:search %)))
-                          (assoc :select 0))))
+      (swap! search splice-last))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
-      (swap! state #(-> % (assoc :search (str (:search %) (str/upper-case (:key event))))
-                          (assoc :select 0))))))
+      (swap! search #(str % (str/upper-case (:key event)))))))
 
 (defn on-release-key
   [event]
