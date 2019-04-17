@@ -134,7 +134,8 @@
   "navigates to the <index> occurrence of the <search> tag"
   ([search] (navigate search {}))
   ([search opts]
-   (.find @ace-editor (str "\\[=?" search "=?\\]") (clj->js (set/union opts {"caseSensitive" true "regExp" true})))))
+   (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true} opts))]
+     (.find @ace-editor (str "\\[=?" search "=?\\]") settings))))
 
 (defn last-before [list value]
   (loop [lo 0 hi (dec (count list)) best nil]
@@ -183,15 +184,14 @@
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))
   (when (= "Escape" (:code event))
-    (swap! state #(-> % (assoc :search nil) (assoc :select 0))))
+    (reset! search nil))
   (when @search
-    (when (= "Enter" (:key event))
+    (println event)
+    (when (#{"Enter" "Tab"} (:key event))
+      (.preventDefault (:original event))
       (if (:shift-key event)
         (navigate @search {"backwards" true})
         (navigate @search)))
-    (when (= "Tab" (:key event))
-      (swap! state #(-> % (assoc :select (inc (:select %)))))
-      (.preventDefault (:original event)))
     (when (= "Backspace" (:key event))
       (swap! search splice-last))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
