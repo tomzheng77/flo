@@ -109,7 +109,7 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 .ace-monokai .ace_string.ace_tag {\
 font-weight: bold;\
 color: #3DA1D2;\
-animation: blinker 1s linear infinite;\
+/*animation: blinker 1s linear infinite;*/\
 }\
 ";
 
