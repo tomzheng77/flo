@@ -98,7 +98,20 @@ color: #75715E\
 }\
 .ace-monokai .ace_indent-guide {\
 background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWPQ0FD0ZXBzd/wPAAjVAoxeSgNeAAAAAElFTkSuQmCC) right repeat-y\
-}";
+}\
+\
+/* ----------- [CUSTOM] ---------- */\
+@keyframes blinker {\
+  50% {\
+    opacity: 0;\
+  }\
+}\
+.ace-monokai .ace_string.ace_tag {\
+font-weight: bold;\
+color: #3DA1D2;\
+animation: blinker 1s linear infinite;\
+}\
+";
 
 var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);
