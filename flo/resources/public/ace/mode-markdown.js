@@ -2636,7 +2636,10 @@ var MarkdownHighlightRules = function() {
     });
 
     this.addRules({
-        "basic" : [{
+        "basic" : [{ // ---------- [CUSTOM] ----------
+            token : "string.tag",
+            regex : "\\[=?[A-Z0-9]+=?\\]"
+        }, {
             token : "constant.language.escape",
             regex : /\\[\\`*_{}\[\]()#+\-.!]/
         }, { // code span `
@@ -2662,9 +2665,6 @@ var MarkdownHighlightRules = function() {
         }, { // emphasis * _
             token : "string.emphasis",
             regex : "([*]|[_](?=\\S))(.*?\\S[*_]*)(\\1)"
-        }, { // ---------- [CUSTOM] ----------
-            token : "string.tag",
-            regex : "\\[=?[A-Z0-9]+=?\\]"
         }, { //
             token : ["text", "url", "text"],
             regex : "(<)("+
