@@ -143,17 +143,20 @@
           (recur (inc mid) hi mid)
           (recur lo (dec mid) best))))))
 
+(def last-history (atom nil))
+(def show-history [note]
+  (when (not= @last-history note)
+    (reset! last-history note)
+    (ace/set-text @ace-editor-ro (or note ""))))
+
 (add-watch state :show-history
-  (let [last-show-note (atom nil)]
-    (fn [_ _ old new]
-      (if (or (not= (:drag-timestamp old) (:drag-timestamp new))
-              (not= (count (:history old)) (count (:history new))))
-        (let [timestamp (:drag-timestamp new) history (:history new)]
-          (when timestamp
-            (let [[_ note] (avl/nearest history <= timestamp)]
-              (when (not= @last-show-note note)
-                (reset! last-show-note note)
-                (ace/set-text @ace-editor-ro (or note ""))))))))))
+  (fn [_ _ old new]
+    (if (or (not= (:drag-timestamp old) (:drag-timestamp new))
+            (not= (count (:history old)) (count (:history new))))
+      (let [timestamp (:drag-timestamp new) history (:history new)]
+        (when timestamp
+          (let [[_ note] (avl/nearest history <= timestamp)]
+            (show-history note)))))))
 
 (add-watch state :cancel-history
   (fn [_ _ old new]
@@ -239,7 +242,8 @@
   (let [item (<! ch-chsk)]
     (match (:event item)
       [:chsk/recv [:flo/history [fid timestamp note]]]
-      (swap! history #(assoc % timestamp note))
+      (do (when (nil? @last-history) (show-history note))
+          (swap! history #(assoc % timestamp note)))
       :else nil))
   (recur))
 
