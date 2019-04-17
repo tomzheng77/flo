@@ -106,9 +106,19 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
     opacity: 0;\
   }\
 }\
-.ace-monokai .ace_string.ace_tag {\
+.ace-monokai .ace_tag.ace_declaration {\
 font-weight: bold;\
 color: #3DA1D2;\
+/*animation: blinker 1s linear infinite;*/\
+}\
+.ace-monokai .ace_tag.ace_definition {\
+font-weight: bold;\
+color: #3DA1D2;\
+/*animation: blinker 1s linear infinite;*/\
+}\
+.ace-monokai .ace_tag.ace_reference {\
+font-weight: bold;\
+color: #ffe300;\
 /*animation: blinker 1s linear infinite;*/\
 }\
 ";

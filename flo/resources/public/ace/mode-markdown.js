@@ -2637,8 +2637,14 @@ var MarkdownHighlightRules = function() {
 
     this.addRules({
         "basic" : [{ // ---------- [CUSTOM] ----------
-            token : "string.tag",
-            regex : "\\[=?[A-Z0-9]+=?\\]"
+            token : "tag.declaration",
+            regex : "\\[[A-Z0-9]+\\]"
+        }, { // ---------- [CUSTOM] ----------
+            token : "tag.definition",
+            regex : "\\[[A-Z0-9]+=\\]"
+        }, { // ---------- [CUSTOM] ----------
+            token : "tag.reference",
+            regex : "\\[=[A-Z0-9]+\\]"
         }, {
             token : "constant.language.escape",
             regex : /\\[\\`*_{}\[\]()#+\-.!]/
