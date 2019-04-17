@@ -16,27 +16,32 @@
            (java.time LocalDateTime ZoneId)
            (java.util Date)))
 
-(def conn (atom nil))
+(def schema [{:db/ident       :note/name
+              :db/unique      :db.unique/identity
+              :db/valueType   :db.type/string
+              :db/cardinality :db.cardinality/one
+              :db/doc         "unique name of the note"}
+             {:db/ident       :note/content
+              :db/valueType   :db.type/bytes
+              :db/cardinality :db.cardinality/one
+              :db/doc         "nippy serialized content"}])
 
-(defn connect []
-  (let [db-uri "datomic:dev://localhost:4334/flo-ace"]
-    (d/create-database db-uri)
-    (reset! conn (d/connect db-uri))))
-
-(defn get-conn []
-  (if (nil? @conn) (connect) @conn))
-
-(defn init-schema []
-  (let [schema [{:db/ident       :note/name
-                 :db/unique      :db.unique/identity
-                 :db/valueType   :db.type/string
-                 :db/cardinality :db.cardinality/one
-                 :db/doc         "unique name of the note"}
-                {:db/ident       :note/content
-                 :db/valueType   :db.type/bytes
-                 :db/cardinality :db.cardinality/one
-                 :db/doc         "nippy serialized content"}]]
-    (d/transact (get-conn) schema)))
+; connections are long lived and cached by d/connect
+; hence there is no need to store the connection
+(def get-conn
+  (let [db-uri "datomic:dev://localhost:4334/flo-ace"
+        started (atom false)]
+    (fn []
+      ; when this function is called for the first time
+      ; check if the database has been created
+      (locking started
+        (when (not @started)
+          (reset! started true)
+          (when (d/create-database db-uri)
+            ; the database has just been created
+            ; initialize the schema
+            (d/transact (d/connect db-uri) schema))))
+      (d/connect db-uri))))
 
 (defn all-notes-q []
   '[:find ?e ?name ?content
