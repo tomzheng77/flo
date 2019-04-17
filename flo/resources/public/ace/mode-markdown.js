@@ -2664,7 +2664,7 @@ var MarkdownHighlightRules = function() {
             regex : "([*]|[_](?=\\S))(.*?\\S[*_]*)(\\1)"
         }, { // ---------- [CUSTOM] ----------
             token : "string.tag",
-            regex : "\\[[A-Z0-9]+\\]"
+            regex : "\\[=?[A-Z0-9]+=?\\]"
         }, { //
             token : ["text", "url", "text"],
             regex : "(<)("+
