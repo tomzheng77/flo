@@ -3129,7 +3129,1040 @@ oop.inherits(Mode, TextMode);
 exports.Mode = Mode;
 });
 
-define("ace/mode/markdown",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/javascript","ace/mode/xml","ace/mode/html","ace/mode/markdown_highlight_rules","ace/mode/folding/markdown","ace/mode/javascript","ace/mode/html","ace/mode/sh","ace/mode/sh","ace/mode/xml","ace/mode/css"], function(require, exports, module) {
+// ------------------------------------------------------- [BEGIN CLOJURE SECTION] -------------------------------------------------------
+
+define("ace/mode/clojure_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../lib/oop");
+    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+
+
+
+    var ClojureHighlightRules = function() {
+
+        var builtinFunctions = (
+            '* *1 *2 *3 *agent* *allow-unresolved-vars* *assert* *clojure-version* ' +
+            '*command-line-args* *compile-files* *compile-path* *e *err* *file* ' +
+            '*flush-on-newline* *in* *macro-meta* *math-context* *ns* *out* ' +
+            '*print-dup* *print-length* *print-level* *print-meta* *print-readably* ' +
+            '*read-eval* *source-path* *use-context-classloader* ' +
+            '*warn-on-reflection* + - -> ->> .. / < <= = ' +
+            '== > &gt; >= &gt;= accessor aclone ' +
+            'add-classpath add-watch agent agent-errors aget alength alias all-ns ' +
+            'alter alter-meta! alter-var-root amap ancestors and apply areduce ' +
+            'array-map aset aset-boolean aset-byte aset-char aset-double aset-float ' +
+            'aset-int aset-long aset-short assert assoc assoc! assoc-in associative? ' +
+            'atom await await-for await1 bases bean bigdec bigint binding bit-and ' +
+            'bit-and-not bit-clear bit-flip bit-not bit-or bit-set bit-shift-left ' +
+            'bit-shift-right bit-test bit-xor boolean boolean-array booleans ' +
+            'bound-fn bound-fn* butlast byte byte-array bytes cast char char-array ' +
+            'char-escape-string char-name-string char? chars chunk chunk-append ' +
+            'chunk-buffer chunk-cons chunk-first chunk-next chunk-rest chunked-seq? ' +
+            'class class? clear-agent-errors clojure-version coll? comment commute ' +
+            'comp comparator compare compare-and-set! compile complement concat cond ' +
+            'condp conj conj! cons constantly construct-proxy contains? count ' +
+            'counted? create-ns create-struct cycle dec decimal? declare definline ' +
+            'defmacro defmethod defmulti defn defn- defonce defstruct delay delay? ' +
+            'deliver deref derive descendants destructure disj disj! dissoc dissoc! ' +
+            'distinct distinct? doall doc dorun doseq dosync dotimes doto double ' +
+            'double-array doubles drop drop-last drop-while empty empty? ensure ' +
+            'enumeration-seq eval even? every? false? ffirst file-seq filter find ' +
+            'find-doc find-ns find-var first float float-array float? floats flush ' +
+            'fn fn? fnext for force format future future-call future-cancel ' +
+            'future-cancelled? future-done? future? gen-class gen-interface gensym ' +
+            'get get-in get-method get-proxy-class get-thread-bindings get-validator ' +
+            'hash hash-map hash-set identical? identity if-let if-not ifn? import ' +
+            'in-ns inc init-proxy instance? int int-array integer? interleave intern ' +
+            'interpose into into-array ints io! isa? iterate iterator-seq juxt key ' +
+            'keys keyword keyword? last lazy-cat lazy-seq let letfn line-seq list ' +
+            'list* list? load load-file load-reader load-string loaded-libs locking ' +
+            'long long-array longs loop macroexpand macroexpand-1 make-array ' +
+            'make-hierarchy map map? mapcat max max-key memfn memoize merge ' +
+            'merge-with meta method-sig methods min min-key mod name namespace neg? ' +
+            'newline next nfirst nil? nnext not not-any? not-empty not-every? not= ' +
+            'ns ns-aliases ns-imports ns-interns ns-map ns-name ns-publics ' +
+            'ns-refers ns-resolve ns-unalias ns-unmap nth nthnext num number? odd? ' +
+            'or parents partial partition pcalls peek persistent! pmap pop pop! ' +
+            'pop-thread-bindings pos? pr pr-str prefer-method prefers ' +
+            'primitives-classnames print print-ctor print-doc print-dup print-method ' +
+            'print-namespace-doc print-simple print-special-doc print-str printf ' +
+            'println println-str prn prn-str promise proxy proxy-call-with-super ' +
+            'proxy-mappings proxy-name proxy-super push-thread-bindings pvalues quot ' +
+            'rand rand-int range ratio? rational? rationalize re-find re-groups ' +
+            're-matcher re-matches re-pattern re-seq read read-line read-string ' +
+            'reduce ref ref-history-count ref-max-history ref-min-history ref-set ' +
+            'refer refer-clojure release-pending-sends rem remove remove-method ' +
+            'remove-ns remove-watch repeat repeatedly replace replicate require ' +
+            'reset! reset-meta! resolve rest resultset-seq reverse reversible? rseq ' +
+            'rsubseq second select-keys send send-off seq seq? seque sequence ' +
+            'sequential? set set-validator! set? short short-array shorts ' +
+            'shutdown-agents slurp some sort sort-by sorted-map sorted-map-by ' +
+            'sorted-set sorted-set-by sorted? special-form-anchor special-symbol? ' +
+            'split-at split-with str stream? string? struct struct-map subs subseq ' +
+            'subvec supers swap! symbol symbol? sync syntax-symbol-anchor take ' +
+            'take-last take-nth take-while test the-ns time to-array to-array-2d ' +
+            'trampoline transient tree-seq true? type unchecked-add unchecked-dec ' +
+            'unchecked-divide unchecked-inc unchecked-multiply unchecked-negate ' +
+            'unchecked-remainder unchecked-subtract underive unquote ' +
+            'unquote-splicing update-in update-proxy use val vals var-get var-set ' +
+            'var? vary-meta vec vector vector? when when-first when-let when-not ' +
+            'while with-bindings with-bindings* with-in-str with-loading-context ' +
+            'with-local-vars with-meta with-open with-out-str with-precision xml-seq ' +
+            'zero? zipmap'
+        );
+
+        var keywords = ('throw try var ' +
+            'def do fn if let loop monitor-enter monitor-exit new quote recur set!'
+        );
+
+        var buildinConstants = ("true false nil");
+
+        var keywordMapper = this.createKeywordMapper({
+            "keyword": keywords,
+            "constant.language": buildinConstants,
+            "support.function": builtinFunctions
+        }, "identifier", false, " ");
+
+        this.$rules = {
+            "start" : [
+                {
+                    token : "comment",
+                    regex : ";.*$"
+                }, {
+                    token : "keyword", //parens
+                    regex : "[\\(|\\)]"
+                }, {
+                    token : "keyword", //lists
+                    regex : "[\\'\\(]"
+                }, {
+                    token : "keyword", //vectors
+                    regex : "[\\[|\\]]"
+                }, {
+                    token : "keyword", //sets and maps
+                    regex : "[\\{|\\}|\\#\\{|\\#\\}]"
+                }, {
+                    token : "keyword", // ampersands
+                    regex : '[\\&]'
+                }, {
+                    token : "keyword", // metadata
+                    regex : '[\\#\\^\\{]'
+                }, {
+                    token : "keyword", // anonymous fn syntactic sugar
+                    regex : '[\\%]'
+                }, {
+                    token : "keyword", // deref reader macro
+                    regex : '[@]'
+                }, {
+                    token : "constant.numeric", // hex
+                    regex : "0[xX][0-9a-fA-F]+\\b"
+                }, {
+                    token : "constant.numeric", // float
+                    regex : "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b"
+                }, {
+                    token : "constant.language",
+                    regex : '[!|\\$|%|&|\\*|\\-\\-|\\-|\\+\\+|\\+||=|!=|<=|>=|<>|<|>|!|&&]'
+                }, {
+                    token : keywordMapper,
+                    regex : "[a-zA-Z_$][a-zA-Z0-9_$\\-]*\\b"
+                }, {
+                    token : "string", // single line
+                    regex : '"',
+                    next: "string"
+                }, {
+                    token : "constant", // symbol
+                    regex : /:[^()\[\]{}'"\^%`,;\s]+/
+                }, {
+                    token : "string.regexp", //Regular Expressions
+                    regex : '/#"(?:\\.|(?:\\")|[^""\n])*"/g'
+                }
+
+            ],
+            "string" : [
+                {
+                    token : "constant.language.escape",
+                    regex : "\\\\.|\\\\$"
+                }, {
+                    token : "string",
+                    regex : '[^"\\\\]+'
+                }, {
+                    token : "string",
+                    regex : '"',
+                    next : "start"
+                }
+            ]
+        };
+    };
+
+    oop.inherits(ClojureHighlightRules, TextHighlightRules);
+
+    exports.ClojureHighlightRules = ClojureHighlightRules;
+});
+
+define("ace/mode/matching_parens_outdent",["require","exports","module","ace/range"], function(require, exports, module) {
+    "use strict";
+
+    var Range = require("../range").Range;
+
+    var MatchingParensOutdent = function() {};
+
+    (function() {
+
+        this.checkOutdent = function(line, input) {
+            if (! /^\s+$/.test(line))
+                return false;
+
+            return /^\s*\)/.test(input);
+        };
+
+        this.autoOutdent = function(doc, row) {
+            var line = doc.getLine(row);
+            var match = line.match(/^(\s*\))/);
+
+            if (!match) return 0;
+
+            var column = match[1].length;
+            var openBracePos = doc.findMatchingBracket({row: row, column: column});
+
+            if (!openBracePos || openBracePos.row == row) return 0;
+
+            var indent = this.$getIndent(doc.getLine(openBracePos.row));
+            doc.replace(new Range(row, 0, row, column-1), indent);
+        };
+
+        this.$getIndent = function(line) {
+            var match = line.match(/^(\s+)/);
+            if (match) {
+                return match[1];
+            }
+
+            return "";
+        };
+
+    }).call(MatchingParensOutdent.prototype);
+
+    exports.MatchingParensOutdent = MatchingParensOutdent;
+});
+
+define("ace/mode/clojure",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/clojure_highlight_rules","ace/mode/matching_parens_outdent"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../lib/oop");
+    var TextMode = require("./text").Mode;
+    var ClojureHighlightRules = require("./clojure_highlight_rules").ClojureHighlightRules;
+    var MatchingParensOutdent = require("./matching_parens_outdent").MatchingParensOutdent;
+
+    var Mode = function() {
+        this.HighlightRules = ClojureHighlightRules;
+        this.$outdent = new MatchingParensOutdent();
+        this.$behaviour = this.$defaultBehaviour;
+    };
+    oop.inherits(Mode, TextMode);
+
+    (function() {
+
+        this.lineCommentStart = ";";
+        this.minorIndentFunctions = ["defn", "defn-", "defmacro", "def", "deftest", "testing"];
+
+        this.$toIndent = function(str) {
+            return str.split('').map(function(ch) {
+                if (/\s/.exec(ch)) {
+                    return ch;
+                } else {
+                    return ' ';
+                }
+            }).join('');
+        };
+
+        this.$calculateIndent = function(line, tab) {
+            var baseIndent = this.$getIndent(line);
+            var delta = 0;
+            var isParen, ch;
+            for (var i = line.length - 1; i >= 0; i--) {
+                ch = line[i];
+                if (ch === '(') {
+                    delta--;
+                    isParen = true;
+                } else if (ch === '(' || ch === '[' || ch === '{') {
+                    delta--;
+                    isParen = false;
+                } else if (ch === ')' || ch === ']' || ch === '}') {
+                    delta++;
+                }
+                if (delta < 0) {
+                    break;
+                }
+            }
+            if (delta < 0 && isParen) {
+                i += 1;
+                var iBefore = i;
+                var fn = '';
+                while (true) {
+                    ch = line[i];
+                    if (ch === ' ' || ch === '\t') {
+                        if(this.minorIndentFunctions.indexOf(fn) !== -1) {
+                            return this.$toIndent(line.substring(0, iBefore - 1) + tab);
+                        } else {
+                            return this.$toIndent(line.substring(0, i + 1));
+                        }
+                    } else if (ch === undefined) {
+                        return this.$toIndent(line.substring(0, iBefore - 1) + tab);
+                    }
+                    fn += line[i];
+                    i++;
+                }
+            } else if(delta < 0 && !isParen) {
+                return this.$toIndent(line.substring(0, i+1));
+            } else if(delta > 0) {
+                baseIndent = baseIndent.substring(0, baseIndent.length - tab.length);
+                return baseIndent;
+            } else {
+                return baseIndent;
+            }
+        };
+
+        this.getNextLineIndent = function(state, line, tab) {
+            return this.$calculateIndent(line, tab);
+        };
+
+        this.checkOutdent = function(state, line, input) {
+            return this.$outdent.checkOutdent(line, input);
+        };
+
+        this.autoOutdent = function(state, doc, row) {
+            this.$outdent.autoOutdent(doc, row);
+        };
+
+        this.$id = "ace/mode/clojure";
+    }).call(Mode.prototype);
+
+    exports.Mode = Mode;
+});                (function() {
+    window.require(["ace/mode/clojure"], function(m) {
+        if (typeof module == "object" && typeof exports == "object" && module) {
+            module.exports = m;
+        }
+    });
+})();
+
+// ------------------------------------------------------- [BEGIN C/C++ SECTION] -------------------------------------------------------
+
+define("ace/mode/c_cpp_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/text_highlight_rules"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../lib/oop");
+    var DocCommentHighlightRules = require("./doc_comment_highlight_rules").DocCommentHighlightRules;
+    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+    var cFunctions = exports.cFunctions = "\\b(?:hypot(?:f|l)?|s(?:scanf|ystem|nprintf|ca(?:nf|lb(?:n(?:f|l)?|ln(?:f|l)?))|i(?:n(?:h(?:f|l)?|f|l)?|gn(?:al|bit))|tr(?:s(?:tr|pn)|nc(?:py|at|mp)|c(?:spn|hr|oll|py|at|mp)|to(?:imax|d|u(?:l(?:l)?|max)|k|f|l(?:d|l)?)|error|pbrk|ftime|len|rchr|xfrm)|printf|et(?:jmp|vbuf|locale|buf)|qrt(?:f|l)?|w(?:scanf|printf)|rand)|n(?:e(?:arbyint(?:f|l)?|xt(?:toward(?:f|l)?|after(?:f|l)?))|an(?:f|l)?)|c(?:s(?:in(?:h(?:f|l)?|f|l)?|qrt(?:f|l)?)|cos(?:h(?:f)?|f|l)?|imag(?:f|l)?|t(?:ime|an(?:h(?:f|l)?|f|l)?)|o(?:s(?:h(?:f|l)?|f|l)?|nj(?:f|l)?|pysign(?:f|l)?)|p(?:ow(?:f|l)?|roj(?:f|l)?)|e(?:il(?:f|l)?|xp(?:f|l)?)|l(?:o(?:ck|g(?:f|l)?)|earerr)|a(?:sin(?:h(?:f|l)?|f|l)?|cos(?:h(?:f|l)?|f|l)?|tan(?:h(?:f|l)?|f|l)?|lloc|rg(?:f|l)?|bs(?:f|l)?)|real(?:f|l)?|brt(?:f|l)?)|t(?:ime|o(?:upper|lower)|an(?:h(?:f|l)?|f|l)?|runc(?:f|l)?|gamma(?:f|l)?|mp(?:nam|file))|i(?:s(?:space|n(?:ormal|an)|cntrl|inf|digit|u(?:nordered|pper)|p(?:unct|rint)|finite|w(?:space|c(?:ntrl|type)|digit|upper|p(?:unct|rint)|lower|al(?:num|pha)|graph|xdigit|blank)|l(?:ower|ess(?:equal|greater)?)|al(?:num|pha)|gr(?:eater(?:equal)?|aph)|xdigit|blank)|logb(?:f|l)?|max(?:div|abs))|di(?:v|fftime)|_Exit|unget(?:c|wc)|p(?:ow(?:f|l)?|ut(?:s|c(?:har)?|wc(?:har)?)|error|rintf)|e(?:rf(?:c(?:f|l)?|f|l)?|x(?:it|p(?:2(?:f|l)?|f|l|m1(?:f|l)?)?))|v(?:s(?:scanf|nprintf|canf|printf|w(?:scanf|printf))|printf|f(?:scanf|printf|w(?:scanf|printf))|w(?:scanf|printf)|a_(?:start|copy|end|arg))|qsort|f(?:s(?:canf|e(?:tpos|ek))|close|tell|open|dim(?:f|l)?|p(?:classify|ut(?:s|c|w(?:s|c))|rintf)|e(?:holdexcept|set(?:e(?:nv|xceptflag)|round)|clearexcept|testexcept|of|updateenv|r(?:aiseexcept|ror)|get(?:e(?:nv|xceptflag)|round))|flush|w(?:scanf|ide|printf|rite)|loor(?:f|l)?|abs(?:f|l)?|get(?:s|c|pos|w(?:s|c))|re(?:open|e|ad|xp(?:f|l)?)|m(?:in(?:f|l)?|od(?:f|l)?|a(?:f|l|x(?:f|l)?)?))|l(?:d(?:iv|exp(?:f|l)?)|o(?:ngjmp|cal(?:time|econv)|g(?:1(?:p(?:f|l)?|0(?:f|l)?)|2(?:f|l)?|f|l|b(?:f|l)?)?)|abs|l(?:div|abs|r(?:int(?:f|l)?|ound(?:f|l)?))|r(?:int(?:f|l)?|ound(?:f|l)?)|gamma(?:f|l)?)|w(?:scanf|c(?:s(?:s(?:tr|pn)|nc(?:py|at|mp)|c(?:spn|hr|oll|py|at|mp)|to(?:imax|d|u(?:l(?:l)?|max)|k|f|l(?:d|l)?|mbs)|pbrk|ftime|len|r(?:chr|tombs)|xfrm)|to(?:b|mb)|rtomb)|printf|mem(?:set|c(?:hr|py|mp)|move))|a(?:s(?:sert|ctime|in(?:h(?:f|l)?|f|l)?)|cos(?:h(?:f|l)?|f|l)?|t(?:o(?:i|f|l(?:l)?)|exit|an(?:h(?:f|l)?|2(?:f|l)?|f|l)?)|b(?:s|ort))|g(?:et(?:s|c(?:har)?|env|wc(?:har)?)|mtime)|r(?:int(?:f|l)?|ound(?:f|l)?|e(?:name|alloc|wind|m(?:ove|quo(?:f|l)?|ainder(?:f|l)?))|a(?:nd|ise))|b(?:search|towc)|m(?:odf(?:f|l)?|em(?:set|c(?:hr|py|mp)|move)|ktime|alloc|b(?:s(?:init|towcs|rtowcs)|towc|len|r(?:towc|len))))\\b";
+
+    var c_cppHighlightRules = function() {
+
+        var keywordControls = (
+            "break|case|continue|default|do|else|for|goto|if|_Pragma|" +
+            "return|switch|while|catch|operator|try|throw|using"
+        );
+
+        var storageType = (
+            "asm|__asm__|auto|bool|_Bool|char|_Complex|double|enum|float|" +
+            "_Imaginary|int|long|short|signed|struct|typedef|union|unsigned|void|" +
+            "class|wchar_t|template|char16_t|char32_t"
+        );
+
+        var storageModifiers = (
+            "const|extern|register|restrict|static|volatile|inline|private|" +
+            "protected|public|friend|explicit|virtual|export|mutable|typename|" +
+            "constexpr|new|delete|alignas|alignof|decltype|noexcept|thread_local"
+        );
+
+        var keywordOperators = (
+            "and|and_eq|bitand|bitor|compl|not|not_eq|or|or_eq|typeid|xor|xor_eq|" +
+            "const_cast|dynamic_cast|reinterpret_cast|static_cast|sizeof|namespace"
+        );
+
+        var builtinConstants = (
+            "NULL|true|false|TRUE|FALSE|nullptr"
+        );
+
+        var keywordMapper = this.$keywords = this.createKeywordMapper({
+            "keyword.control" : keywordControls,
+            "storage.type" : storageType,
+            "storage.modifier" : storageModifiers,
+            "keyword.operator" : keywordOperators,
+            "variable.language": "this",
+            "constant.language": builtinConstants
+        }, "identifier");
+
+        var identifierRe = "[a-zA-Z\\$_\u00a1-\uffff][a-zA-Z\\d\\$_\u00a1-\uffff]*\\b";
+        var escapeRe = /\\(?:['"?\\abfnrtv]|[0-7]{1,3}|x[a-fA-F\d]{2}|u[a-fA-F\d]{4}U[a-fA-F\d]{8}|.)/.source;
+        var formatRe = "%"
+            + /(\d+\$)?/.source // field (argument #)
+            + /[#0\- +']*/.source // flags
+            + /[,;:_]?/.source // separator character (AltiVec)
+            + /((-?\d+)|\*(-?\d+\$)?)?/.source // minimum field width
+            + /(\.((-?\d+)|\*(-?\d+\$)?)?)?/.source // precision
+            + /(hh|h|ll|l|j|t|z|q|L|vh|vl|v|hv|hl)?/.source // length modifier
+            + /(\[[^"\]]+\]|[diouxXDOUeEfFgGaACcSspn%])/.source; // conversion type
+
+        this.$rules = {
+            "start" : [
+                {
+                    token : "comment",
+                    regex : "//$",
+                    next : "start"
+                }, {
+                    token : "comment",
+                    regex : "//",
+                    next : "singleLineComment"
+                },
+                DocCommentHighlightRules.getStartRule("doc-start"),
+                {
+                    token : "comment", // multi line comment
+                    regex : "\\/\\*",
+                    next : "comment"
+                }, {
+                    token : "string", // character
+                    regex : "'(?:" + escapeRe + "|.)?'"
+                }, {
+                    token : "string.start",
+                    regex : '"',
+                    stateName: "qqstring",
+                    next: [
+                        { token: "string", regex: /\\\s*$/, next: "qqstring" },
+                        { token: "constant.language.escape", regex: escapeRe },
+                        { token: "constant.language.escape", regex: formatRe },
+                        { token: "string.end", regex: '"|$', next: "start" },
+                        { defaultToken: "string"}
+                    ]
+                }, {
+                    token : "string.start",
+                    regex : 'R"\\(',
+                    stateName: "rawString",
+                    next: [
+                        { token: "string.end", regex: '\\)"', next: "start" },
+                        { defaultToken: "string"}
+                    ]
+                }, {
+                    token : "constant.numeric", // hex
+                    regex : "0[xX][0-9a-fA-F]+(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\\b"
+                }, {
+                    token : "constant.numeric", // float
+                    regex : "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\\b"
+                }, {
+                    token : "keyword", // pre-compiler directives
+                    regex : "#\\s*(?:include|import|pragma|line|define|undef)\\b",
+                    next  : "directive"
+                }, {
+                    token : "keyword", // special case pre-compiler directive
+                    regex : "#\\s*(?:endif|if|ifdef|else|elif|ifndef)\\b"
+                }, {
+                    token : "support.function.C99.c",
+                    regex : cFunctions
+                }, {
+                    token : keywordMapper,
+                    regex : "[a-zA-Z_$][a-zA-Z0-9_$]*"
+                }, {
+                    token : "keyword.operator",
+                    regex : /--|\+\+|<<=|>>=|>>>=|<>|&&|\|\||\?:|[*%\/+\-&\^|~!<>=]=?/
+                }, {
+                    token : "punctuation.operator",
+                    regex : "\\?|\\:|\\,|\\;|\\."
+                }, {
+                    token : "paren.lparen",
+                    regex : "[[({]"
+                }, {
+                    token : "paren.rparen",
+                    regex : "[\\])}]"
+                }, {
+                    token : "text",
+                    regex : "\\s+"
+                }
+            ],
+            "comment" : [
+                {
+                    token : "comment", // closing comment
+                    regex : "\\*\\/",
+                    next : "start"
+                }, {
+                    defaultToken : "comment"
+                }
+            ],
+            "singleLineComment" : [
+                {
+                    token : "comment",
+                    regex : /\\$/,
+                    next : "singleLineComment"
+                }, {
+                    token : "comment",
+                    regex : /$/,
+                    next : "start"
+                }, {
+                    defaultToken: "comment"
+                }
+            ],
+            "directive" : [
+                {
+                    token : "constant.other.multiline",
+                    regex : /\\/
+                },
+                {
+                    token : "constant.other.multiline",
+                    regex : /.*\\/
+                },
+                {
+                    token : "constant.other",
+                    regex : "\\s*<.+?>",
+                    next : "start"
+                },
+                {
+                    token : "constant.other", // single line
+                    regex : '\\s*["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]',
+                    next : "start"
+                },
+                {
+                    token : "constant.other", // single line
+                    regex : "\\s*['](?:(?:\\\\.)|(?:[^'\\\\]))*?[']",
+                    next : "start"
+                },
+                {
+                    token : "constant.other",
+                    regex : /[^\\\/]+/,
+                    next : "start"
+                }
+            ]
+        };
+
+        this.embedRules(DocCommentHighlightRules, "doc-",
+            [ DocCommentHighlightRules.getEndRule("start") ]);
+        this.normalizeRules();
+    };
+
+    oop.inherits(c_cppHighlightRules, TextHighlightRules);
+
+    exports.c_cppHighlightRules = c_cppHighlightRules;
+});
+
+define("ace/mode/c_cpp",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/c_cpp_highlight_rules","ace/mode/matching_brace_outdent","ace/range","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../lib/oop");
+    var TextMode = require("./text").Mode;
+    var c_cppHighlightRules = require("./c_cpp_highlight_rules").c_cppHighlightRules;
+    var MatchingBraceOutdent = require("./matching_brace_outdent").MatchingBraceOutdent;
+    var Range = require("../range").Range;
+    var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
+    var CStyleFoldMode = require("./folding/cstyle").FoldMode;
+
+    var Mode = function() {
+        this.HighlightRules = c_cppHighlightRules;
+
+        this.$outdent = new MatchingBraceOutdent();
+        this.$behaviour = new CstyleBehaviour();
+
+        this.foldingRules = new CStyleFoldMode();
+    };
+    oop.inherits(Mode, TextMode);
+
+    (function() {
+
+        this.lineCommentStart = "//";
+        this.blockComment = {start: "/*", end: "*/"};
+
+        this.getNextLineIndent = function(state, line, tab) {
+            var indent = this.$getIndent(line);
+
+            var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
+            var tokens = tokenizedLine.tokens;
+            var endState = tokenizedLine.state;
+
+            if (tokens.length && tokens[tokens.length-1].type == "comment") {
+                return indent;
+            }
+
+            if (state == "start") {
+                var match = line.match(/^.*[\{\(\[]\s*$/);
+                if (match) {
+                    indent += tab;
+                }
+            } else if (state == "doc-start") {
+                if (endState == "start") {
+                    return "";
+                }
+                var match = line.match(/^\s*(\/?)\*/);
+                if (match) {
+                    if (match[1]) {
+                        indent += " ";
+                    }
+                    indent += "* ";
+                }
+            }
+
+            return indent;
+        };
+
+        this.checkOutdent = function(state, line, input) {
+            return this.$outdent.checkOutdent(line, input);
+        };
+
+        this.autoOutdent = function(state, doc, row) {
+            this.$outdent.autoOutdent(doc, row);
+        };
+
+        this.$id = "ace/mode/c_cpp";
+    }).call(Mode.prototype);
+
+    exports.Mode = Mode;
+});                (function() {
+    window.require(["ace/mode/c_cpp"], function(m) {
+        if (typeof module == "object" && typeof exports == "object" && module) {
+            module.exports = m;
+        }
+    });
+})();
+
+// ------------------------------------------------------- [BEGIN SCALA SECTION] -------------------------------------------------------
+
+define("ace/mode/scala_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/text_highlight_rules"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../lib/oop");
+    var DocCommentHighlightRules = require("./doc_comment_highlight_rules").DocCommentHighlightRules;
+    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+
+    var ScalaHighlightRules = function() {
+
+        var keywords = (
+            "case|default|do|else|for|if|match|while|throw|return|try|trye|catch|finally|yield|" +
+            "abstract|class|def|extends|final|forSome|implicit|implicits|import|lazy|new|object|null|" +
+            "override|package|private|protected|sealed|super|this|trait|type|val|var|with|" +
+            "assert|assume|require|print|println|printf|readLine|readBoolean|readByte|readShort|" + // package scala
+            "readChar|readInt|readLong|readFloat|readDouble" // package scala
+        );
+
+        var buildinConstants = ("true|false");
+
+        var langClasses = (
+            "AbstractMethodError|AssertionError|ClassCircularityError|"+
+            "ClassFormatError|Deprecated|EnumConstantNotPresentException|"+
+            "ExceptionInInitializerError|IllegalAccessError|"+
+            "IllegalThreadStateException|InstantiationError|InternalError|"+
+
+            "NegativeArraySizeException|NoSuchFieldError|Override|Process|"+
+            "ProcessBuilder|SecurityManager|StringIndexOutOfBoundsException|"+
+            "SuppressWarnings|TypeNotPresentException|UnknownError|"+
+            "UnsatisfiedLinkError|UnsupportedClassVersionError|VerifyError|"+
+            "InstantiationException|IndexOutOfBoundsException|"+
+            "ArrayIndexOutOfBoundsException|CloneNotSupportedException|"+
+            "NoSuchFieldException|IllegalArgumentException|NumberFormatException|"+
+            "SecurityException|Void|InheritableThreadLocal|IllegalStateException|"+
+            "InterruptedException|NoSuchMethodException|IllegalAccessException|"+
+            "UnsupportedOperationException|Enum|StrictMath|Package|Compiler|"+
+            "Readable|Runtime|StringBuilder|Math|IncompatibleClassChangeError|"+
+            "NoSuchMethodError|ThreadLocal|RuntimePermission|ArithmeticException|"+
+            "NullPointerException|Long|Integer|Short|Byte|Double|Number|Float|"+
+            "Character|Boolean|StackTraceElement|Appendable|StringBuffer|"+
+            "Iterable|ThreadGroup|Runnable|Thread|IllegalMonitorStateException|"+
+            "StackOverflowError|OutOfMemoryError|VirtualMachineError|"+
+            "ArrayStoreException|ClassCastException|LinkageError|"+
+            "NoClassDefFoundError|ClassNotFoundException|RuntimeException|"+
+            "Exception|ThreadDeath|Error|Throwable|System|ClassLoader|"+
+            "Cloneable|Class|CharSequence|Comparable|String|Object|" +
+            "Unit|Any|AnyVal|AnyRef|Null|ScalaObject|Singleton|Seq|Iterable|List|" +
+            "Option|Array|Char|Byte|Int|Long|Nothing|" +
+
+            "App|Application|BufferedIterator|BigDecimal|BigInt|Console|Either|" +
+            "Enumeration|Equiv|Fractional|Function|IndexedSeq|Integral|Iterator|" +
+            "Map|Numeric|Nil|NotNull|Ordered|Ordering|PartialFunction|PartialOrdering|" +
+            "Product|Proxy|Range|Responder|Seq|Serializable|Set|Specializable|Stream|" +
+            "StringContext|Symbol|Traversable|TraversableOnce|Tuple|Vector|Pair|Triple"
+
+
+        );
+
+        var keywordMapper = this.createKeywordMapper({
+            "variable.language": "this",
+            "keyword": keywords,
+            "support.function": langClasses,
+            "constant.language": buildinConstants
+        }, "identifier");
+
+        this.$rules = {
+            "start" : [
+                {
+                    token : "comment",
+                    regex : "\\/\\/.*$"
+                },
+                DocCommentHighlightRules.getStartRule("doc-start"),
+                {
+                    token : "comment", // multi line comment
+                    regex : "\\/\\*",
+                    next : "comment"
+                }, {
+                    token : "string.regexp",
+                    regex : "[/](?:(?:\\[(?:\\\\]|[^\\]])+\\])|(?:\\\\/|[^\\]/]))*[/]\\w*\\s*(?=[).,;]|$)"
+                }, {
+                    token : "string",
+                    regex : '"""',
+                    next : "tstring"
+                }, {
+                    token : "string",
+                    regex : '"(?=.)', // " strings can't span multiple lines
+                    next : "string"
+                }, {
+                    token : "symbol.constant", // single line
+                    regex : "'[\\w\\d_]+"
+                }, {
+                    token : "constant.numeric", // hex
+                    regex : "0[xX][0-9a-fA-F]+\\b"
+                }, {
+                    token : "constant.numeric", // float
+                    regex : "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b"
+                }, {
+                    token : "constant.language.boolean",
+                    regex : "(?:true|false)\\b"
+                }, {
+                    token : keywordMapper,
+                    regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+                }, {
+                    token : "keyword.operator",
+                    regex : "!|\\$|%|&|\\*|\\-\\-|\\-|\\+\\+|\\+|~|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\\|\\||\\?\\:|\\*=|%=|\\+=|\\-=|&=|\\^=|\\b(?:in|instanceof|new|delete|typeof|void)"
+                }, {
+                    token : "paren.lparen",
+                    regex : "[[({]"
+                }, {
+                    token : "paren.rparen",
+                    regex : "[\\])}]"
+                }, {
+                    token : "text",
+                    regex : "\\s+"
+                }
+            ],
+            "comment" : [
+                {
+                    token : "comment", // closing comment
+                    regex : "\\*\\/",
+                    next : "start"
+                }, {
+                    defaultToken : "comment"
+                }
+            ],
+            "string" : [
+                {
+                    token : "escape",
+                    regex : '\\\\"'
+                }, {
+                    token : "string",
+                    regex : '"',
+                    next : "start"
+                }, {
+                    token : "string.invalid",
+                    regex : '[^"\\\\]*$',
+                    next : "start"
+                }, {
+                    token : "string",
+                    regex : '[^"\\\\]+'
+                }
+            ],
+            "tstring" : [
+                {
+                    token : "string",
+                    regex : '"{3,5}',
+                    next : "start"
+                }, {
+                    defaultToken : "string"
+                }
+            ]
+        };
+
+        this.embedRules(DocCommentHighlightRules, "doc-",
+            [ DocCommentHighlightRules.getEndRule("start") ]);
+    };
+
+    oop.inherits(ScalaHighlightRules, TextHighlightRules);
+
+    exports.ScalaHighlightRules = ScalaHighlightRules;
+});
+
+define("ace/mode/scala",["require","exports","module","ace/lib/oop","ace/mode/javascript","ace/mode/scala_highlight_rules"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../lib/oop");
+    var JavaScriptMode = require("./javascript").Mode;
+    var ScalaHighlightRules = require("./scala_highlight_rules").ScalaHighlightRules;
+
+    var Mode = function() {
+        JavaScriptMode.call(this);
+        this.HighlightRules = ScalaHighlightRules;
+    };
+    oop.inherits(Mode, JavaScriptMode);
+
+    (function() {
+
+        this.createWorker = function(session) {
+            return null;
+        };
+
+        this.$id = "ace/mode/scala";
+    }).call(Mode.prototype);
+
+    exports.Mode = Mode;
+});                (function() {
+    window.require(["ace/mode/scala"], function(m) {
+        if (typeof module == "object" && typeof exports == "object" && module) {
+            module.exports = m;
+        }
+    });
+})();
+
+// ------------------------------------------------------- [BEGIN JAVA SECTION] -------------------------------------------------------
+
+define("ace/mode/java_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/text_highlight_rules"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../lib/oop");
+    var DocCommentHighlightRules = require("./doc_comment_highlight_rules").DocCommentHighlightRules;
+    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+
+    var JavaHighlightRules = function() {
+        var keywords = (
+            "abstract|continue|for|new|switch|" +
+            "assert|default|goto|package|synchronized|" +
+            "boolean|do|if|private|this|" +
+            "break|double|implements|protected|throw|" +
+            "byte|else|import|public|throws|" +
+            "case|enum|instanceof|return|transient|" +
+            "catch|extends|int|short|try|" +
+            "char|final|interface|static|void|" +
+            "class|finally|long|strictfp|volatile|" +
+            "const|float|native|super|while|" +
+            "var"
+        );
+
+        var buildinConstants = ("null|Infinity|NaN|undefined");
+
+
+        var langClasses = (
+            "AbstractMethodError|AssertionError|ClassCircularityError|"+
+            "ClassFormatError|Deprecated|EnumConstantNotPresentException|"+
+            "ExceptionInInitializerError|IllegalAccessError|"+
+            "IllegalThreadStateException|InstantiationError|InternalError|"+
+            "NegativeArraySizeException|NoSuchFieldError|Override|Process|"+
+            "ProcessBuilder|SecurityManager|StringIndexOutOfBoundsException|"+
+            "SuppressWarnings|TypeNotPresentException|UnknownError|"+
+            "UnsatisfiedLinkError|UnsupportedClassVersionError|VerifyError|"+
+            "InstantiationException|IndexOutOfBoundsException|"+
+            "ArrayIndexOutOfBoundsException|CloneNotSupportedException|"+
+            "NoSuchFieldException|IllegalArgumentException|NumberFormatException|"+
+            "SecurityException|Void|InheritableThreadLocal|IllegalStateException|"+
+            "InterruptedException|NoSuchMethodException|IllegalAccessException|"+
+            "UnsupportedOperationException|Enum|StrictMath|Package|Compiler|"+
+            "Readable|Runtime|StringBuilder|Math|IncompatibleClassChangeError|"+
+            "NoSuchMethodError|ThreadLocal|RuntimePermission|ArithmeticException|"+
+            "NullPointerException|Long|Integer|Short|Byte|Double|Number|Float|"+
+            "Character|Boolean|StackTraceElement|Appendable|StringBuffer|"+
+            "Iterable|ThreadGroup|Runnable|Thread|IllegalMonitorStateException|"+
+            "StackOverflowError|OutOfMemoryError|VirtualMachineError|"+
+            "ArrayStoreException|ClassCastException|LinkageError|"+
+            "NoClassDefFoundError|ClassNotFoundException|RuntimeException|"+
+            "Exception|ThreadDeath|Error|Throwable|System|ClassLoader|"+
+            "Cloneable|Class|CharSequence|Comparable|String|Object"
+        );
+
+        var keywordMapper = this.createKeywordMapper({
+            "variable.language": "this",
+            "keyword": keywords,
+            "constant.language": buildinConstants,
+            "support.function": langClasses
+        }, "identifier");
+
+        this.$rules = {
+            "start" : [
+                {
+                    token : "comment",
+                    regex : "\\/\\/.*$"
+                },
+                DocCommentHighlightRules.getStartRule("doc-start"),
+                {
+                    token : "comment", // multi line comment
+                    regex : "\\/\\*",
+                    next : "comment"
+                }, {
+                    token : "string", // single line
+                    regex : '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]'
+                }, {
+                    token : "string", // single line
+                    regex : "['](?:(?:\\\\.)|(?:[^'\\\\]))*?[']"
+                }, {
+                    token : "constant.numeric", // hex
+                    regex : /0(?:[xX][0-9a-fA-F][0-9a-fA-F_]*|[bB][01][01_]*)[LlSsDdFfYy]?\b/
+                }, {
+                    token : "constant.numeric", // float
+                    regex : /[+-]?\d[\d_]*(?:(?:\.[\d_]*)?(?:[eE][+-]?[\d_]+)?)?[LlSsDdFfYy]?\b/
+                }, {
+                    token : "constant.language.boolean",
+                    regex : "(?:true|false)\\b"
+                }, {
+                    regex: "(open(?:\\s+))?module(?=\\s*\\w)",
+                    token: "keyword",
+                    next: [{
+                        regex: "{",
+                        token: "paren.lparen",
+                        next: [{
+                            regex: "}",
+                            token: "paren.rparen",
+                            next: "start"
+                        }, {
+                            regex: "\\b(requires|transitive|exports|opens|to|uses|provides|with)\\b",
+                            token: "keyword"
+                        }]
+                    }, {
+                        token : "text",
+                        regex : "\\s+"
+                    }, {
+                        token : "identifier",
+                        regex : "\\w+"
+                    }, {
+                        token : "punctuation.operator",
+                        regex : "."
+                    }, {
+                        token : "text",
+                        regex : "\\s+"
+                    }, {
+                        regex: "", // exit if there is anything else
+                        next: "start"
+                    }]
+                }, {
+                    token : keywordMapper,
+                    regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+                }, {
+                    token : "keyword.operator",
+                    regex : "!|\\$|%|&|\\*|\\-\\-|\\-|\\+\\+|\\+|~|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\\|\\||\\?\\:|\\*=|%=|\\+=|\\-=|&=|\\^=|\\b(?:in|instanceof|new|delete|typeof|void)"
+                }, {
+                    token : "lparen",
+                    regex : "[[({]"
+                }, {
+                    token : "rparen",
+                    regex : "[\\])}]"
+                }, {
+                    token : "text",
+                    regex : "\\s+"
+                }
+            ],
+            "comment" : [
+                {
+                    token : "comment", // closing comment
+                    regex : "\\*\\/",
+                    next : "start"
+                }, {
+                    defaultToken : "comment"
+                }
+            ]
+        };
+
+
+        this.embedRules(DocCommentHighlightRules, "doc-",
+            [ DocCommentHighlightRules.getEndRule("start") ]);
+        this.normalizeRules();
+    };
+
+    oop.inherits(JavaHighlightRules, TextHighlightRules);
+
+    exports.JavaHighlightRules = JavaHighlightRules;
+});
+
+define("ace/mode/folding/java",["require","exports","module","ace/lib/oop","ace/mode/folding/cstyle","ace/range"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../../lib/oop");
+    var CStyleFoldMode = require("./cstyle").FoldMode;
+    var Range = require("../../range").Range;
+
+    var FoldMode = exports.FoldMode = function() {};
+    oop.inherits(FoldMode, CStyleFoldMode);
+
+    (function() {
+        this.importRegex = /^import /;
+        this.getCStyleFoldWidget = this.getFoldWidget;
+        this.getFoldWidget = function(session, foldStyle, row) {
+            if (foldStyle === "markbegin") {
+                var line = session.getLine(row);
+                if (this.importRegex.test(line)) {
+                    if (row == 0 || !this.importRegex.test(session.getLine(row - 1)))
+                        return "start";
+                }
+            }
+
+            return this.getCStyleFoldWidget(session, foldStyle, row);
+        };
+
+        this.getCstyleFoldWidgetRange = this.getFoldWidgetRange;
+        this.getFoldWidgetRange = function(session, foldStyle, row, forceMultiline) {
+            var line = session.getLine(row);
+            var match = line.match(this.importRegex);
+            if (!match || foldStyle !== "markbegin")
+                return this.getCstyleFoldWidgetRange(session, foldStyle, row, forceMultiline);
+
+            var startColumn = match[0].length;
+            var maxRow = session.getLength();
+            var startRow = row;
+            var endRow = row;
+
+            while (++row < maxRow) {
+                var line = session.getLine(row);
+                if (line.match(/^\s*$/))
+                    continue;
+
+                if (!line.match(this.importRegex))
+                    break;
+
+                endRow = row;
+            }
+
+            if (endRow > startRow) {
+                var endColumn = session.getLine(endRow).length;
+                return new Range(startRow, startColumn, endRow, endColumn);
+            }
+        };
+
+    }).call(FoldMode.prototype);
+
+});
+
+define("ace/mode/java",["require","exports","module","ace/lib/oop","ace/mode/javascript","ace/mode/java_highlight_rules","ace/mode/folding/java"], function(require, exports, module) {
+    "use strict";
+
+    var oop = require("../lib/oop");
+    var JavaScriptMode = require("./javascript").Mode;
+    var JavaHighlightRules = require("./java_highlight_rules").JavaHighlightRules;
+    var JavaFoldMode = require("./folding/java").FoldMode;
+
+    var Mode = function() {
+        JavaScriptMode.call(this);
+        this.HighlightRules = JavaHighlightRules;
+        this.foldingRules = new JavaFoldMode();
+    };
+    oop.inherits(Mode, JavaScriptMode);
+
+    (function() {
+
+        this.createWorker = function(session) {
+            return null;
+        };
+
+        this.$id = "ace/mode/java";
+    }).call(Mode.prototype);
+
+    exports.Mode = Mode;
+});                (function() {
+    window.require(["ace/mode/java"], function(m) {
+        if (typeof module == "object" && typeof exports == "object" && module) {
+            module.exports = m;
+        }
+    });
+})();
+
+// ------------------------------------------------------- [END CUSTOM SECTION] -------------------------------------------------------
+
+define("ace/mode/markdown",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/clojure","ace/mode/c_cpp","ace/mode/javascript","ace/mode/xml","ace/mode/html","ace/mode/markdown_highlight_rules","ace/mode/folding/markdown","ace/mode/javascript","ace/mode/html","ace/mode/sh","ace/mode/sh","ace/mode/xml","ace/mode/css"], function(require, exports, module) {
 "use strict";
 
 var oop = require("../lib/oop");
@@ -3149,7 +4182,11 @@ var Mode = function() {
         bash: require("./sh").Mode,
         sh: require("./sh").Mode,
         xml: require("./xml").Mode,
-        css: require("./css").Mode
+        css: require("./css").Mode,
+        clojure: require("./clojure").Mode,
+        c_cpp: require("./c_cpp").Mode,
+        scala: require("./scala").Mode,
+        java: require("./java").Mode
     });
 
     this.foldingRules = new MarkdownFoldMode();
