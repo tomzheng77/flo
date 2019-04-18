@@ -134,8 +134,9 @@
   "navigates to the <index> occurrence of the <search> tag"
   ([search] (navigate search {}))
   ([search opts]
-   (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))]
-     (.find @ace-editor (str "\\[" search "=?\\]") settings))))
+   (if (and search (not-empty search))
+     (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))]
+       (.find @ace-editor (str "\\[" search "=?\\]") settings)))))
 
 (defn last-before [list value]
   (loop [lo 0 hi (dec (count list)) best nil]
