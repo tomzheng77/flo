@@ -118,7 +118,7 @@ color: #3DA1D2;\
 }\
 .ace-monokai .ace_tag.ace_reference {\
 font-weight: bold;\
-color: #ffe300;\
+color: #f0c400;\
 /*animation: blinker 1s linear infinite;*/\
 }\
 ";
