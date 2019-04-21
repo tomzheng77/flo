@@ -19,7 +19,6 @@
             [ring.middleware.anti-forgery :as anti-forgery :refer [wrap-anti-forgery]]
             [clojure.core.async :as async :refer [chan <! <!! >! >!! put! chan go go-loop]]
             [clojure.data :refer [diff]]
-            [org.httpkit.server :as ks]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [flo.server.store :refer [get-note-content get-note-at set-note get-note-created get-note-updated]]
