@@ -38,15 +38,9 @@
 (println "file:" file-id)
 (println "initial content:" initial-content)
 
-(def example-state
-  {:last-shift-press 0                                      ; the time when the shift key was last pressed
-   :search           "AA"                                   ; the active label being searched, nil means no search
-   :content          {}})                                   ; the current contents of the editor
-
 (defonce state
-  (r/atom {:last-shift-press nil
-           :search           nil
-           :content          nil
+  (r/atom {:last-shift-press nil ; the time when the shift key was last pressed
+           :search           nil ; the active label being searched, nil means no search
            :window-width     (.-innerWidth js/window)
            :drag-width       80
            :drag-timestamp   nil
