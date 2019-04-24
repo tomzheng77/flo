@@ -1,18 +1,6 @@
 (ns flo.server.static
-  (:require [ring.middleware.reload :refer [wrap-reload]]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
-            [hiccup.page :refer [html5]]
-            [hiccup.util :refer [escape-html]]
-            [garden.core :refer [css]]
-            [clojure.core.match :refer [match]]
-            [clojure.pprint :refer [pprint]]
-            [taoensso.sente.server-adapters.http-kit :refer [get-sch-adapter]]
-            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
-            [ring.middleware.params :refer [wrap-params]]
-            [clojure.data :refer [diff]]
-            [flo.server.store :refer [get-note-content set-note get-note-created get-note-updated]]
-            [org.httpkit.server :as ks]
-            [taoensso.timbre :as timbre :refer [trace debug info error]])
+  (:require [hiccup.page :refer [html5]]
+            [garden.core :refer [css]])
   (:import (java.util Base64)))
 
 (defn base64-encode [to-encode]
