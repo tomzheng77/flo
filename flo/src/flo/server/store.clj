@@ -86,10 +86,8 @@
   ([name] (get-note-updated name (d/db (get-conn))))
   ([name db] (ffirst (d/q (note-updated-q name) db))))
 
-; Date in = new Date();
-; LocalDateTime ldt = LocalDateTime.ofInstant(in.toInstant(), ZoneId.systemDefault());
-; Date out = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
-(defn ldt-to-date [ldt]
+; converts to java.util.Date
+(defn to-util-date [ldt]
   (cond
     (instance? Long ldt) (new Date ldt)
     (instance? Integer ldt) (new Date ldt)
@@ -98,7 +96,7 @@
     (instance? Date ldt) ldt))
 
 (defn get-note-at [name at]
-  (let [date (ldt-to-date at)]
+  (let [date (to-util-date at)]
     (assert (not (nil? date)))
     (let [db (d/as-of (d/db (get-conn)) date)
           updated (get-note-updated name db)]
