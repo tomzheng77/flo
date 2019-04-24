@@ -4708,7 +4708,7 @@ var Mode = function() {
         c_cpp: require("./c_cpp").Mode,
         scala: require("./scala").Mode,
         java: require("./java").Mode,
-        python: require("./java").Mode
+        python: require("./python").Mode
     });
 
     this.foldingRules = new MarkdownFoldMode();
