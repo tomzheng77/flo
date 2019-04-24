@@ -104,21 +104,3 @@
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
-
-(defn file->bytes [file]
-  (with-open [in (io/input-stream file)
-              out (new ByteArrayOutputStream)]
-    (io/copy in out)
-    (.toByteArray out)))
-
-(defn load-store []
-  (let [store-dir (io/file "store")
-        nippy-suffix ".nippy"
-        files (.listFiles (io/file store-dir))]
-    (doseq [file files]
-      (when (str/ends-with? (.getName file) nippy-suffix)
-        (let [content (file->bytes file)
-              filename (.getName file)
-              name (subs filename 0 (- (count filename) (count nippy-suffix)))]
-          (debug "loading" name "from store")
-          (d/transact-async (get-conn) [{:note/name name :note/content content}]))))))
