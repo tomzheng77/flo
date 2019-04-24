@@ -21,17 +21,17 @@
     [clojure.set :as set]))
 
 (enable-console-print!)
-(defonce configuration
-   (->> "init"
+(defonce init
+        (->> "init"
         (.getElementById js/document)
         (.-innerHTML)
         (b64/decodeString)
         (read-string)))
 
-(def time-created (:time-created configuration))
-(def time-updated (:time-updated configuration))
-(def file-id (:file-id configuration))
-(def initial-content (:content configuration))
+(def time-created (:time-created init))
+(def time-updated (:time-updated init))
+(def file-id (:file-id init))
+(def initial-content (:content init))
 
 (println "time created:" time-created)
 (println "time updated:" time-updated)
