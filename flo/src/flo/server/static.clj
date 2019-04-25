@@ -14,10 +14,17 @@
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
       [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
       [:style
-       (css [:html :body {:margin 0 :height 100}]
-            [:body {:background-color "#95d5ee"}])]
+       (css [:html :body {:margin 0 :height "100%"}]
+            [:body {:background-color "#95d5ee"}]
+            [:#login-form {:width "300px"
+                           :min-height "100px"
+                           :margin-top "50px"
+                           :margin-left "auto"
+                           :margin-right "auto"
+                           :background-color "red"}])]
       [:title "FloNote Login"]]
-     [:body]]))
+     [:body
+      [:div#login-form]]]))
 
 (defn editor-html [title init]
   (html5
