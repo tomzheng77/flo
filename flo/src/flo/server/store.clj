@@ -24,7 +24,11 @@
              {:db/ident       :user/password
               :db/valueType   :db.type/string
               :db/cardinality :db.cardinality/one
-              :db/doc         "password hashed in PBKDF2"}
+              :db/doc         "password hashed in PBKDF2 and serialized in base64"}
+             {:db/ident       :user/notes
+              :db/valueType   :db.type/ref
+              :db/cardinality :db.cardinality/many
+              :db/doc         "all of the notes owned by the user"}
              {:db/ident       :note/name
               :db/unique      :db.unique/identity
               :db/valueType   :db.type/string
