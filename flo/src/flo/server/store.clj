@@ -22,7 +22,6 @@
               :db/cardinality :db.cardinality/one
               :db/doc         "email"}
              {:db/ident       :user/password
-              :db/unique      :db.unique/identity
               :db/valueType   :db.type/string
               :db/cardinality :db.cardinality/one
               :db/doc         "password hashed in PBKDF2"}
