@@ -58,6 +58,11 @@
 (def history (r/cursor state [:history]))
 (def search (r/cursor state [:search]))
 
+(defn on-drag-start [event drag-position]
+  (let [clj-event (to-clj-event event)]
+    (reset! drag-start
+            {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-position})))
+
 (defn drag-button []
   (let [timestamp (or @drag-timestamp @time-last-save)
         drag-position (/ (* (- timestamp @time-start) (- @window-width @drag-width))
@@ -77,11 +82,8 @@
                            :font-size        8
                            :width            @drag-width
                            :margin-left      drag-position}
-           :on-mouse-down (fn [event]
-                            (let [clj-event (to-clj-event event)]
-                              (reset! drag-start {:x        (:mouse-x clj-event)
-                                                  :y        (:mouse-y clj-event)
-                                                  :position drag-position})))}
+           :on-touch-start #(on-drag-start % drag-position)
+           :on-mouse-down #(on-drag-start % drag-position)}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 (defn drag-bar []
@@ -216,7 +218,9 @@
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
 (set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))
 (set! (.-onmousemove js/window) (fn [event] (on-mouse-move (to-clj-event event))))
+(set! (.-ontouchmove js/window) (fn [event] (on-mouse-move (to-clj-event event))))
 (set! (.-onmouseup js/window) #(reset! drag-start nil))
+(set! (.-ontouchend js/window) #(reset! drag-start nil))
 (set! (.-onresize js/window) #(reset! window-width (.-innerWidth js/window)))
 
 (let [{:keys [chsk ch-recv send-fn state]}

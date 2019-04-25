@@ -35,6 +35,12 @@
                    (or (and doc (.-scrollTop doc)) (and body (.-scrollTop body)) 0))
                (or (and doc (.-clientTop doc)) (and body (.-clientTop body)) 0))))))
 
+(defn touch-0 [event]
+  (and
+    (.-touches event) (< 0 (.-length (.-touches event)))
+    {:x (.-clientX (aget (.-touches event) 0))
+     :y (.-clientY (aget (.-touches event) 0))}))
+
 (defn to-clj-event [event]
   (assign-document-scroll event)
   {:code (. event -code)
@@ -42,10 +48,8 @@
    :ctrl-key (. event -ctrlKey)
    :shift-key (. event -shiftKey)
    :original event
-   :page-x (. event -pageX)
-   :page-y (. event -pageY)
-   :mouse-x (. event -pageX)
-   :mouse-y (. event -pageY)})
+   :mouse-x (or (.-pageX event) (:x (touch-0 event)))
+   :mouse-y (or (.-pageY event) (:y (touch-0 event)))})
 
 ; https://stackoverflow.com/questions/18735665/how-can-i-get-the-positions-of-regex-matches-in-clojurescript
 (defn re-pos [re s]
