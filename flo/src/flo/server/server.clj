@@ -22,7 +22,7 @@
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [flo.server.store :refer [get-note-content get-note-at set-note get-note-created get-note-updated]]
-            [flo.server.static :refer [style-css editor-html]])
+            [flo.server.static :refer [style-css editor-html login-html]])
   (:import (java.util UUID Date)))
 
 (timbre/merge-config!
@@ -76,6 +76,10 @@
   (route/resources "/" {:root "public"})
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post req))
+  (GET "/login" []
+    {:status  200
+     :headers {"Content-Type" "text/html"}
+     :body    (login-html)})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
           content (get-note-content file-id)
@@ -85,11 +89,12 @@
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session session
-       :body    (editor-html {:file-id     file-id
-                             :content      content
-                             :time-created time-created
-                             :time-updated time-updated})}))
-  (route/not-found "Not Found"))
+       :body    (editor-html file-id
+                  {:file-id      file-id
+                   :content      content
+                   :time-created time-created
+                   :time-updated time-updated})}))
+           (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel
 ;; but it's very good to know about

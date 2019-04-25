@@ -6,18 +6,20 @@
 (defn base64-encode [to-encode]
   (.encodeToString (Base64/getEncoder) (.getBytes to-encode)))
 
-(defn login-html
+(defn login-html []
   (html5
     [:html {:lang "en"}
      [:head
       [:meta {:charset "UTF-8"}]
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
       [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
-      [:style]
-      [:title]]
+      [:style
+       (css [:html :body {:margin 0 :height 100}]
+            [:body {:background-color "#95d5ee"}])]
+      [:title "FloNote Login"]]
      [:body]]))
 
-(defn editor-html [init]
+(defn editor-html [title init]
   (html5
     [:html {:lang "en"}
      [:head
@@ -31,7 +33,7 @@
             [:html :body :#app :#app-inner {:margin 0 :height "100%"}]
             [:#editor :#editor-read-only
              {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}])]
-      [:title "FloNote"]]
+      [:title title]]
      [:body
       [:pre#init {:style "display: none"} (base64-encode (pr-str init))]
       [:div#app]
