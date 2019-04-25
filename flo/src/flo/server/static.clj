@@ -13,7 +13,7 @@
        [:#editor :#editor-read-only
         {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}]))
 
-(defn index-html [init]
+(defn editor-html [init]
   (html5
     [:html {:lang "en"}
      [:head

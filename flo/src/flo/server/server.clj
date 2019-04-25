@@ -22,7 +22,7 @@
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [flo.server.store :refer [get-note-content get-note-at set-note get-note-created get-note-updated]]
-            [flo.server.static :refer [style-css index-html]])
+            [flo.server.static :refer [style-css editor-html]])
   (:import (java.util UUID Date)))
 
 (timbre/merge-config!
@@ -85,8 +85,8 @@
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session session
-       :body    (index-html {:file-id file-id
-                             :content content
+       :body    (editor-html {:file-id     file-id
+                             :content      content
                              :time-created time-created
                              :time-updated time-updated})}))
   (route/not-found "Not Found"))
