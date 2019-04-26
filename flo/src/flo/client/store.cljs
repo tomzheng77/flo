@@ -40,7 +40,6 @@
 (rf/reg-event-db
   :initialize
   (fn [_ [_ {:keys [file-id content notes-summary time-created time-updated]}]]
-    (println notes-summary)
     {:last-shift-press nil ; the time when the shift key was last pressed
      :search           nil ; the active label being searched, nil means no search
      :window-width     (.-innerWidth js/window)

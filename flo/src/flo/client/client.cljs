@@ -199,7 +199,6 @@
     (.preventDefault (:original event))
     (rf/dispatch [:toggle-navigation]))
   (when @search
-    (println event)
     (when (#{"Enter" "Tab"} (:key event))
       (.preventDefault (:original event))
       (if (:shift-key event)
