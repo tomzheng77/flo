@@ -31,7 +31,7 @@
 
 (rf/reg-event-fx :edit
   (fn [{:keys [db]} [_ content]]
-    (if (= content (:content db))
+    (if (= content (:last-save db))
       {:db db}
       {:save content :db (assoc db :last-save content)})))
 
