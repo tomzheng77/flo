@@ -53,10 +53,9 @@
       (d/connect db-uri))))
 
 (defn all-notes-q []
-  '[:find ?e ?name ?content
+  '[:find ?name
     :where
-    [?e :note/name ?name]
-    [?e :note/content ?content]])
+    [?e :note/name ?name]])
 
 (defn note-content-q [name]
   `[:find ?content
@@ -77,9 +76,9 @@
     [?e :note/content ?content ?tx]
     [?tx :db/txInstant ?tx-time]])
 
-(defn get-all-notes []
+(defn get-all-note-names []
   (let [db (d/db (get-conn))]
-    (d/q (all-notes-q) db)))
+    (map first (d/q (all-notes-q) db))))
 
 (defn get-note-content
   ([name] (get-note-content name (d/db (get-conn))))
