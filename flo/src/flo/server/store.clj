@@ -53,9 +53,12 @@
       (d/connect db-uri))))
 
 (defn all-notes-q []
-  '[:find ?name
+  '[:find ?name ?new-time ?upd-time
     :where
-    [?e :note/name ?name]])
+    [?e :note/name ?name ?tx1]
+    [?e :note/content ?content ?tx2]
+    [?tx1 :db/txInstant ?new-time]
+    [?tx2 :db/txInstant ?upd-time]])
 
 (defn note-content-q [name]
   `[:find ?content
@@ -76,9 +79,12 @@
     [?e :note/content ?content ?tx]
     [?tx :db/txInstant ?tx-time]])
 
-(defn get-all-note-names []
+(defn get-notes-summary []
   (let [db (d/db (get-conn))]
-    (map first (d/q (all-notes-q) db))))
+    (for [[name created-time updated-time] (d/q (all-notes-q) db)]
+      {:name name
+       :created-time (.getTime (or created-time (new Date)))
+       :updated-time (.getTime (or updated-time (new Date)))})))
 
 (defn get-note-content
   ([name] (get-note-content name (d/db (get-conn))))

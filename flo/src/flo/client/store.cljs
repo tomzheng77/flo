@@ -39,7 +39,8 @@
 
 (rf/reg-event-db
   :initialize
-  (fn [_ [_ {:keys [file-id content all-notes time-created time-updated]}]]
+  (fn [_ [_ {:keys [file-id content notes-summary time-created time-updated]}]]
+    (println notes-summary)
     {:last-shift-press nil ; the time when the shift key was last pressed
      :search           nil ; the active label being searched, nil means no search
      :window-width     (.-innerWidth js/window)
@@ -49,7 +50,7 @@
      :history          (avl/sorted-map)
      :navigation       nil ; nil means no navigation, "string" means
      :navigation-index nil ; selected item in navigation box
-     :notes-list       all-notes
+     :notes-list       notes-summary
      :time-start       time-created
      :time-last-save   time-updated
      :file-id          file-id
@@ -130,4 +131,4 @@
 
 (rf/reg-sub :navigation-notes
   (fn [db v]
-    (filter #(str/includes? % (:navigation db)) (:notes-list db))))
+    (filter #(str/includes? (:name %) (:navigation db)) (:notes-list db))))
