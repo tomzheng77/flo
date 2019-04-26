@@ -38,12 +38,12 @@
 
 (defn on-chsk-receive [item]
   (match (:event item)
-    [:flo/seek [file-id timestamp]]
-    (do (swap! seek-location #(assoc % (:uid item) [file-id timestamp])))
-    [:flo/save [file-id content]]
-    (do (debug "saving" file-id) (set-note file-id content))
-    [:flo/load [file-id]]
-    (send-note-contents (:uid item) file-id)
+    [:flo/seek [name timestamp]]
+    (do (swap! seek-location #(assoc % (:uid item) [name timestamp])))
+    [:flo/save [name content]]
+    (do (debug "saving" name) (set-note name content))
+    [:flo/load [name]]
+    (send-note-contents (:uid item) name)
     :else nil))
 
 (let [{:keys [ch-recv send-fn connected-uids
@@ -66,8 +66,8 @@
   (go (while (= init-id @run-iteration-id)
         (locking seek-location
           (when (not-empty @seek-location)
-            (doseq [[uid [file-id timestamp]] @seek-location]
-              (let [note (get-note-at file-id timestamp)]
+            (doseq [[uid [name timestamp]] @seek-location]
+              (let [note (get-note-at name timestamp)]
                 (when note (chsk-send! uid [:flo/history [note]]))))
             (reset! seek-location {})))
         (Thread/sleep 50))))
@@ -81,14 +81,14 @@
      :headers {"Content-Type" "text/html"}
      :body    (login-html)})
   (GET "/editor" request
-    (let [file-id (get (:query-params request) "id" "default")
-          note (get-note file-id)
+    (let [name (get (:query-params request) "id" "default")
+          note (get-note name)
           notes-summary (get-notes-summary)
           session {:uid (.toString (UUID/randomUUID))}]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session session
-       :body    (editor-html file-id
+       :body    (editor-html name
                   {:note note
                    :notes-summary notes-summary
                    })}))
