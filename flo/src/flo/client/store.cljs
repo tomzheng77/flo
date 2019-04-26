@@ -46,7 +46,7 @@
      :drag-timestamp   nil
      :drag-start       nil
      :history          (avl/sorted-map)
-     :show-navigation  false
+     :navigation       false
      :notes-list       all-notes
      :time-start       time-created
      :time-last-save   time-updated
@@ -61,7 +61,7 @@
 (rf/reg-sub :drag-timestamp (fn [db v] (:drag-timestamp db)))
 (rf/reg-sub :drag-start (fn [db v] (:drag-start db)))
 (rf/reg-sub :history (fn [db v] (:history db)))
-(rf/reg-sub :show-navigation (fn [db v] (:show-navigation db)))
+(rf/reg-sub :navigation (fn [db v] (:navigation db)))
 (rf/reg-sub :notes-list (fn [db v] (:notes-list db)))
 (rf/reg-sub :time-start (fn [db v] (:time-start db)))
 (rf/reg-sub :time-last-save (fn [db v] (:time-last-save db)))
@@ -88,9 +88,9 @@
   (fn [db [_ timestamp note]]
     (update db :history #(assoc % timestamp note))))
 
-(rf/reg-event-db :toggle-show-navigation
+(rf/reg-event-db :toggle-navigation
   (fn [db v]
-    (update db :show-navigation not)))
+    (update db :navigation not)))
 
 (rf/reg-event-db :shift-press
   (fn [db [_ t]]

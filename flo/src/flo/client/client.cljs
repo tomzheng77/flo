@@ -63,7 +63,7 @@
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 (defn navigation []
-  [:div {:style {:display (if @(rf/subscribe [:show-navigation]) "block" "none")
+  [:div {:style {:display (if @(rf/subscribe [:navigation]) "block" "none")
                  :position "absolute"
                  :left "auto"
                  :right "auto"
@@ -113,7 +113,7 @@
 
 (.addCommand (.-commands @ace-editor)
   (clj->js {:name "toggle-navigation"
-            :exec #(rf/dispatch [:toggle-show-navigation])
+            :exec #(rf/dispatch [:toggle-navigation])
             :bindKey {:mac "cmd-p" :win "ctrl-p"}}))
 
 (defn navigate
@@ -167,7 +167,7 @@
   (when (= "Escape" (:code event))
     (reset! search nil))
   (when (and (:ctrl-key event) (= "p" (:key event)))
-    (rf/dispatch [:toggle-show-navigation]))
+    (rf/dispatch [:toggle-navigation]))
   (when @search
     (println event)
     (when (#{"Enter" "Tab"} (:key event))
