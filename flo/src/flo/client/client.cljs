@@ -142,7 +142,7 @@
 (ace/set-text @ace-editor-ro (or initial-content ""))
 (ace/set-read-only @ace-editor-ro true)
 
-(.addCommand (.-commands ace-editor)
+(.addCommand (.-commands @ace-editor)
   (clj->js {:name "toggle-navigation"
             :exec (fn [] (swap! show-navigation not))
             :bindKey {:mac "cmd-p" :win "ctrl-p"}}))
