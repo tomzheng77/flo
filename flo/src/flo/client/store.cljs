@@ -2,7 +2,8 @@
   (:require [clojure.data.avl :as avl]
             [reagent.core :as r]
             [re-frame.core :as rf]
-            [re-frame.db :as db]))
+            [re-frame.db :as db]
+            [clojure.string :as str]))
 
 (def watches-on-db (r/atom {}))
 (defn add-watch-db [ident v listener]
@@ -120,3 +121,11 @@
     (/ (* (- (or (:drag-timestamp db) (:time-last-save db)) (:time-start db))
           (- (:window-width db) (:drag-btn-width db)))
        (- (:time-last-save db) (:time-start db)))))
+
+(rf/reg-event-db :set-navigation
+  (fn [db [_ nav]]
+    (assoc db :navigation nav)))
+
+(rf/reg-sub :navigation-notes
+  (fn [db v]
+    (filter #(str/includes? % (:navigation db)) (:notes-list db))))

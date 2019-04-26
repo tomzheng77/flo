@@ -83,9 +83,11 @@
                       :height "100%"
                       :padding 0
                       :text-indent 7}
-              :value "123"}]]
+              :auto-focus true
+              :value @(rf/subscribe [:navigation])
+              :on-change #(rf/dispatch [:set-navigation (-> % .-target .-value)])}]]
     [:div {:style {:height 4}}]
-    (for [note-name @(rf/subscribe [:notes-list])]
+    (for [note-name @(rf/subscribe [:navigation-notes])]
       ^{:key note-name}
       [:div {:style {:width "100%" :height 24
                      :font-size 15
