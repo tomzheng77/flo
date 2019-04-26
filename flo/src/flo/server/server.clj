@@ -21,7 +21,7 @@
             [clojure.data :refer [diff]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
-            [flo.server.store :refer [get-note-content get-note-at set-note get-note-created get-note-updated]]
+            [flo.server.store :refer [get-note-content get-note-at set-note get-note-created get-note-updated get-all-note-names]]
             [flo.server.static :refer [editor-html login-html]])
   (:import (java.util UUID Date)))
 
@@ -85,6 +85,7 @@
           content (get-note-content file-id)
           time-created (.getTime (or (get-note-created file-id) (new Date)))
           time-updated (.getTime (or (get-note-updated file-id) (new Date)))
+          all-notes (get-all-note-names)
           session {:uid (.toString (UUID/randomUUID))}]
       {:status  200
        :headers {"Content-Type" "text/html"}
@@ -93,7 +94,9 @@
                   {:file-id      file-id
                    :content      content
                    :time-created time-created
-                   :time-updated time-updated})}))
+                   :time-updated time-updated
+                   :all-notes    all-notes
+                   })}))
            (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel
