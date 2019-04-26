@@ -198,7 +198,6 @@
 
 (defn on-press-key
   [event]
-  (println event)
   (if (= "ShiftLeft" (:code event))
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))
