@@ -63,16 +63,37 @@
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 (defn navigation []
-  [:div {:style {:position "absolute"
-                 :left "auto"
-                 :right "auto"
-                 :top 100
-                 :width 100
-                 :height 100
-                 :background-color "red"
-                 :z-index 10}}
-   (for [note-name @(rf/subscribe [:notes-list])]
-     ^{:key note-name} [:div note-name])])
+  [:div#navigation-outer
+   {:style {:position "absolute"
+            :top      0
+            :bottom   0
+            :left     0
+            :right    0
+            :z-index  10}}
+   [:div#navigation
+    {:style {:width 600
+             :margin-left "auto"
+             :margin-right "auto"
+             :padding 4
+             :background-color "#ebedef"}}
+    [:div {:style {:height 30 :background-color "white"}}
+     [:input {:style {:border "none"
+                      :line-height "30px"
+                      :width "100%"
+                      :height "100%"
+                      :padding 0
+                      :text-indent 7}
+              :value "123"}]]
+    [:div {:style {:height 4}}]
+    (for [note-name @(rf/subscribe [:notes-list])]
+      ^{:key note-name}
+      [:div {:style {:width "100%" :height 24
+                     :font-size 15
+                     :text-indent 7
+                     :line-height "24px"
+                     :user-select "none"
+                     :cursor "pointer"}}
+       note-name])]])
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
