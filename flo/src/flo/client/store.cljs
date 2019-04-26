@@ -48,6 +48,7 @@
      :drag-start       nil
      :history          (avl/sorted-map)
      :navigation       nil ; nil means no navigation, "string" means
+     :navigation-index nil ; selected item in navigation box
      :notes-list       all-notes
      :time-start       time-created
      :time-last-save   time-updated
