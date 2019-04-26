@@ -12,7 +12,7 @@
             [taoensso.nippy :as nippy]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [datomic.api :as d]
-            [flo.server.codec :refer [base64-encode]])
+            [flo.server.codec :refer [base64-encode hash-password]])
   (:import (java.time LocalDateTime ZoneId)
            (java.util Date)))
 
@@ -119,4 +119,4 @@
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
 
 (defn new-user [email password]
-  (d/transact-async (get-conn) [{:user/email email :user/password (base64-encode password)}]))
+  (d/transact-async (get-conn) [{:user/email email :user/password (hash-password password)}]))
