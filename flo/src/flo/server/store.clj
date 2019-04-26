@@ -61,46 +61,30 @@
     [?tx2 :db/txInstant ?upd-time]
     [(count ?content) ?length]])
 
-(defn note-content-q [name]
-  `[:find ?content
+(defn note-q [name]
+  `[:find ?new-time ?upd-time ?content
     :where
-    [?e :note/name ~name]
-    [?e :note/content ?content]])
-
-(defn note-created-q [name]
-  `[:find ?tx-time
-    :where
-    [?e :note/name ~name ?tx]
-    [?tx :db/txInstant ?tx-time]])
-
-(defn note-updated-q [name]
-  `[:find ?tx-time
-    :where
-    [?e :note/name ~name]
-    [?e :note/content ?content ?tx]
-    [?tx :db/txInstant ?tx-time]])
+    [?e :note/name ~name ?tx1]
+    [?e :note/content ?content ?tx2]
+    [?tx1 :db/txInstant ?new-time]
+    [?tx2 :db/txInstant ?upd-time]])
 
 (defn get-notes-summary []
   (let [db (d/db (get-conn))]
-    (for [[name created-time updated-time length] (d/q (all-notes-q) db)]
+    (for [[name time-created time-updated length] (d/q (all-notes-q) db)]
       {:name name
-       :created-time (.getTime (or created-time (new Date)))
-       :updated-time (.getTime (or updated-time (new Date)))
+       :time-created (if time-created (.getTime time-created))
+       :time-updated (if time-updated (.getTime time-updated))
        :length length})))
 
-(defn get-note-content
-  ([name] (get-note-content name (d/db (get-conn))))
+(defn get-note
+  ([name] (get-note name (d/db (get-conn))))
   ([name db]
-   (let [content-raw (ffirst (d/q (note-content-q name) db))]
-     (if content-raw (nippy/thaw content-raw)))))
-
-(defn get-note-created
-  ([name] (get-note-created name (d/db (get-conn))))
-  ([name db] (ffirst (d/q (note-created-q name) db))))
-
-(defn get-note-updated
-  ([name] (get-note-updated name (d/db (get-conn))))
-  ([name db] (ffirst (d/q (note-updated-q name) db))))
+   (let [[time-created time-updated content] (first (d/q (note-q name) db))]
+     {:name name
+      :time-created (if time-created (.getTime time-created))
+      :time-updated (if time-updated (.getTime time-updated))
+      :content (if content (nippy/thaw content))})))
 
 ; converts to java.util.Date
 (defn to-util-date [ldt]
@@ -116,7 +100,7 @@
     (assert (not (nil? date)))
     (let [db (d/as-of (d/db (get-conn)) date)
           updated (get-note-updated name db)]
-      (if updated {:content (get-note-content name db) :updated updated}))))
+      (if updated (get-note name db)))))
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))

@@ -21,7 +21,7 @@
             [clojure.data :refer [diff]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
-            [flo.server.store :refer [get-note-content get-note-at set-note get-note-created get-note-updated get-notes-summary]]
+            [flo.server.store :refer [get-note get-note-at set-note get-notes-summary]]
             [flo.server.static :refer [editor-html login-html]])
   (:import (java.util UUID Date)))
 
@@ -68,10 +68,7 @@
           (when (not-empty @seek-location)
             (doseq [[uid [file-id timestamp]] @seek-location]
               (let [note (get-note-at file-id timestamp)]
-                (when note
-                  (chsk-send! uid [:flo/history [file-id
-                                                 (.getTime (:updated note))
-                                                 (:content note)]]))))
+                (when note (chsk-send! uid [:flo/history [note]]))))
             (reset! seek-location {})))
         (Thread/sleep 50))))
 
@@ -85,19 +82,14 @@
      :body    (login-html)})
   (GET "/editor" request
     (let [file-id (get (:query-params request) "id" "default")
-          content (get-note-content file-id)
-          time-created (.getTime (or (get-note-created file-id) (new Date)))
-          time-updated (.getTime (or (get-note-updated file-id) (new Date)))
+          note (get-note file-id)
           notes-summary (get-notes-summary)
           session {:uid (.toString (UUID/randomUUID))}]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session session
        :body    (editor-html file-id
-                  {:file-id       file-id
-                   :content       content
-                   :time-created  time-created
-                   :time-updated  time-updated
+                  {:note note
                    :notes-summary notes-summary
                    })}))
            (route/not-found "Not Found"))

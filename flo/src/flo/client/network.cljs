@@ -19,7 +19,7 @@
 (go-loop []
   (let [item (<! ch-chsk)]
     (match (:event item)
-      [:chsk/recv [:flo/history [fid timestamp note]]] (rf/dispatch [:recv-history timestamp note])
+      [:chsk/recv [:flo/history [note]]] (rf/dispatch [:recv-history note])
       :else nil))
   (recur))
 
