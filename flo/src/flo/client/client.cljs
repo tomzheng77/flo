@@ -110,10 +110,8 @@
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
-   [:div {:style {:flex-grow 1 :display (if @drag-timestamp "none" "flex")
-                  :flex-direction "column"}} [:div#editor]]
-   [:div {:style {:flex-grow 1 :display (if @drag-timestamp "flex" "none")
-                  :flex-direction "column"}} [:div#editor-read-only]]
+   [:div {:style {:flex-grow 1 :display (if @drag-timestamp "none" "flex") :flex-direction "column"}} [:div#editor]]
+   [:div {:style {:flex-grow 1 :display (if @drag-timestamp "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [status-bar]
    [drag-bar]])
 

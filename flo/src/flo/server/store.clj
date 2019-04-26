@@ -117,3 +117,6 @@
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
+
+(defn new-user [email password]
+  (d/transact-async (get-conn) [{:user/email email :user/password password}]))
