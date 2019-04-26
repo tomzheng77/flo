@@ -46,6 +46,7 @@
            :drag-timestamp   nil
            :drag-start       nil
            :history          (avl/sorted-map)
+           :show-navigation  false
            :time-start       time-created
            :time-last-save   time-updated}))
 
@@ -57,34 +58,44 @@
 (def drag-start (r/cursor state [:drag-start]))
 (def history (r/cursor state [:history]))
 (def search (r/cursor state [:search]))
+(def show-navigation (r/cursor state [:show-navigation]))
 
 (defn on-drag-start [event drag-position]
   (let [clj-event (to-clj-event event)]
-    (reset! drag-start
-            {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-position})))
+    (reset! drag-start {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-position})))
 
 (defn drag-button []
   (let [timestamp (or @drag-timestamp @time-last-save)
         drag-position (/ (* (- timestamp @time-start) (- @window-width @drag-width))
                          (- @time-last-save @time-start))]
-    [:div {:style         {:height           "100%"
-                           :text-indent      "0"
-                           :text-align       "center"
-                           ;:background-color "#ffe795"
-                           :background-color "#9e2023"
-                           :font-family      "Monospace"
-                           :padding-top      "2px"
-                           :padding-bottom   "2px"
-                           :color            "#FFF"
-                           :cursor           "pointer"
-                           :user-select      "none"
-                           :line-height      "10px"
-                           :font-size        8
-                           :width            @drag-width
-                           :margin-left      drag-position}
+    [:div {:style {:height           "100%"
+                   :text-indent      "0"
+                   :text-align       "center"
+                   :background-color "#9e2023"
+                   :font-family      "Monospace"
+                   :padding-top      "2px"
+                   :padding-bottom   "2px"
+                   :color            "#FFF"
+                   :cursor           "pointer"
+                   :user-select      "none"
+                   :line-height      "10px"
+                   :font-size        8
+                   :width            @drag-width
+                   :margin-left      drag-position}
            :on-touch-start #(on-drag-start % drag-position)
            :on-mouse-down #(on-drag-start % drag-position)}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
+
+(defn navigation []
+  [:div {:style {:display (if @show-navigation "block" "hidden")
+                 :position "absolute"
+                 :left "auto"
+                 :right "auto"
+                 :top 100
+                 :width 100
+                 :height 100
+                 :background-color "red"}}
+   "this is something"])
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
@@ -110,6 +121,7 @@
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
+   [navigation]
    [:div {:style {:flex-grow 1 :display (if @drag-timestamp "none" "flex") :flex-direction "column"}} [:div#editor]]
    [:div {:style {:flex-grow 1 :display (if @drag-timestamp "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [status-bar]
@@ -119,6 +131,7 @@
 (def ace-editor (r/atom (ace/new-instance "editor")))
 (def ace-editor-ro (r/atom (ace/new-instance "editor-read-only")))
 (ace/set-text @ace-editor (or initial-content ""))
+(ace/set-text @ace-editor-ro (or initial-content ""))
 (ace/set-read-only @ace-editor-ro true)
 
 ;(println (new js/ace.Search))
@@ -179,6 +192,8 @@
     (swap! state #(assoc % :last-shift-press nil)))
   (when (= "Escape" (:code event))
     (reset! search nil))
+  (when (and (:shift-key event) (= "p" (:key event)))
+    (swap! show-navigation not))
   (when @search
     (println event)
     (when (#{"Enter" "Tab"} (:key event))
