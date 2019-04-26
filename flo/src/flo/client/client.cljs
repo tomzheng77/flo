@@ -62,7 +62,7 @@
            :on-mouse-down #(on-drag-start % drag-btn-x)}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
-(defn navigation-btn [note-name]
+(defn navigation-btn [note]
   (let [focus? (r/atom false)]
     (fn []
       [:div {:style {:width "100%" :height 24
@@ -71,13 +71,21 @@
                      :line-height "24px"
                      :user-select "none"
                      :background-color (if @focus? "#c7cbd1")
-                     :cursor "pointer"}
+                     :cursor "pointer"
+                     :display "flex"
+                     :flex-direction "row"}
              :on-mouse-over #(reset! focus? true)
-             :on-mouse-out #(reset! focus? false)} note-name])))
+             :on-mouse-out #(reset! focus? false)}
+       [:div (:name note)]
+       [:div {:style {:flex-grow 1}}]
+       [:div {:style {:color "#777"}} (.format (js/moment (:created-time note)) "MM-DD hh:mm:ss")]
+       [:div {:style {:color "#777"}} (.format (js/moment (:updated-time note)) "MM-DD hh:mm:ss")]
+       ])))
 
 (defn navigation []
   [:div#navigation-outer
-   {:style {:position "absolute"
+   {:on-click #(rf/dispatch [:set-navigation nil])
+    :style {:position "absolute"
             :top      0
             :bottom   0
             :left     0
