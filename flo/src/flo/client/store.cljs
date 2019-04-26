@@ -46,7 +46,7 @@
      :drag-timestamp   nil
      :drag-start       nil
      :history          (avl/sorted-map)
-     :navigation       false
+     :navigation       nil ; nil means no navigation, "string" means
      :notes-list       all-notes
      :time-start       time-created
      :time-last-save   time-updated
@@ -90,7 +90,9 @@
 
 (rf/reg-event-db :toggle-navigation
   (fn [db v]
-    (update db :navigation not)))
+    (if (nil? (:navigation db))
+      (assoc db :navigation "")
+      (assoc db :navigation nil))))
 
 (rf/reg-event-db :shift-press
   (fn [db [_ t]]
