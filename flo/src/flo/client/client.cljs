@@ -32,11 +32,13 @@
 (def time-updated (:time-updated init))
 (def file-id (:file-id init))
 (def initial-content (:content init))
+(def all-notes (:all-notes init))
 
 (println "time created:" time-created)
 (println "time updated:" time-updated)
 (println "file:" file-id)
 (println "initial content:" initial-content)
+(println "all notes:" all-notes)
 
 (defonce state
   (r/atom {:last-shift-press nil ; the time when the shift key was last pressed
@@ -47,17 +49,19 @@
            :drag-start       nil
            :history          (avl/sorted-map)
            :show-navigation  false
-           :all-note-names   []
+           :all-note-names   all-notes
            :time-start       time-created
            :time-last-save   time-updated}))
 
 (def time-start (r/cursor state [:time-start]))
 (def time-last-save (r/cursor state [:time-last-save]))
 (def window-width (r/cursor state [:window-width]))
+
 (def drag-btn-width (r/cursor state [:drag-btn-width]))
 (def drag-timestamp (r/cursor state [:drag-timestamp]))
 (def drag-start (r/cursor state [:drag-start]))
 (def history (r/cursor state [:history]))
+
 (def search (r/cursor state [:search]))
 (def show-navigation (r/cursor state [:show-navigation]))
 (def all-note-names (r/cursor state [:all-note-names]))
