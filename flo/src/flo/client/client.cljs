@@ -93,16 +93,18 @@
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 (defn navigation []
-  [:div {:style {:display (if @show-navigation "block" "hidden")
+  (println @show-navigation)
+  [:div {:style {:display (if @show-navigation "block" "none")
                  :position "absolute"
                  :left "auto"
                  :right "auto"
                  :top 100
                  :width 100
                  :height 100
-                 :background-color "red"}}
+                 :background-color "red"
+                 :z-index 10}}
    (for [note-name @all-note-names]
-     [:div note-name])])
+     ^{:key note-name} [:div note-name])])
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
@@ -140,7 +142,10 @@
 (ace/set-text @ace-editor-ro (or initial-content ""))
 (ace/set-read-only @ace-editor-ro true)
 
-;(println (new js/ace.Search))
+(.addCommand (.-commands ace-editor)
+  (clj->js {:name "toggle-navigation"
+            :exec (fn [] (swap! show-navigation not))
+            :bindKey {:mac "cmd-p" :win "ctrl-p"}}))
 
 (defn navigate
   "navigates to the <index> occurrence of the <search> tag"
@@ -193,12 +198,13 @@
 
 (defn on-press-key
   [event]
+  (println event)
   (if (= "ShiftLeft" (:code event))
     (swap! state #(assoc % :last-shift-press (current-time-millis)))
     (swap! state #(assoc % :last-shift-press nil)))
   (when (= "Escape" (:code event))
     (reset! search nil))
-  (when (and (:shift-key event) (= "p" (:key event)))
+  (when (and (:ctrl-key event) (= "p" (:key event)))
     (swap! show-navigation not))
   (when @search
     (println event)
