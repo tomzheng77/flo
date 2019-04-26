@@ -29,6 +29,8 @@
   {:level      :debug
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
+(defn send-note-contents [uid note])
+
 ; map of client-id => timestamp
 (def seek-location (atom {}))
 (defonce run-iteration-id (atom (UUID/randomUUID)))
@@ -39,8 +41,9 @@
     [:flo/seek [file-id timestamp]]
     (do (swap! seek-location #(assoc % (:uid item) [file-id timestamp])))
     [:flo/save [file-id content]]
-    (do (debug "saving" file-id)
-        (set-note file-id content))
+    (do (debug "saving" file-id) (set-note file-id content))
+    [:flo/load [file-id]]
+    (send-note-contents (:uid item) file-id)
     :else nil))
 
 (let [{:keys [ch-recv send-fn connected-uids
