@@ -90,12 +90,6 @@
   (fn [db [_ timestamp note]]
     (update db :history #(assoc % timestamp note))))
 
-(rf/reg-event-db :toggle-navigation
-  (fn [db v]
-    (if (nil? (:navigation db))
-      (assoc db :navigation "")
-      (assoc db :navigation nil))))
-
 (rf/reg-event-db :shift-press
   (fn [db [_ t]]
     (assoc db :last-shift-press t)))
@@ -123,9 +117,16 @@
           (- (:window-width db) (:drag-btn-width db)))
        (- (:time-last-save db) (:time-start db)))))
 
+(rf/reg-event-db :toggle-navigation
+  (fn [db v]
+    (if (nil? (:navigation db))
+      (assoc db :navigation "" :navigation-index nil)
+      (assoc db :navigation nil :navigation-index nil))))
+
 (rf/reg-event-db :set-navigation
   (fn [db [_ nav]]
-    (assoc db :navigation nav)))
+    (assoc db :navigation nav
+              :navigation-index nil)))
 
 (rf/reg-sub :navigation-notes
   (fn [db v]
