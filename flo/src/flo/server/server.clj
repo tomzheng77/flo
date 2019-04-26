@@ -22,7 +22,7 @@
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [flo.server.store :refer [get-note-content get-note-at set-note get-note-created get-note-updated]]
-            [flo.server.static :refer [style-css editor-html login-html]])
+            [flo.server.static :refer [editor-html login-html]])
   (:import (java.util UUID Date)))
 
 (timbre/merge-config!
