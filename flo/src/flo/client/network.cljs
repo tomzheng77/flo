@@ -21,16 +21,10 @@
     (recur)))
 
 (rf/reg-fx :save
-  (fn [content]
+  (fn [[name content]]
     (when (:open? @chsk-state)
       (rf/dispatch [:new-save (current-time-millis)])
-      (chsk-send! [:flo/save [@(rf/subscribe [:file-id]) content]]))))
-
-(rf/reg-event-fx :edit
-  (fn [{:keys [db]} [_ content]]
-    (if (= content (:last-save db))
-      {:db db}
-      {:save content :db (assoc db :last-save content)})))
+      (chsk-send! [:flo/save [name content]]))))
 
 (add-watch-db :drag-changed [:drag-timestamp]
   (fn [_ _ _ timestamp]

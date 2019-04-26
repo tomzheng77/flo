@@ -56,7 +56,7 @@
      :notes-list       notes-summary
      :time-start       (- (:time-created note) 1000)
      :time-last-save   (:time-updated note)
-     :file-id          (:name note)
+     :active-note          (:name note)
      :initial-content  (str (:content note))
      :last-save        (str (:content note))}))
 
@@ -71,7 +71,7 @@
 (rf/reg-sub :notes-list (fn [db v] (:notes-list db)))
 (rf/reg-sub :time-start (fn [db v] (:time-start db)))
 (rf/reg-sub :time-last-save (fn [db v] (:time-last-save db)))
-(rf/reg-sub :file-id (fn [db v] (:file-id db)))
+(rf/reg-sub :active-note (fn [db v] (:active-note db)))
 (rf/reg-sub :initial-content (fn [db v] (:initial-content db)))
 
 (rf/reg-event-db :new-save
@@ -137,4 +137,11 @@
 
 (rf/reg-sub :navigation-notes
   (fn [db v]
-    (filter #(str/includes? (:name %) (:navigation db)) (:notes-list db))))
+    (filter #(str/includes? (:name %)(:navigation db)) (:notes-list db))))
+
+
+(rf/reg-event-fx :edit
+  (fn [{:keys [db]} [_ content]]
+    (if (= content (:last-save db))
+      {:db db}
+      {:save [(:active-note db) content] :db (assoc db :last-save content)})))
