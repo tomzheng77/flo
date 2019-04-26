@@ -97,9 +97,9 @@
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
-   (if @(rf/subscribe [:navigation]) [navigation])
-   [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:drag-timestamp]) "none" "flex") :flex-direction "column"}} [:div#editor]]
-   [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:drag-timestamp]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
+   (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
+   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:drag-timestamp]) "none" "flex") :flex-direction "column"}} [:div#editor]]
+   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:drag-timestamp]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [status-bar]
    [drag-bar]])
 
@@ -157,6 +157,7 @@
   (when (= "Escape" (:code event))
     (reset! search nil))
   (when (and (:ctrl-key event) (= "p" (:key event)))
+    (.preventDefault (:original event))
     (rf/dispatch [:toggle-navigation]))
   (when @search
     (println event)
