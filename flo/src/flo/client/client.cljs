@@ -62,6 +62,20 @@
            :on-mouse-down #(on-drag-start % drag-btn-x)}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
+(defn navigation-btn [note-name]
+  (let [focus? (r/atom false)]
+    (fn []
+      ^{:key note-name}
+      [:div {:style {:width "100%" :height 24
+                     :font-size 15
+                     :text-indent 7
+                     :line-height "24px"
+                     :user-select "none"
+                     :background-color (if @focus? "#c7cbd1")
+                     :cursor "pointer"}
+             :on-mouse-over #(reset! focus? true)
+             :on-mouse-out #(reset! focus? false)} note-name])))
+
 (defn navigation []
   [:div#navigation-outer
    {:style {:position "absolute"
@@ -87,15 +101,8 @@
               :value @(rf/subscribe [:navigation])
               :on-change #(rf/dispatch [:set-navigation (-> % .-target .-value)])}]]
     [:div {:style {:height 4}}]
-    (for [note-name @(rf/subscribe [:navigation-notes])]
-      ^{:key note-name}
-      [:div {:style {:width "100%" :height 24
-                     :font-size 15
-                     :text-indent 7
-                     :line-height "24px"
-                     :user-select "none"
-                     :cursor "pointer"}}
-       note-name])]])
+    (for [note-name (take 20 @(rf/subscribe [:navigation-notes]))]
+      [navigation-btn note-name])]])
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
