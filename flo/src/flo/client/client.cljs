@@ -47,6 +47,7 @@
            :drag-start       nil
            :history          (avl/sorted-map)
            :show-navigation  false
+           :all-note-names   []
            :time-start       time-created
            :time-last-save   time-updated}))
 
@@ -59,6 +60,7 @@
 (def history (r/cursor state [:history]))
 (def search (r/cursor state [:search]))
 (def show-navigation (r/cursor state [:show-navigation]))
+(def all-note-names (r/cursor state [:all-note-names]))
 
 (defn on-drag-start [event drag-position]
   (let [clj-event (to-clj-event event)]
@@ -95,7 +97,8 @@
                  :width 100
                  :height 100
                  :background-color "red"}}
-   "this is something"])
+   (for [note-name @all-note-names]
+     [:div note-name])])
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
