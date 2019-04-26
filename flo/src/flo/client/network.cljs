@@ -14,14 +14,11 @@
   (def chsk chsk)
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
-  (def chsk-state state))
-
-(go-loop []
-  (let [item (<! ch-chsk)]
-    (match (:event item)
-      [:chsk/recv [:flo/history [note]]] (rf/dispatch [:recv-history note])
-      :else nil))
-  (recur))
+  (def chsk-state state)
+  (go-loop []
+    (let [item (<! ch-chsk)]
+      (rf/dispatch [:chsk-event (:event item)]))
+    (recur)))
 
 (rf/reg-fx :save
   (fn [content]

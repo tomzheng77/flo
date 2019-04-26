@@ -1,9 +1,13 @@
 (ns flo.client.store
+  (:require-macros
+    [cljs.core.async.macros :as asyncm :refer [go go-loop]]
+    [flo.client.macros :refer [console-log]])
   (:require [clojure.data.avl :as avl]
             [reagent.core :as r]
             [re-frame.core :as rf]
             [re-frame.db :as db]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cljs.core.match :refer-macros [match]]))
 
 (def watches-on-db (r/atom {}))
 (defn add-watch-db [ident v listener]
@@ -86,10 +90,6 @@
   (fn [db [_ item]]
     (assoc db :drag-start item)))
 
-(rf/reg-event-db :recv-history
-  (fn [db [_ note]]
-    (update db :history #(assoc % (:time-updated note) (:content note)))))
-
 (rf/reg-event-db :shift-press
   (fn [db [_ t]]
     (assoc db :last-shift-press t)))
@@ -110,6 +110,13 @@
             (if (= drag-position max-drag-position)
               (assoc db :drag-timestamp nil)
               (assoc db :drag-timestamp new-drag-timestamp))))))))
+
+(rf/reg-event-db
+  :chsk-event
+  (fn [db [_ event]]
+    (match event
+      [:chsk/recv [:flo/history [note]]] (update db :history #(assoc % (:time-updated note) (:content note)))
+      :else db)))
 
 (rf/reg-sub :drag-btn-x
   (fn [db v]
