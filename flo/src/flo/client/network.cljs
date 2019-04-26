@@ -35,8 +35,6 @@
       {:db db}
       {:save content :db (assoc db :last-save content)})))
 
-(println "registered")
-
 (add-watch-db :drag-changed [:drag-timestamp]
   (fn [_ _ _ timestamp]
     (chsk-send! [:flo/seek [@(rf/subscribe [:file-id]) (js/Math.round timestamp)]])))

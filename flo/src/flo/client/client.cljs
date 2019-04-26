@@ -63,8 +63,7 @@
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 (defn navigation []
-  [:div {:style {:display (if @(rf/subscribe [:navigation]) "block" "none")
-                 :position "absolute"
+  [:div {:style {:position "absolute"
                  :left "auto"
                  :right "auto"
                  :top 100
@@ -98,7 +97,7 @@
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
-   [navigation]
+   (if @(rf/subscribe [:navigation]) [navigation])
    [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:drag-timestamp]) "none" "flex") :flex-direction "column"}} [:div#editor]]
    [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:drag-timestamp]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [status-bar]
