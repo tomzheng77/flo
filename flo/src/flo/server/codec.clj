@@ -9,7 +9,7 @@
 
 (defn hash-password [password]
   (let [password-chars (or (and (bytes? password) password) (.toCharArray password))
-        salt (byte-array 0)
+        salt (.getBytes "salt")
         iterations 10000
         key-length 512
         skf (SecretKeyFactory/getInstance "PBKDF2WithHmacSHA512")
