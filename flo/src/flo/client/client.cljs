@@ -102,7 +102,6 @@
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
-                 ;:background-color "#ffdf70"
                  :background-color "#9e4446"
                  :flex-grow        "0"
                  :flex-shrink      "0"
