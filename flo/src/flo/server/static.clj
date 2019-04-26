@@ -1,10 +1,7 @@
 (ns flo.server.static
   (:require [hiccup.page :refer [html5]]
-            [garden.core :refer [css]])
-  (:import (java.util Base64)))
-
-(defn base64-encode [to-encode]
-  (.encodeToString (Base64/getEncoder) (.getBytes to-encode)))
+            [garden.core :refer [css]]
+            [flo.server.codec :refer [base64-encode]]))
 
 (defn login-html []
   (html5

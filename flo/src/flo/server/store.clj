@@ -11,9 +11,9 @@
             [clojure.string :as str]
             [taoensso.nippy :as nippy]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
-            [datomic.api :as d])
-  (:import (java.io ByteArrayOutputStream)
-           (java.time LocalDateTime ZoneId)
+            [datomic.api :as d]
+            [flo.server.codec :refer [base64-encode]])
+  (:import (java.time LocalDateTime ZoneId)
            (java.util Date)))
 
 (def schema [{:db/ident       :user/email
@@ -119,4 +119,4 @@
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
 
 (defn new-user [email password]
-  (d/transact-async (get-conn) [{:user/email email :user/password password}]))
+  (d/transact-async (get-conn) [{:user/email email :user/password (base64-encode password)}]))
