@@ -6,6 +6,7 @@
     [flo.client.ace :as ace]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [flo.client.store :refer [add-watches-db add-watch-db db]]
+    [flo.client.network]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
@@ -36,15 +37,13 @@
 
 (def search (r/atom nil))
 
-(defn on-drag-start [event drag-position]
+(defn on-drag-start [event drag-btn-x]
   (let [clj-event (to-clj-event event)]
-    (rf/dispatch [:drag-start {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-position}])))
+    (rf/dispatch [:set-drag-start {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-btn-x}])))
 
 (defn drag-button []
   (let [timestamp (or @(rf/subscribe [:drag-timestamp]) @(rf/subscribe [:time-last-save]))
-        drag-position (/ (* (- timestamp @(rf/subscribe [:time-start]))
-                            (- @(rf/subscribe [:window-width]) @(rf/subscribe [:drag-btn-width])))
-                         (- @(rf/subscribe [:time-last-save]) @(rf/subscribe [:time-start])))]
+        drag-btn-x @(rf/subscribe [:drag-btn-x])]
     [:div {:style {:height           "100%"
                    :text-indent      "0"
                    :text-align       "center"
@@ -58,9 +57,9 @@
                    :line-height      "10px"
                    :font-size        8
                    :width            @(rf/subscribe [:drag-btn-width])
-                   :margin-left      drag-position}
-           :on-touch-start #(on-drag-start % drag-position)
-           :on-mouse-down #(on-drag-start % drag-position)}
+                   :margin-left      drag-btn-x}
+           :on-touch-start #(on-drag-start % drag-btn-x)
+           :on-mouse-down #(on-drag-start % drag-btn-x)}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 (defn navigation []
@@ -134,10 +133,10 @@
           (recur (inc mid) hi mid)
           (recur lo (dec mid) best))))))
 
-(def last-history (atom nil))
+(def ace-editor-ro-text (atom nil))
 (defn show-history [note]
-  (when (not= @last-history note)
-    (reset! last-history note)
+  (when (not= @ace-editor-ro-text note)
+    (reset! ace-editor-ro-text note)
     (ace/set-text @ace-editor-ro (or note ""))))
 
 (add-watches-db :show-history [[:drag-timestamp] [:history]]
@@ -214,40 +213,5 @@
 (set! (.-ontouchend js/window) #(rf/dispatch [:set-drag-start nil]))
 (set! (.-onresize js/window) (rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 
-(let [{:keys [chsk ch-recv send-fn state]}
-      (sente/make-channel-socket! "/chsk" nil
-        {:type :auto :packer (transit/get-transit-packer)})]
-  (def chsk chsk)
-  (def ch-chsk ch-recv)
-  (def chsk-send! send-fn)
-  (def chsk-state state))
-
-(go-loop []
-  (let [item (<! ch-chsk)]
-    (match (:event item)
-      [:chsk/recv [:flo/history [fid timestamp note]]]
-      (rf/dispatch [:recv-history timestamp note])
-      :else nil))
-  (recur))
-
-(defn save-content [content]
-  (when (:open? @chsk-state)
-    (rf/dispatch [:new-save (current-time-millis)])
-    (chsk-send! [:flo/save [@(rf/subscribe [:file-id]) content]])))
-
-(def last-save (atom nil))
-(defn detect-change []
-  (let [content (ace/get-text @ace-editor)]
-    (locking last-save
-      (when (nil? @last-save) (reset! last-save content))
-      (when (not= content @last-save)
-        (save-content content)
-        (reset! last-save content)))))
-
-(add-watch-db :drag-changed [:drag-timestamp]
-  (fn [_ _ _ timestamp]
-    (chsk-send! [:flo/seek [@(rf/subscribe [:file-id]) (js/Math.round timestamp)]])))
-
-(js/setInterval detect-change 1000)
-
+(js/setInterval #(rf/dispatch [:edit (ace/get-text @ace-editor)]) 1000)
 (defn on-js-reload [])

@@ -51,7 +51,8 @@
      :time-start       time-created
      :time-last-save   time-updated
      :file-id          file-id
-     :initial-content  content}))
+     :initial-content  (str content)
+     :last-save        (str content)}))
 
 (rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
 (rf/reg-sub :search (fn [db v] (:search db)))
@@ -93,4 +94,10 @@
 
 (rf/reg-event-db :shift-press
   (fn [db [_ t]]
-    (update db :last-shift-press t)))
+    (assoc db :last-shift-press t)))
+
+(rf/reg-sub :drag-btn-x
+  (fn [db v]
+    (/ (* (- (or (:drag-timestamp db) (:time-last-save db)) (:time-start db))
+          (- (:window-width db) (:drag-btn-width db)))
+       (- (:time-last-save db) (:time-start db)))))
