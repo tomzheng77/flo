@@ -206,8 +206,8 @@
 
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
 (set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))
-(set! (.-onmousemove js/window) (fn [event] (on-mouse-move (to-clj-event event))))
-(set! (.-ontouchmove js/window) (fn [event] (on-mouse-move (to-clj-event event))))
+(set! (.-onmousemove js/window) #(rf/dispatch [:mouse-move (to-clj-event %)]))
+(set! (.-ontouchmove js/window) #(rf/dispatch [:mouse-move (to-clj-event %)]))
 (set! (.-onmouseup js/window) #(rf/dispatch [:set-drag-start nil]))
 (set! (.-ontouchend js/window) #(rf/dispatch [:set-drag-start nil]))
 (set! (.-onresize js/window) (rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))

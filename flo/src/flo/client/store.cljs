@@ -96,6 +96,23 @@
   (fn [db [_ t]]
     (assoc db :last-shift-press t)))
 
+(rf/reg-event-db :mouse-move
+  (fn [db [_ event]]
+    (let [mouse-x (:mouse-x event)
+          active-drag (:drag-start db)]
+      (if-not active-drag db
+        (let [dx (- mouse-x (:x active-drag))
+              start-position (:position active-drag)
+              width (:window-width db)]
+          (let [drag-position      (min (max 0 (+ dx start-position)) (- width 80))
+                max-drag-position  (- (:window-width db) (:drag-btn-width db))
+                new-drag-timestamp (+ (:time-start db)
+                                      (/ (* (- (:time-last-save db) (:time-start db)) drag-position)
+                                         max-drag-position))]
+            (if (= drag-position max-drag-position)
+              (assoc db :drag-timestamp nil)
+              (assoc db :drag-timestamp new-drag-timestamp))))))))
+
 (rf/reg-sub :drag-btn-x
   (fn [db v]
     (/ (* (- (or (:drag-timestamp db) (:time-last-save db)) (:time-start db))
