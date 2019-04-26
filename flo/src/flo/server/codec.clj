@@ -8,12 +8,12 @@
       (and (bytes? to-encode) (.encodeToString (Base64/getEncoder) to-encode))))
 
 (defn hash-password [password]
-  (let [password-bytes (or (and (bytes? password) password) (.getBytes password))
+  (let [password-chars (or (and (bytes? password) password) (.toCharArray password))
         salt (byte-array 0)
         iterations 10000
         key-length 512
         skf (SecretKeyFactory/getInstance "PBKDF2WithHmacSHA512")
-        spec (new PBEKeySpec password-bytes salt iterations key-length)
+        spec (new PBEKeySpec password-chars salt iterations key-length)
         key (.generateSecret skf spec)
         result (.getEncoded key)]
     (base64-encode result)))
