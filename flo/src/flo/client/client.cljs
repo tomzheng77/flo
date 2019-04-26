@@ -65,7 +65,6 @@
 (defn navigation-btn [note-name]
   (let [focus? (r/atom false)]
     (fn []
-      ^{:key note-name}
       [:div {:style {:width "100%" :height 24
                      :font-size 15
                      :text-indent 7
@@ -102,6 +101,7 @@
               :on-change #(rf/dispatch [:set-navigation (-> % .-target .-value)])}]]
     [:div {:style {:height 4}}]
     (for [note-name (take 20 @(rf/subscribe [:navigation-notes]))]
+      ^{:key note-name}
       [navigation-btn note-name])]])
 
 (defn drag-bar []
