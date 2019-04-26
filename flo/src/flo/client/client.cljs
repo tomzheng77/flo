@@ -123,19 +123,10 @@
      (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))]
        (.find @ace-editor (str "\\[=?" search "=?\\]") settings)))))
 
-(defn last-before [list value]
-  (loop [lo 0 hi (dec (count list)) best nil]
-    (if-not (<= lo hi)
-      (or best [nil nil])
-      (let [mid (/ (+ lo hi) 2)]
-        (if (>= value (nth list mid))
-          (recur (inc mid) hi mid)
-          (recur lo (dec mid) best))))))
-
-(def ace-editor-ro-text (atom nil))
+(def ace-editor-ro-length (atom nil))
 (defn show-history [note]
-  (when (not= @ace-editor-ro-text note)
-    (reset! ace-editor-ro-text note)
+  (when (not= @ace-editor-ro-length (count note))
+    (reset! ace-editor-ro-length (count note))
     (ace/set-text @ace-editor-ro (or note ""))))
 
 (add-watches-db :show-history [[:drag-timestamp] [:history]]
@@ -185,24 +176,6 @@
     (let [delta (- (current-time-millis) (or @(rf/subscribe [:last-shift-press]) 0))]
       (when (> 200 delta)
         (on-hit-shift)))))
-
-(defn on-mouse-move
-  [event]
-  (let [mouse-x (:mouse-x event)
-        active-drag @(rf/subscribe [:drag-start])]
-    (if active-drag
-      (let [dx (- mouse-x (:x active-drag))
-            start-position (:position active-drag)
-            width @(rf/subscribe [:window-width])]
-        (let [drag-position      (min (max 0 (+ dx start-position)) (- width 80))
-              max-drag-position  (- @(rf/subscribe [:window-width]) @(rf/subscribe [:drag-btn-width]))
-              new-drag-timestamp (+ @(rf/subscribe [:time-start])
-                                    (/ (* (- @(rf/subscribe [:time-last-save])
-                                             @(rf/subscribe [:time-start])) drag-position)
-                                       max-drag-position))]
-          (if (= drag-position max-drag-position)
-            (rf/dispatch [:set-drag-timestamp nil])
-            (rf/dispatch [:set-drag-timestamp new-drag-timestamp])))))))
 
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
 (set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))
