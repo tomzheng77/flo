@@ -42,7 +42,7 @@
   (r/atom {:last-shift-press nil ; the time when the shift key was last pressed
            :search           nil ; the active label being searched, nil means no search
            :window-width     (.-innerWidth js/window)
-           :drag-width       80
+           :drag-btn-width   80
            :drag-timestamp   nil
            :drag-start       nil
            :history          (avl/sorted-map)
@@ -54,7 +54,7 @@
 (def time-start (r/cursor state [:time-start]))
 (def time-last-save (r/cursor state [:time-last-save]))
 (def window-width (r/cursor state [:window-width]))
-(def drag-width (r/cursor state [:drag-width]))
+(def drag-btn-width (r/cursor state [:drag-btn-width]))
 (def drag-timestamp (r/cursor state [:drag-timestamp]))
 (def drag-start (r/cursor state [:drag-start]))
 (def history (r/cursor state [:history]))
@@ -68,7 +68,7 @@
 
 (defn drag-button []
   (let [timestamp (or @drag-timestamp @time-last-save)
-        drag-position (/ (* (- timestamp @time-start) (- @window-width @drag-width))
+        drag-position (/ (* (- timestamp @time-start) (- @window-width @drag-btn-width))
                          (- @time-last-save @time-start))]
     [:div {:style {:height           "100%"
                    :text-indent      "0"
@@ -82,7 +82,7 @@
                    :user-select      "none"
                    :line-height      "10px"
                    :font-size        8
-                   :width            @drag-width
+                   :width            @drag-btn-width
                    :margin-left      drag-position}
            :on-touch-start #(on-drag-start % drag-position)
            :on-mouse-down #(on-drag-start % drag-position)}
@@ -224,7 +224,7 @@
             start-position (:position active-drag)
             width @window-width]
         (let [drag-position (min (max 0 (+ dx start-position)) (- width 80))
-              max-drag-position (- @window-width @drag-width)
+              max-drag-position (- @window-width @drag-btn-width)
               new-drag-timestamp (+ @time-start (/ (* (- @time-last-save @time-start) drag-position) max-drag-position))]
           (if (= drag-position max-drag-position)
             (reset! drag-timestamp nil)
