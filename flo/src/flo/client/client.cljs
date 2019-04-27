@@ -154,7 +154,8 @@
 (rf/reg-fx :editor
   (fn [[text search]]
     (ace/set-text @ace-editor text)
-    (ace/navigate @ace-editor search)))
+    (ace/navigate @ace-editor search)
+    (.focus @ace-editor)))
 (rf/reg-fx :read-only
   (fn [[text search]]
     (ace/set-text @ace-editor-ro (or text ""))
