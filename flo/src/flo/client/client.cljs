@@ -5,7 +5,7 @@
   (:require
     [flo.client.ace :as ace]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
-    [flo.client.store :refer [add-watches-db add-watch-db db]]
+    [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -167,7 +167,7 @@
     (reset! ace-editor-ro-length (count note))
     (ace/set-text @ace-editor-ro (or note ""))))
 
-(add-watches-db :show-history [[:drag-timestamp] [:history]]
+(add-watches-db :show-history [[:drag-timestamp] active-history]
   (fn [_ _ _ [timestamp history]]
     (when timestamp
       (let [[_ note] (avl/nearest history <= timestamp)]
@@ -224,5 +224,5 @@
 (set! (.-ontouchend js/window) #(rf/dispatch [:set-drag-start nil]))
 (set! (.-onresize js/window) (rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 
-(js/setInterval #(rf/dispatch [:edit (ace/get-text @ace-editor) (current-time-millis)]) 1000)
+(js/setInterval #(rf/dispatch [:editor-tick (ace/get-text @ace-editor) (current-time-millis)]) 1000)
 (defn on-js-reload [])
