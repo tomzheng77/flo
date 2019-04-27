@@ -53,7 +53,7 @@
      :history          (avl/sorted-map)
      :navigation       nil ; nil means no navigation, "string" means
      :navigation-index nil ; selected item in navigation box
-     :notes            notes-summary
+     :notes            (into {} (map (fn [n] [(:name n) n]) notes-summary)) ; notes organised by name
      :time-start       (- (or (:time-created note) time) 1000)
      :time-last-save   (or (:time-updated note) time)
      :active-note-name (:name note)
@@ -136,7 +136,7 @@
 
 (rf/reg-sub :navigation-notes
   (fn [db v]
-    (filter #(str/includes? (:name %)(:navigation db)) (:notes db))))
+    (filter #(str/includes? (:name %)(:navigation db)) (map val (:notes db)))))
 
 (rf/reg-event-fx :edit
   (fn [{:keys [db]} [_ content time]]
