@@ -126,10 +126,10 @@
 ; x-position of the history button
 (rf/reg-sub :history-btn-x
   (fn [db _]
-    (println db)
-    (/ (* (- (or (:history-cursor db) (active-time-updated db)) (active-time-created db))
+    ; use inc to deal with zeros
+    (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-created db))
           (- (:window-width db) (:drag-btn-width db)))
-       (inc (- (active-time-updated db) (active-time-created db)))))) ; use inc to deal with zero
+       (inc (- (active-time-updated db) (active-time-created db))))))
 
 ; turns navigation on/off
 (rf/reg-event-db :toggle-navigation
