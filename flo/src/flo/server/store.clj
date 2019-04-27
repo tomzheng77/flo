@@ -38,7 +38,7 @@
 ; connections are long lived and cached by d/connect
 ; hence there is no need to store the connection
 (def get-conn
-  (let [db-uri "datomic:dev://localhost:4334/flo-ace-testbed"
+  (let [db-uri "datomic:dev://localhost:4334/flo-ace"
         started (atom false)]
     (fn []
       ; when this function is called for the first time
