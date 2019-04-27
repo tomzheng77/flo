@@ -77,10 +77,10 @@
 (rf/reg-sub :drag-start (fn [db v] (:drag-start db)))
 (rf/reg-sub :history (fn [db v] (:history db)))
 (rf/reg-sub :navigation (fn [db v] (:navigation db)))
-(rf/reg-sub :time-start (fn [db v] (:time-start db)))
-(rf/reg-sub :time-last-save (fn [db v] (:time-last-save db)))
-(rf/reg-sub :active-note-name (fn [db v] (:active-note-name db)))
-(rf/reg-sub :initial-content (fn [db v] (:initial-content db)))
+
+(rf/reg-sub :time-start (get-in db [:notes (:active-note-name db) :time-created]))
+(rf/reg-sub :time-last-save (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
+(rf/reg-sub :initial-content (fn [db v] (get-in db [:notes (:active-note-name db) :content])))
 
 (rf/reg-event-db :new-save
   (fn [db [_ time]]
