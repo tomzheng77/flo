@@ -1,5 +1,6 @@
 (ns flo.client.ace
-  (:require [cljsjs.ace]))
+  (:require [cljsjs.ace]
+            [clojure.set :as set]))
 
 (def instance (atom nil))
 (defn new-instance [element-id]
@@ -17,3 +18,11 @@
 
 (defn set-read-only [this value]
   (.setReadOnly this value))
+
+(defn navigate
+  "navigates to the next occurrence of the <search> tag"
+  ([this search] (navigate this search {}))
+  ([this search opts]
+   (if (and search (not-empty search))
+     (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))]
+       (.find this (str "\\[=?" search "=?\\]") settings)))))

@@ -161,20 +161,12 @@
 (.addCommand (.-commands @ace-editor) (clj->js toggle-nav-command))
 (.addCommand (.-commands @ace-editor-ro) (clj->js toggle-nav-command))
 
-(defn navigate
-  "navigates to the <index> occurrence of the <search> tag"
-  ([this search] (navigate this search {}))
-  ([this search opts]
-   (if (and search (not-empty search))
-     (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))]
-       (.find this (str "\\[=?" search "=?\\]") settings)))))
-
 (def ace-editor-ro-length (atom nil))
 (defn show-history [note]
   (when (not= @ace-editor-ro-length (count note))
     (reset! ace-editor-ro-length (count note))
     (ace/set-text @ace-editor-ro (or note ""))
-    (navigate @ace-editor-ro @(rf/subscribe [:search]))))
+    (ace/navigate @ace-editor-ro @(rf/subscribe [:search]))))
 
 (add-watches-db :show-history [[:history-cursor] active-history]
   (fn [_ _ _ [timestamp history]]
@@ -190,8 +182,8 @@
 
 (add-watch-db :auto-search [:search]
   (fn [_ _ _ search]
-    (navigate @ace-editor search)
-    (navigate @ace-editor-ro search)))
+    (ace/navigate @ace-editor search)
+    (ace/navigate @ace-editor-ro search)))
 
 (defn on-hit-shift []
   (if-not (= "" @(rf/subscribe [:search]))
@@ -220,8 +212,8 @@
     (when (#{"Enter" "Tab"} (:key event))
       (.preventDefault (:original event))
       (if (:shift-key event)
-        (for [e [@ace-editor @ace-editor-ro]] (navigate e @(rf/subscribe [:search]) {"backwards" true}))
-        (for [e [@ace-editor @ace-editor-ro]] (navigate e @(rf/subscribe [:search])))))
+        (for [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search]) {"backwards" true}))
+        (for [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search])))))
     (when (= "Backspace" (:key event))
       (rf/dispatch [:swap-search splice-last]))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
