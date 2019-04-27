@@ -20,12 +20,8 @@
       (rf/dispatch [:chsk-event (:event item)]))
     (recur)))
 
-(rf/reg-fx :save
-  (fn [[name content]]
+(rf/reg-fx :chsk-send
+  (fn [event]
+    (println event)
     (when (:open? @chsk-state)
-      (rf/dispatch [:new-save (current-time-millis)])
-      (chsk-send! [:flo/save [name content]]))))
-
-(add-watch-db :drag-changed [:drag-timestamp]
-  (fn [_ _ _ timestamp]
-    (chsk-send! [:flo/seek [@(rf/subscribe [:file-id]) (js/Math.round timestamp)]])))
+      (chsk-send! event))))

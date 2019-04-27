@@ -224,5 +224,5 @@
 (set! (.-ontouchend js/window) #(rf/dispatch [:set-drag-start nil]))
 (set! (.-onresize js/window) (rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 
-(js/setInterval #(rf/dispatch [:edit (ace/get-text @ace-editor)]) 1000)
+(js/setInterval #(rf/dispatch [:edit (ace/get-text @ace-editor) (current-time-millis)]) 1000)
 (defn on-js-reload [])

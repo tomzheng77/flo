@@ -56,7 +56,7 @@
      :notes-list       notes-summary
      :time-start       (- (:time-created note) 1000)
      :time-last-save   (:time-updated note)
-     :active-note          (:name note)
+     :active-note-name (:name note)
      :initial-content  (str (:content note))
      :last-save        (str (:content note))}))
 
@@ -71,7 +71,7 @@
 (rf/reg-sub :notes-list (fn [db v] (:notes-list db)))
 (rf/reg-sub :time-start (fn [db v] (:time-start db)))
 (rf/reg-sub :time-last-save (fn [db v] (:time-last-save db)))
-(rf/reg-sub :active-note (fn [db v] (:active-note db)))
+(rf/reg-sub :active-note-name (fn [db v] (:active-note-name db)))
 (rf/reg-sub :initial-content (fn [db v] (:initial-content db)))
 
 (rf/reg-event-db :new-save
@@ -114,6 +114,7 @@
 (rf/reg-event-db
   :chsk-event
   (fn [db [_ event]]
+    (println event)
     (match event
       [:chsk/recv [:flo/history [note]]] (update db :history #(assoc % (:time-updated note) (:content note)))
       :else db)))
@@ -139,9 +140,15 @@
   (fn [db v]
     (filter #(str/includes? (:name %)(:navigation db)) (:notes-list db))))
 
-
 (rf/reg-event-fx :edit
-  (fn [{:keys [db]} [_ content]]
+  (fn [{:keys [db]} [_ content time]]
     (if (= content (:last-save db))
       {:db db}
-      {:save [(:active-note db) content] :db (assoc db :last-save content)})))
+      {:db (assoc db :last-save content :time-last-save time)
+       :chsk-send [:flo/save [(:active-note-name db) content]]})))
+
+(add-watch-db :drag-changed [:drag-timestamp] (fn [_ _ _ timestamp] (rf/dispatch [:drag-changed timestamp])))
+(rf/reg-event-fx
+  :drag-changed
+  (fn [{:keys [db]} [_ timestamp]]
+    {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
