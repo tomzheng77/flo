@@ -203,13 +203,15 @@
                    (assoc :active-note-name note-or-name)
                    (assoc :drag-start nil)
                    (assoc :history-cursor nil)
+                   (assoc :navigation-index nil)
                    (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
       {:title (:name note-or-name)
        :editor [(:content note-or-name) (:search db)]
        :db (-> db
                (assoc :active-note-name (:name note-or-name))
                (assoc :drag-start nil)
-               (assoc :history-cursor nil))})))
+               (assoc :history-cursor nil)
+               (assoc :navigation-index nil))})))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
