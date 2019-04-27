@@ -152,6 +152,10 @@
 
 (rf/reg-fx :editor (fn [text] (ace/set-text @ace-editor text)))
 (rf/reg-fx :title (fn [title] (set! (.-title js/document) title)))
+(rf/reg-fx :read-only
+  (fn [[text search]]
+    (ace/set-text @ace-editor-ro (or text ""))
+    (ace/navigate @ace-editor-ro search)))
 
 (def toggle-nav-command
   {:name "toggle-navigation"
@@ -161,18 +165,12 @@
 (.addCommand (.-commands @ace-editor) (clj->js toggle-nav-command))
 (.addCommand (.-commands @ace-editor-ro) (clj->js toggle-nav-command))
 
-(def ace-editor-ro-length (atom nil))
-(defn show-history [note]
-  (when (not= @ace-editor-ro-length (count note))
-    (reset! ace-editor-ro-length (count note))
-    (ace/set-text @ace-editor-ro (or note ""))
-    (ace/navigate @ace-editor-ro @(rf/subscribe [:search]))))
-
 (add-watches-db :show-history [[:history-cursor] active-history]
   (fn [_ _ _ [timestamp history]]
     (when timestamp
       (let [[_ note] (avl/nearest history <= timestamp)]
-        (show-history note)))))
+        (ace/set-text @ace-editor-ro (or note ""))
+        (ace/navigate @ace-editor-ro @(rf/subscribe [:search]))))))
 
 (add-watches-db :disable-edit [[:search] [:history-cursor]]
   (fn [_ _ _ [search drag-timestamp]]
