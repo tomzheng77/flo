@@ -114,7 +114,6 @@
 (rf/reg-event-db
   :chsk-event
   (fn [db [_ event]]
-    (println event)
     (match event
       [:chsk/recv [:flo/history [note]]] (update db :history #(assoc % (:time-updated note) (:content note)))
       :else db)))
