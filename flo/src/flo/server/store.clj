@@ -70,22 +70,24 @@
 
 (defn get-all-notes []
   (let [db (d/db (get-conn))]
-    (for [[name time-created time-updated content] (d/q (all-notes-q) db)]
-      {:name name
-       :time-created (if time-created (.getTime time-created))
-       :time-updated (if time-updated (.getTime time-updated))
-       :length (count content)
-       :content (if content (nippy/thaw content))})))
+    (for [[name time-created time-updated content-raw] (d/q (all-notes-q) db)]
+      (let [content (if content-raw (nippy/thaw content-raw))]
+        {:name name
+         :time-created (if time-created (.getTime time-created))
+         :time-updated (if time-updated (.getTime time-updated))
+         :length (count content)
+         :content content}))))
 
 (defn get-note
   ([name] (get-note name (d/db (get-conn))))
   ([name db]
-   (let [[time-created time-updated content] (first (d/q (note-q name) db))]
-     {:name name
-      :time-created (if time-created (.getTime time-created))
-      :time-updated (if time-updated (.getTime time-updated))
-      :length (count content)
-      :content (if content (nippy/thaw content))})))
+   (let [[time-created time-updated content-raw] (first (d/q (note-q name) db))]
+     (let [content (if content-raw (nippy/thaw content-raw))]
+       {:name name
+        :time-created (if time-created (.getTime time-created))
+        :time-updated (if time-updated (.getTime time-updated))
+        :length (count content)
+        :content content}))))
 
 ; converts to java.util.Date
 (defn to-util-date [ldt]
