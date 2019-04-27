@@ -157,7 +157,7 @@
                            :navigation-index (if (or (nil? nav) (not= old-name new-name)) nil old-index)
                            :search (or (and search-subquery (str/upper-case search-subquery))
                                        (:search db)))]
-      (if (:navigation-index new-db)
+      (if (:navigation new-db)
         {:db new-db}
         {:db new-db :editor-focus true}))))
 
