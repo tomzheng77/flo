@@ -72,7 +72,7 @@
                             ((fn [m] (if (get m active-note-name) m
                                 (assoc m active-note-name
                                   {:name active-note-name
-                                   :time-created time
+                                   :time-created (- time 1)
                                    :time-updated time
                                    :length 0
                                    :content ""
