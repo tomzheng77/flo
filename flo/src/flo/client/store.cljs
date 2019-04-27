@@ -147,9 +147,13 @@
 ; or when navigation is turned on/off
 (rf/reg-event-db :navigation-input
   (fn [db [_ nav]]
-    (let [search-subquery (and nav (second (str/split nav #"@" 2)))]
+    (let [search-subquery (and nav (second (str/split nav #"@" 2)))
+          old-nav (:navigation db)
+          old-name (and old-nav (first (str/split old-nav #"@" 2)))
+          new-name (and nav (first (str/split nav #"@" 2)))
+          old-index (:navigation-index db)]
       (assoc db :navigation nav
-                :navigation-index nil
+                :navigation-index (if (not= old-name new-name) nil old-index)
                 :search (or (and search-subquery (str/upper-case search-subquery))
                             (:search db))))))
 
