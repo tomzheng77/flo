@@ -29,7 +29,10 @@
   {:level      :debug
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
-(defn send-note-contents [uid note])
+(defn chsk-send! [& args])
+(defn send-note-contents [uid name]
+  (let [note (get-note name)]
+    (chsk-send! uid [:flo/note note])))
 
 ; map of client-id => timestamp
 (def seek-location (atom {}))
