@@ -84,6 +84,7 @@
      {:name name
       :time-created (if time-created (.getTime time-created))
       :time-updated (if time-updated (.getTime time-updated))
+      :length (count content)
       :content (if content (nippy/thaw content))})))
 
 ; converts to java.util.Date

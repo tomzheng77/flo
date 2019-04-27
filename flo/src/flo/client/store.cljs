@@ -53,7 +53,9 @@
      :history          (avl/sorted-map)
      :navigation       nil ; nil means no navigation, "string" means
      :navigation-index nil ; selected item in navigation box
-     :notes            (into {} (map (fn [n] [(:name n) n]) notes-summary)) ; notes organised by name
+
+     ; all the notes organised into a map
+     :notes            (assoc (into {} (map (fn [n] [(:name n) n]) notes-summary)) (:name note) note)
      :time-start       (- (or (:time-created note) time) 1000)
      :time-last-save   (or (:time-updated note) time)
      :active-note-name (:name note)
