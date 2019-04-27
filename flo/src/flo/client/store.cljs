@@ -198,14 +198,14 @@
         (if existing-note
           {:dispatch [:navigation-select existing-note]}
           {:title note-or-name
-           :editor ""
+           :editor ["" (:search db)]
            :db (-> db
                    (assoc :active-note-name note-or-name)
                    (assoc :drag-start nil)
                    (assoc :history-cursor nil)
                    (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
       {:title (:name note-or-name)
-       :editor (:content note-or-name)
+       :editor [(:content note-or-name) (:search db)]
        :db (-> db
                (assoc :active-note-name (:name note-or-name))
                (assoc :drag-start nil)

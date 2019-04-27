@@ -150,8 +150,11 @@
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)
 
-(rf/reg-fx :editor (fn [text] (ace/set-text @ace-editor text)))
 (rf/reg-fx :title (fn [title] (set! (.-title js/document) title)))
+(rf/reg-fx :editor
+  (fn [[text search]]
+    (ace/set-text @ace-editor text)
+    (ace/navigate @ace-editor search)))
 (rf/reg-fx :read-only
   (fn [[text search]]
     (ace/set-text @ace-editor-ro (or text ""))
