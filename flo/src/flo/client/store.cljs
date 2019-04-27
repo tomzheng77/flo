@@ -159,18 +159,20 @@
 ; navigates to the item above
 (rf/reg-event-db :navigate-up
   (fn [db _]
-    (let [max-index (dec (count (navigation-list db)))]
-      (if-not (:navigation-index db)
-        (assoc db :navigation-index 0)
-        (update db :navigation-index #(wrap (dec %) 0 max-index))))))
+    (let [index (:navigation-index db)
+          navs (navigation-list db)
+          max-index (dec (count navs))
+          new-index (if-not index 0 (wrap (dec index) 0 max-index))]
+      (assoc db :navigation-index new-index))))
 
 ; navigates to the item below
 (rf/reg-event-db :navigate-down
   (fn [db _]
-    (let [max-index (dec (count (navigation-list db)))]
-      (if-not (:navigation-index db)
-        (assoc db :navigation-index 0)
-        (update db :navigation-index #(wrap (inc %) 0 max-index))))))
+    (let [index (:navigation-index db)
+          navs (navigation-list db)
+          max-index (dec (count navs))
+          new-index (if-not index 0 (wrap (inc index) 0 max-index))]
+      (assoc db :navigation-index new-index))))
 
 (rf/reg-event-fx :navigate-in
   (fn [{:keys [db]} [_ time]]
