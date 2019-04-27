@@ -154,7 +154,7 @@
 
 (defn navigation-list [db]
   (->> (map val (:notes db))
-       (filter #(str/includes? (:name %)(:navigation db)))
+       (filter #(str/includes? (:name %) (first (str/split (:navigation db) #"@" 2))))
        (sort-by #(vector (not= 0 (count (:content %))) (:time-updated %)))
        (reverse)))
 
