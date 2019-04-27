@@ -154,7 +154,8 @@
     {:db (assoc db :active-note-name (:name note)
                    :drag-start nil
                    :history-cursor nil)
-     :editor (:content note)}))
+     :editor (:content note)
+     :title (:name note)}))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick

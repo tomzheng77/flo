@@ -148,7 +148,9 @@
 (ace/set-text @ace-editor (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)
+
 (rf/reg-fx :editor (fn [text] (ace/set-text @ace-editor text)))
+(rf/reg-fx :title (fn [title] (set! (.-title js/document) title)))
 
 (def toggle-nav-command
   {:name "toggle-navigation"
