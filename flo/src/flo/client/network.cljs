@@ -17,6 +17,7 @@
   (def chsk-state state)
   (go-loop []
     (let [item (<! ch-chsk)]
+      (println item)
       (rf/dispatch [:chsk-event (:event item)]))
     (recur)))
 
