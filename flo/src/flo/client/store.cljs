@@ -187,8 +187,8 @@
   (fn [{:keys [db]} [_ time]]
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
-        {:db (assoc db :navigation nil) :dispatch [:navigation-select (nth navs (:navigation-index db)) time]}
-        {:db (assoc db :navigation nil) :dispatch [:navigation-select (:navigation db) time]}))))
+        {:db db :dispatch [:navigation-select (nth navs (:navigation-index db)) time]}
+        {:db db :dispatch [:navigation-select (:navigation db) time]}))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
@@ -203,18 +203,22 @@
           {:dispatch [:navigation-select existing-note]}
           {:title note-or-name
            :editor ["" (:search db)]
+           :editor-focus true
            :db (-> db
                    (assoc :active-note-name note-or-name)
                    (assoc :drag-start nil)
                    (assoc :history-cursor nil)
+                   (assoc :navigation nil)
                    (assoc :navigation-index nil)
                    (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
       {:title (:name note-or-name)
        :editor [(:content note-or-name) (:search db)]
+       :editor-focus true
        :db (-> db
                (assoc :active-note-name (:name note-or-name))
                (assoc :drag-start nil)
                (assoc :history-cursor nil)
+               (assoc :navigation nil)
                (assoc :navigation-index nil))})))
 
 ; called with the editor's contents every second
