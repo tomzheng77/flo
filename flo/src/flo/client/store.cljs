@@ -63,12 +63,11 @@
      ; all the notes organised into a map
      ; including the current note being edited (stored in :active-note-name)
      ; each notes has :name, :time-created, :time-updated and :length
-     ; only loaded notes have :content
+     ; :content is provided by the server initially, then synced from the editor at a fixed interval
      :active-note-name active-note-name
      :notes            (->> notes
                             (map (fn [n] [(:name n) n]) notes)
                             (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
-                            (map (fn [[k v]] [k (assoc v :last-saved-content (:content v))]))
                             (into {}))}))
 
 (rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
@@ -145,9 +144,9 @@
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
   (fn [{:keys [db]} [_ content time]]
-    (if (= content (get-in db [:notes (:active-note-name db) :last-saved-content]))
+    (if (= content (get-in db [:notes (:active-note-name db) :content]))
       {:db db}
-      {:db (-> db (assoc-in [:notes (:active-note-name db) :last-saved-content] content)
+      {:db (-> db (assoc-in [:notes (:active-note-name db) :content] content)
                   (assoc-in [:notes (:active-note-name db) :time-updated] time))
        :chsk-send [:flo/save [(:active-note-name db) content]]})))
 
