@@ -68,7 +68,15 @@
      :notes            (->> notes
                             (map (fn [n] [(:name n) n]) notes)
                             (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
-                            (into {}))}))
+                            (into {})
+                            ((fn [m] (if (get m active-note-name) m
+                                (assoc m active-note-name
+                                  {:name active-note-name
+                                   :time-created time
+                                   :time-updated time
+                                   :length 0
+                                   :content ""
+                                   :history (avl/sorted-map)})))))}))
 
 (rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
 (rf/reg-sub :search (fn [db v] (:search db)))
