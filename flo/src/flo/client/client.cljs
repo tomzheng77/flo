@@ -78,8 +78,8 @@
              :on-mouse-out #(reset! focus? false)}
        [:div (:name note)]
        [:div {:style {:flex-grow 1}}]
-       [:div {:style {:color "#777"}} (.format (js/moment (:created-time note)) "MM-DD hh:mm:ss")]
-       [:div {:style {:color "#777"}} (.format (js/moment (:updated-time note)) "MM-DD hh:mm:ss")]
+       [:div {:style {:color "#777"}} (.format (js/moment (:time-created note)) "MM-DD hh:mm:ss")]
+       [:div {:style {:color "#777"}} (.format (js/moment (:time-updated note)) "MM-DD hh:mm:ss")]
        ])))
 
 (defn navigation []
