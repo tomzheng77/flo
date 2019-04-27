@@ -147,7 +147,10 @@
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
   (fn [db _]
-    (filter #(str/includes? (:name %)(:navigation db)) (map val (:notes db)))))
+    (->> (map val (:notes db))
+         (filter #(str/includes? (:name %)(:navigation db)))
+         (sort-by :time-updated)
+         (reverse))))
 
 (rf/reg-event-fx :navigation-select
   (fn [{:keys [db]} [_ note]]
