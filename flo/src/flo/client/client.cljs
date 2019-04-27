@@ -150,10 +150,13 @@
 (ace/set-read-only @ace-editor-ro true)
 (rf/reg-fx :editor (fn [text] (ace/set-text @ace-editor text)))
 
-(.addCommand (.-commands @ace-editor)
-  (clj->js {:name "toggle-navigation"
-            :exec #(rf/dispatch [:toggle-navigation])
-            :bindKey {:mac "cmd-p" :win "ctrl-p"}}))
+(def toggle-nav-command
+  {:name "toggle-navigation"
+   :exec #(rf/dispatch [:toggle-navigation])
+   :bindKey {:mac "cmd-p" :win "ctrl-p"}})
+
+(.addCommand (.-commands @ace-editor) (clj->js toggle-nav-command))
+(.addCommand (.-commands @ace-editor-ro) (clj->js toggle-nav-command))
 
 (defn navigate
   "navigates to the <index> occurrence of the <search> tag"
