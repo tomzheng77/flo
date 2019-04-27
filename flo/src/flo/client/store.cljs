@@ -88,6 +88,9 @@
 (rf/reg-sub :navigation (fn [db v] (:navigation db)))
 (rf/reg-sub :navigation-index (fn [db v] (:navigation-index db)))
 
+(rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
+(rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
+
 (defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
 (defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))
 (defn active-time-updated [db] (get-in db [:notes (:active-note-name db) :time-updated]))

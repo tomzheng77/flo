@@ -132,7 +132,7 @@
                  :text-indent      "10px"
                  :flex-grow        "0"
                  :flex-shrink      "0"}}
-   (str "Search: " (pr-str @search))])
+   (str "Search: " (pr-str @(rf/subscribe [:search])))])
 
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
@@ -188,12 +188,13 @@
       (ace/set-read-only @ace-editor false))))
 
 (add-watch-db :auto-search [:search]
-  (fn [_ _ _ search] (navigate search)))
+  (fn [_ _ _ search]
+    (navigate search)))
 
 (defn on-hit-shift []
-  (if-not (= "" @search)
-    (reset! search "")
-    (reset! search nil)))
+  (if-not (= "" @(rf/subscribe [:search]))
+    (rf/dispatch [:set-search ""])
+    (rf/dispatch [:set-search nil])))
 
 (defn on-press-key
   [event]
@@ -208,21 +209,21 @@
     (rf/dispatch [:shift-press (current-time-millis)])
     (rf/dispatch [:shift-press nil]))
   (when (= "Escape" (:code event))
-    (reset! search nil)
+    (rf/dispatch [:set-search nil])
     (rf/dispatch [:navigation-input nil]))
   (when (and (:ctrl-key event) (= "p" (:key event)))
     (.preventDefault (:original event))
     (rf/dispatch [:toggle-navigation]))
-  (when @search
+  (when @(rf/subscribe [:search])
     (when (#{"Enter" "Tab"} (:key event))
       (.preventDefault (:original event))
       (if (:shift-key event)
-        (navigate @search {"backwards" true})
-        (navigate @search)))
+        (navigate @(rf/subscribe [:search]) {"backwards" true})
+        (navigate @(rf/subscribe [:search]))))
     (when (= "Backspace" (:key event))
-      (swap! search splice-last))
+      (rf/dispatch [:swap-search splice-last]))
     (when (re-matches #"^[A-Za-z0-9]$" (:key event))
-      (swap! search #(str % (str/upper-case (:key event)))))))
+      (rf/dispatch [:swap-search #(str % (str/upper-case (:key event)))]))))
 
 (defn on-release-key
   [event]
