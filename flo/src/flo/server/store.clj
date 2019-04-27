@@ -53,13 +53,12 @@
       (d/connect db-uri))))
 
 (defn all-notes-q []
-  '[:find ?name ?new-time ?upd-time ?length
+  '[:find ?name ?new-time ?upd-time ?content
     :where
     [?e :note/name ?name ?tx1]
     [?e :note/content ?content ?tx2]
     [?tx1 :db/txInstant ?new-time]
-    [?tx2 :db/txInstant ?upd-time]
-    [(count ?content) ?length]])
+    [?tx2 :db/txInstant ?upd-time]])
 
 (defn note-q [name]
   `[:find ?new-time ?upd-time ?content
@@ -71,11 +70,12 @@
 
 (defn get-notes-summary []
   (let [db (d/db (get-conn))]
-    (for [[name time-created time-updated length] (d/q (all-notes-q) db)]
+    (for [[name time-created time-updated content] (d/q (all-notes-q) db)]
       {:name name
        :time-created (if time-created (.getTime time-created))
        :time-updated (if time-updated (.getTime time-updated))
-       :length length})))
+       :length (count content)
+       :content (if content (nippy/thaw content))})))
 
 (defn get-note
   ([name] (get-note name (d/db (get-conn))))

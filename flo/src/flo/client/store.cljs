@@ -48,7 +48,7 @@
 
 (rf/reg-event-db
   :initialize
-  (fn [_ [_ time {:keys [note notes-summary]}]]
+  (fn [_ [_ time {:keys [active-note-name notes]}]]
     {:last-shift-press nil ; the time when the shift key was last pressed
      :search           nil ; the active label being searched, nil means no search
      :window-width     (.-innerWidth js/window)
@@ -64,12 +64,12 @@
      ; including the current note being edited (stored in :active-note-name)
      ; each notes has :name, :time-created, :time-updated and :length
      ; only loaded notes have :content
-     :active-note-name (:name note)
-     :notes            (let [notes-summary-map (into {} (map (fn [n] [(:name n) n]) notes-summary))]
-                         (->> (assoc notes-summary-map (:name note) note)
-                              (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
-                              (map (fn [[k v]] [k (assoc v :last-saved-content (:content v))]))
-                              (into {})))}))
+     :active-note-name active-note-name
+     :notes            (->> notes
+                            (map (fn [n] [(:name n) n]) notes)
+                            (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
+                            (map (fn [[k v]] [k (assoc v :last-saved-content (:content v))]))
+                            (into {}))}))
 
 (rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
 (rf/reg-sub :search (fn [db v] (:search db)))

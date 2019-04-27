@@ -85,16 +85,14 @@
      :body    (login-html)})
   (GET "/editor" request
     (let [name (get (:query-params request) "id" "default")
-          note (get-note name)
           notes-summary (get-notes-summary)
           session {:uid (.toString (UUID/randomUUID))}]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session session
        :body    (editor-html name
-                  {:note note
-                   :notes-summary notes-summary
-                   })}))
+                  {:active-note-name name
+                   :notes notes-summary})}))
            (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel
