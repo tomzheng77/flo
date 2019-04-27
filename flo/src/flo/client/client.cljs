@@ -62,21 +62,22 @@
            :on-mouse-down #(on-drag-start % drag-btn-x)}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
-(defn navigation-btn [note]
+(defn navigation-btn [note index]
   (let [focus? (r/atom false)]
     (fn []
-      [:div {:style {:width "100%" :height 24
+      [:div {:style {:width "auto" :height 24
                      :font-size 15
                      :text-indent 7
+                     :padding-right 7
                      :line-height "24px"
                      :user-select "none"
-                     :background-color (if @focus? "#c7cbd1")
+                     :background-color (if (or @focus? (= index @(rf/subscribe [:navigation-index]))) "#c7cbd1")
                      :cursor "pointer"
                      :display "flex"
                      :flex-direction "row"}
              :on-mouse-over #(reset! focus? true)
              :on-mouse-out #(reset! focus? false)
-             :on-click #(rf/dispatch [:navigation-select note])}
+             :on-click #(rf/dispatch [:navigation-select note (current-time-millis)])}
        [:div (:name note)]
        [:div {:style {:flex-grow 1}}]
        [:div {:style {:color "#777"}} (.format (js/moment (:time-created note)) "MM-DD hh:mm:ss")]
@@ -109,9 +110,9 @@
               :value @(rf/subscribe [:navigation])
               :on-change #(rf/dispatch [:navigation-input (-> % .-target .-value)])}]]
     [:div {:style {:height 4}}]
-    (for [note-name (take 20 @(rf/subscribe [:navigation-list]))]
-      ^{:key note-name}
-      [navigation-btn note-name])]])
+    (for [[index note] (map-indexed vector (take 20 @(rf/subscribe [:navigation-list])))]
+      ^{:key (:name note)}
+      [navigation-btn note index])]])
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
@@ -196,6 +197,13 @@
 
 (defn on-press-key
   [event]
+  (when @(rf/subscribe [:navigation])
+    (when (and (#{"ArrowUp"} (:code event)))
+      (rf/dispatch [:navigate-up]))
+    (when (and (#{"ArrowDown"} (:code event)))
+      (rf/dispatch [:navigate-down]))
+    (when (and (#{"Enter"} (:code event)))
+      (rf/dispatch [:navigate-in (current-time-millis)])))
   (if (= "ShiftLeft" (:code event))
     (rf/dispatch [:shift-press (current-time-millis)])
     (rf/dispatch [:shift-press nil]))

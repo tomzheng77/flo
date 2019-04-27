@@ -45,6 +45,13 @@
       (listener db/app-db ident value value))))
 
 (def db db/app-db)
+(defn new-note [name time]
+  {:name name
+   :time-created time
+   :time-updated time
+   :length 0
+   :content ""
+   :history (avl/sorted-map)})
 
 (rf/reg-event-db
   :initialize
@@ -71,12 +78,7 @@
                             (into {})
                             ((fn [m] (if (get m active-note-name) m
                                 (assoc m active-note-name
-                                  {:name active-note-name
-                                   :time-created time
-                                   :time-updated time
-                                   :length 0
-                                   :content ""
-                                   :history (avl/sorted-map)})))))}))
+                                  (new-note active-note-name time))))))}))
 
 (rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
 (rf/reg-sub :search (fn [db v] (:search db)))
@@ -85,6 +87,7 @@
 (rf/reg-sub :history-cursor (fn [db v] (:history-cursor db)))
 (rf/reg-sub :drag-start (fn [db v] (:drag-start db)))
 (rf/reg-sub :navigation (fn [db v] (:navigation db)))
+(rf/reg-sub :navigation-index (fn [db v] (:navigation-index db)))
 
 (defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
 (defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))
@@ -144,21 +147,62 @@
   (fn [db [_ nav]]
     (assoc db :navigation nav :navigation-index nil)))
 
+(defn wrap [x min max]
+  (cond (< x min) min (> x max) max true x))
+
+(defn navigation-list [db]
+  (->> (map val (:notes db))
+       (filter #(str/includes? (:name %)(:navigation db)))
+       (sort-by :time-updated)
+       (reverse)))
+
+; navigates to the item above
+(rf/reg-event-db :navigate-up
+  (fn [db _]
+    (let [max-index (dec (count (navigation-list db)))]
+      (if-not (:navigation-index db)
+        (assoc db :navigation-index 0)
+        (update db :navigation-index #(wrap (dec %) 0 max-index))))))
+
+; navigates to the item below
+(rf/reg-event-db :navigate-down
+  (fn [db _]
+    (let [max-index (dec (count (navigation-list db)))]
+      (if-not (:navigation-index db)
+        (assoc db :navigation-index 0)
+        (update db :navigation-index #(wrap (inc %) 0 max-index))))))
+
+(rf/reg-event-fx :navigate-in
+  (fn [{:keys [db]} [_ time]]
+    (let [navs (navigation-list db)]
+      (if (:navigation-index db)
+        {:db db :dispatch [:navigation-select (nth navs (:navigation-index db)) time]}
+        {:db db :dispatch [:navigation-select (:navigation db) time]}))))
+
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
   (fn [db _]
-    (->> (map val (:notes db))
-         (filter #(str/includes? (:name %)(:navigation db)))
-         (sort-by :time-updated)
-         (reverse))))
+    (navigation-list db)))
 
 (rf/reg-event-fx :navigation-select
-  (fn [{:keys [db]} [_ note]]
-    {:db (assoc db :active-note-name (:name note)
-                   :drag-start nil
-                   :history-cursor nil)
-     :editor (:content note)
-     :title (:name note)}))
+  (fn [{:keys [db]} [_ note-or-name time]]
+    (if (string? note-or-name)
+      (let [existing-note (get (:notes db) note-or-name)]
+        (if existing-note
+          {:dispatch [:navigation-select existing-note]}
+          {:title note-or-name
+           :editor ""
+           :db (-> db
+                   (assoc :active-note-name note-or-name)
+                   (assoc :drag-start nil)
+                   (assoc :history-cursor nil)
+                   (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
+      {:title (:name note-or-name)
+       :editor (:content note-or-name)
+       :db (-> db
+               (assoc :active-note-name (:name note-or-name))
+               (assoc :drag-start nil)
+               (assoc :history-cursor nil))})))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
