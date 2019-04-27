@@ -212,6 +212,7 @@
     (if (= content (get-in db [:notes (:active-note-name db) :content]))
       {:db db}
       {:db (-> db (assoc-in [:notes (:active-note-name db) :content] content)
+                  (assoc-in [:notes (:active-note-name db) :length] (count content))
                   (assoc-in [:notes (:active-note-name db) :time-updated] time))
        :chsk-send [:flo/save [(:active-note-name db) content]]})))
 
