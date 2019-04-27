@@ -75,7 +75,6 @@
         {:name name
          :time-created (if time-created (.getTime time-created))
          :time-updated (if time-updated (.getTime time-updated))
-         :length (count content)
          :content content}))))
 
 (defn get-note
@@ -86,7 +85,6 @@
        {:name name
         :time-created (if time-created (.getTime time-created))
         :time-updated (if time-updated (.getTime time-updated))
-        :length (count content)
         :content content}))))
 
 ; converts to java.util.Date

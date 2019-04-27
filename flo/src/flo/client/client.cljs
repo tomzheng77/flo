@@ -80,7 +80,7 @@
              :on-click #(rf/dispatch [:navigation-select note (current-time-millis)])}
        [:div (:name note)]
        [:div {:style {:flex-grow 1}}]
-       [:div {:style {:color "#777"}} (:length note)]
+       [:div {:style {:color "#777"}} (count (:content note))]
        [:div {:style {:color "#777"}} (.format (js/moment (:time-updated note)) "MM-DD hh:mm:ss")]
        ])))
 

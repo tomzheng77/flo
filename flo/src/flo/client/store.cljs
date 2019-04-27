@@ -49,7 +49,6 @@
   {:name name
    :time-created time
    :time-updated time
-   :length 0
    :content ""
    :history (avl/sorted-map)})
 
@@ -69,7 +68,7 @@
 
      ; all the notes organised into a map
      ; including the current note being edited (stored in :active-note-name)
-     ; each notes has :name, :time-created, :time-updated and :length
+     ; each notes has :name, :time-created, :time-updated
      ; :content is provided by the server initially, then synced from the editor at a fixed interval
      :active-note-name active-note-name
      :notes            (->> notes
@@ -212,7 +211,6 @@
     (if (= content (get-in db [:notes (:active-note-name db) :content]))
       {:db db}
       {:db (-> db (assoc-in [:notes (:active-note-name db) :content] content)
-                  (assoc-in [:notes (:active-note-name db) :length] (count content))
                   (assoc-in [:notes (:active-note-name db) :time-updated] time))
        :chsk-send [:flo/save [(:active-note-name db) content]]})))
 
