@@ -153,7 +153,8 @@
           new-name (and nav (first (str/split nav #"@" 2)))
           old-index (:navigation-index db)]
       (assoc db :navigation nav
-                :navigation-index (if (not= old-name new-name) nil old-index)
+                ; if navigation is turned off or the name has been changed, reset the index
+                :navigation-index (if (or (nil? nav) (not= old-name new-name)) nil old-index)
                 :search (or (and search-subquery (str/upper-case search-subquery))
                             (:search db))))))
 
