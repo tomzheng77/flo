@@ -147,7 +147,11 @@
 ; or when navigation is turned on/off
 (rf/reg-event-db :navigation-input
   (fn [db [_ nav]]
-    (assoc db :navigation nav :navigation-index nil)))
+    (let [search-subquery (and nav (second (str/split nav #"@" 2)))]
+      (assoc db :navigation nav
+                :navigation-index nil
+                :search (or (and search-subquery (str/upper-case search-subquery))
+                            (:search db))))))
 
 (defn wrap [x min max]
   (cond (< x min) min (> x max) max true x))
