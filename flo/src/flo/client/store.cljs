@@ -92,11 +92,10 @@
 ; whenever the mouse has been moved
 (rf/reg-event-db :mouse-move
   (fn [db [_ event]]
-    (let [mouse-x (:mouse-x event)
-          active-drag (:drag-start db)]
-      (if-not active-drag db
-        (let [dx (- mouse-x (:x active-drag))
-              start-position (:position active-drag)
+    (let [drag-start (:drag-start db)]
+      (if-not drag-start db
+        (let [dx (- (:mouse-x event) (:mouse-x drag-start))
+              start-position (:btn-x drag-start)
               width (:window-width db)
               drag-position (min (max 0 (+ dx start-position)) (- width 80))
               max-drag-position (- (:window-width db) (:drag-btn-width db))

@@ -39,7 +39,7 @@
 
 (defn on-drag-start [event drag-btn-x]
   (let [clj-event (to-clj-event event)]
-    (rf/dispatch [:start-drag {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-btn-x}])))
+    (rf/dispatch [:start-drag {:mouse-x (:mouse-x clj-event) :btn-x drag-btn-x}])))
 
 (defn drag-button []
   (let [timestamp (or @(rf/subscribe [:history-cursor]) @(rf/subscribe [:active-time-updated]))
