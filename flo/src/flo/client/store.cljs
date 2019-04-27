@@ -55,7 +55,13 @@
      :navigation-index nil ; selected item in navigation box
 
      ; all the notes organised into a map
-     :notes            (assoc (into {} (map (fn [n] [(:name n) n]) notes-summary)) (:name note) note)
+     ; including the current note being edited (stored in :active-note-name)
+     ; each notes has :name, :time-created, :time-updated and :length
+     ; only loaded notes have :content
+     :notes            (let [notes-summary-map (into {} (map (fn [n] [(:name n) n]) notes-summary))]
+                         (->> (assoc notes-summary-map (:name note) note)
+                              (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
+                              (into {})))
      :active-note-name (:name note)
 
      :time-start       (- (or (:time-created note) time) 1000)
