@@ -99,9 +99,8 @@
 (defn get-note-at [name at]
   (let [date (to-util-date at)]
     (assert (not (nil? date)))
-    (let [db (d/as-of (d/db (get-conn)) date)
-          updated (get-note-updated name db)]
-      (if updated (get-note name db)))))
+    (let [db (d/as-of (d/db (get-conn)) date)]
+      (get-note name db))))
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
