@@ -56,9 +56,10 @@
 
      ; all the notes organised into a map
      :notes            (assoc (into {} (map (fn [n] [(:name n) n]) notes-summary)) (:name note) note)
+     :active-note-name (:name note)
+
      :time-start       (- (or (:time-created note) time) 1000)
      :time-last-save   (or (:time-updated note) time)
-     :active-note-name (:name note)
      :initial-content  (str (:content note))
      :last-save        (str (:content note))}))
 
