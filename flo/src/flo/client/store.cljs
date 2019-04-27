@@ -98,15 +98,15 @@
       (if-not active-drag db
         (let [dx (- mouse-x (:x active-drag))
               start-position (:position active-drag)
-              width (:window-width db)]
-          (let [drag-position      (min (max 0 (+ dx start-position)) (- width 80))
-                max-drag-position  (- (:window-width db) (:drag-btn-width db))
-                new-drag-timestamp (+ (active-time-created db)
-                                      (/ (* (- (active-time-updated db) (active-time-created db)) drag-position)
-                                         max-drag-position))]
+              width (:window-width db)
+              drag-position (min (max 0 (+ dx start-position)) (- width 80))
+              max-drag-position (- (:window-width db) (:drag-btn-width db))
+              new-history-cursor (+ (active-time-created db)
+                                    (/ (* (- (active-time-updated db) (active-time-created db)) drag-position)
+                                       max-drag-position))]
             (if (= drag-position max-drag-position)
               (assoc db :history-cursor nil)
-              (assoc db :history-cursor new-drag-timestamp))))))))
+              (assoc db :history-cursor new-history-cursor)))))))
 
 ; whenever a message has been received from sente
 (rf/reg-event-db
