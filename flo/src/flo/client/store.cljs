@@ -68,7 +68,7 @@
      :notes            (let [notes-summary-map (into {} (map (fn [n] [(:name n) n]) notes-summary))]
                          (->> (assoc notes-summary-map (:name note) note)
                               (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
-                              (map (fn [[k v]] [k (assoc v :last-save (:content v))]))
+                              (map (fn [[k v]] [k (assoc v :last-saved-content (:content v))]))
                               (into {})))}))
 
 (rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
@@ -83,13 +83,8 @@
 (defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))
 (defn active-time-updated [db] (get-in db [:notes (:active-note-name db) :time-updated]))
 
-(rf/reg-sub :time-start (fn [db v] (get-in db [:notes (:active-note-name db) :time-created])))
-(rf/reg-sub :time-last-save (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
+(rf/reg-sub :active-time-updated (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
 (rf/reg-sub :initial-content (fn [db v] (get-in db [:notes (:active-note-name db) :content])))
-
-(rf/reg-event-db :new-save
-  (fn [db [_ time]]
-    (assoc db :time-last-save time)))
 
 (rf/reg-event-db :window-resize
   (fn [db [_ width height]]
@@ -155,9 +150,10 @@
 
 (rf/reg-event-fx :editor-tick
   (fn [{:keys [db]} [_ content time]]
-    (if (= content (:last-save db))
+    (if (= content (get-in db [:notes (:active-note-name db) :last-saved-content]))
       {:db db}
-      {:db (assoc db :last-save content :time-last-save time)
+      {:db (-> db (assoc-in [:notes (:active-note-name db) :last-saved-content] content)
+                  (assoc-in [:notes (:active-note-name db) :time-updated] time))
        :chsk-send [:flo/save [(:active-note-name db) content]]})))
 
 (add-watch-db :drag-changed [:drag-timestamp] (fn [_ _ _ timestamp] (rf/dispatch [:drag-changed timestamp])))

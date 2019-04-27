@@ -42,7 +42,7 @@
     (rf/dispatch [:set-drag-start {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-btn-x}])))
 
 (defn drag-button []
-  (let [timestamp (or @(rf/subscribe [:drag-timestamp]) @(rf/subscribe [:time-last-save]))
+  (let [timestamp (or @(rf/subscribe [:drag-timestamp]) @(rf/subscribe [:active-time-updated]))
         drag-btn-x @(rf/subscribe [:drag-btn-x])]
     [:div {:style {:height           "100%"
                    :text-indent      "0"
