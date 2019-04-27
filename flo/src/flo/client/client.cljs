@@ -33,7 +33,7 @@
 
 (when-not js/document.initialized
   (set! (.-initialized js/document) true)
-  (rf/dispatch-sync [:initialize init]))
+  (rf/dispatch-sync [:initialize (current-time-millis) init]))
 
 (def search (r/atom nil))
 

@@ -22,6 +22,5 @@
 
 (rf/reg-fx :chsk-send
   (fn [event]
-    (println event)
     (when (:open? @chsk-state)
       (chsk-send! event))))

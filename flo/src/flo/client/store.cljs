@@ -43,7 +43,7 @@
 
 (rf/reg-event-db
   :initialize
-  (fn [_ [_ {:keys [note notes-summary]}]]
+  (fn [_ [_ time {:keys [note notes-summary]}]]
     {:last-shift-press nil ; the time when the shift key was last pressed
      :search           nil ; the active label being searched, nil means no search
      :window-width     (.-innerWidth js/window)
@@ -54,8 +54,8 @@
      :navigation       nil ; nil means no navigation, "string" means
      :navigation-index nil ; selected item in navigation box
      :notes-list       notes-summary
-     :time-start       (- (:time-created note) 1000)
-     :time-last-save   (:time-updated note)
+     :time-start       (- (or (:time-created note) time) 1000)
+     :time-last-save   (or (:time-updated note) time)
      :active-note-name (:name note)
      :initial-content  (str (:content note))
      :last-save        (str (:content note))}))
