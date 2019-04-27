@@ -143,18 +143,31 @@
       {:db db :dispatch [:navigation-input ""]}
       {:db db :dispatch [:navigation-input nil]})))
 
+(defn navigation-list [db]
+  (->> (map val (:notes db))
+       (filter #(str/includes? (:name %) (or (first (str/split (:navigation db) #"@" 2)) "")))
+       (sort-by #(vector (not= 0 (count (:content %))) (:time-updated %)))
+       (reverse)))
+
 ; when the user enters something into the navigation search box
 ; or when navigation is turned on/off
 (rf/reg-event-fx :navigation-input
-  (fn [{:keys [db]} [_ nav]]
-    (let [search-subquery (and nav (second (str/split nav #"@" 2)))
-          old-nav (:navigation db)
-          old-name (and old-nav (first (str/split old-nav #"@" 2)))
-          new-name (and nav (first (str/split nav #"@" 2)))
+  (fn [{:keys [db]} [_ new-input]]
+    (let [search-subquery (and new-input (second (str/split new-input #"@" 2)))
+          old-input (:navigation db)
+          old-name (and old-input (first (str/split old-input #"@" 2)))
+          new-name (and new-input (first (str/split new-input #"@" 2)))
           old-index (:navigation-index db)
-          new-db (assoc db :navigation nav
+
+          ; attempt to find the index of the note which has been selected
+          ; inside the new list
+          old-navs (if old-input (navigation-list db))
+          new-navs (if new-input (navigation-list (assoc db :navigation new-input)))
+          nav-name (if old-index (:name (nth old-navs old-index)))
+          new-index (if nav-name (ffirst (filter (fn [[_ nav]] (= nav-name (:name nav))) (map-indexed vector new-navs))))
+          new-db (assoc db :navigation new-input
                            ; if navigation is turned off or the name has been changed, reset the index
-                           :navigation-index (if (or (nil? nav) (not= old-name new-name)) nil old-index)
+                           :navigation-index (if (= old-name new-name) old-index new-index)
                            :search (or (and search-subquery (str/upper-case search-subquery))
                                        (:search db)))]
       (if (:navigation new-db)
@@ -163,12 +176,6 @@
 
 (defn wrap [x min max]
   (cond (< x min) min (> x max) max true x))
-
-(defn navigation-list [db]
-  (->> (map val (:notes db))
-       (filter #(str/includes? (:name %) (or (first (str/split (:navigation db) #"@" 2)) "")))
-       (sort-by #(vector (not= 0 (count (:content %))) (:time-updated %)))
-       (reverse)))
 
 (defn update-navigation-index-fx [db f]
   (let [index (:navigation-index db)
