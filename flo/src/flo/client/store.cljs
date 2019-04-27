@@ -164,7 +164,7 @@
           old-navs (if old-input (navigation-list db))
           new-navs (if new-input (navigation-list (assoc db :navigation new-input)))
           nav-name (if old-index (:name (nth old-navs old-index)))
-          new-index (if nav-name (ffirst (filter (fn [[_ nav]] (= nav-name (:name nav))) (map-indexed vector new-navs))))
+          new-index (if (and new-navs nav-name) (ffirst (filter (fn [[_ nav]] (= nav-name (:name nav))) (map-indexed vector new-navs))))
           new-db (assoc db :navigation new-input
                            ; if navigation is turned off or the name has been changed, reset the index
                            :navigation-index (if (= old-name new-name) old-index new-index)
