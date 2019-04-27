@@ -151,6 +151,8 @@
 (ace/set-read-only @ace-editor-ro true)
 
 (rf/reg-fx :title (fn [title] (set! (.-title js/document) title)))
+(rf/reg-fx :editor-focus
+  (fn [_] (.focus @ace-editor)))
 (rf/reg-fx :editor
   (fn [[text search]]
     (ace/set-text @ace-editor text)

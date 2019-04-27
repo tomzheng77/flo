@@ -145,18 +145,21 @@
 
 ; when the user enters something into the navigation search box
 ; or when navigation is turned on/off
-(rf/reg-event-db :navigation-input
-  (fn [db [_ nav]]
+(rf/reg-event-fx :navigation-input
+  (fn [{:keys [db]} [_ nav]]
     (let [search-subquery (and nav (second (str/split nav #"@" 2)))
           old-nav (:navigation db)
           old-name (and old-nav (first (str/split old-nav #"@" 2)))
           new-name (and nav (first (str/split nav #"@" 2)))
-          old-index (:navigation-index db)]
-      (assoc db :navigation nav
-                ; if navigation is turned off or the name has been changed, reset the index
-                :navigation-index (if (or (nil? nav) (not= old-name new-name)) nil old-index)
-                :search (or (and search-subquery (str/upper-case search-subquery))
-                            (:search db))))))
+          old-index (:navigation-index db)
+          new-db (assoc db :navigation nav
+                           ; if navigation is turned off or the name has been changed, reset the index
+                           :navigation-index (if (or (nil? nav) (not= old-name new-name)) nil old-index)
+                           :search (or (and search-subquery (str/upper-case search-subquery))
+                                       (:search db)))]
+      (if (:navigation-index new-db)
+        {:db new-db}
+        {:db new-db :editor-focus true}))))
 
 (defn wrap [x min max]
   (cond (< x min) min (> x max) max true x))
