@@ -54,7 +54,7 @@
      :window-width     (.-innerWidth js/window)
 
      :drag-btn-width   80
-     :drag-timestamp   nil
+     :history-cursor   nil
      :drag-start       nil
 
      :navigation       nil ; nil means no navigation, "string" means
@@ -75,7 +75,7 @@
 (rf/reg-sub :search (fn [db v] (:search db)))
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
 (rf/reg-sub :drag-btn-width (fn [db v] (:drag-btn-width db)))
-(rf/reg-sub :drag-timestamp (fn [db v] (:drag-timestamp db)))
+(rf/reg-sub :history-cursor (fn [db v] (:history-cursor db)))
 (rf/reg-sub :drag-start (fn [db v] (:drag-start db)))
 (rf/reg-sub :navigation (fn [db v] (:navigation db)))
 
@@ -86,22 +86,11 @@
 (rf/reg-sub :active-time-updated (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
 (rf/reg-sub :initial-content (fn [db v] (get-in db [:notes (:active-note-name db) :content])))
 
-(rf/reg-event-db :window-resize
-  (fn [db [_ width height]]
-    (assoc db :window-width width)))
+(rf/reg-event-db :window-resize (fn [db [_ width _]] (assoc db :window-width width)))
+(rf/reg-event-db :start-drag (fn [db [_ item]] (assoc db :drag-start item)))
+(rf/reg-event-db :shift-press (fn [db [_ t]] (assoc db :last-shift-press t)))
 
-(rf/reg-event-db :set-drag-timestamp
-  (fn [db [_ t]]
-    (assoc db :drag-timestamp t)))
-
-(rf/reg-event-db :set-drag-start
-  (fn [db [_ item]]
-    (assoc db :drag-start item)))
-
-(rf/reg-event-db :shift-press
-  (fn [db [_ t]]
-    (assoc db :last-shift-press t)))
-
+; whenever the mouse has been moved
 (rf/reg-event-db :mouse-move
   (fn [db [_ event]]
     (let [mouse-x (:mouse-x event)
@@ -116,9 +105,10 @@
                                       (/ (* (- (active-time-updated db) (active-time-created db)) drag-position)
                                          max-drag-position))]
             (if (= drag-position max-drag-position)
-              (assoc db :drag-timestamp nil)
-              (assoc db :drag-timestamp new-drag-timestamp))))))))
+              (assoc db :history-cursor nil)
+              (assoc db :history-cursor new-drag-timestamp))))))))
 
+; whenever a message has been received from sente
 (rf/reg-event-db
   :chsk-event
   (fn [db [_ event]]
@@ -127,27 +117,32 @@
       (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))
       :else db)))
 
-(rf/reg-sub :drag-btn-x
-  (fn [db v]
-    (/ (* (- (or (:drag-timestamp db) (active-time-updated db)) (active-time-created db))
+; x-position of the history button
+(rf/reg-sub :history-btn-x
+  (fn [db _]
+    (/ (* (- (or (:history-cursor db) (active-time-updated db)) (active-time-created db))
           (- (:window-width db) (:drag-btn-width db)))
        (- (active-time-updated db) (active-time-created db)))))
 
+; turns navigation on/off
 (rf/reg-event-db :toggle-navigation
   (fn [db v]
     (if (nil? (:navigation db))
       (assoc db :navigation "" :navigation-index nil)
       (assoc db :navigation nil :navigation-index nil))))
 
-(rf/reg-event-db :set-navigation
+; when the user enters something into the navigation search box
+; or when navigation is turned on/off
+(rf/reg-event-db :navigation-input
   (fn [db [_ nav]]
-    (assoc db :navigation nav
-              :navigation-index nil)))
+    (assoc db :navigation nav :navigation-index nil)))
 
-(rf/reg-sub :navigation-notes
-  (fn [db v]
+; list of notes to display after passing through the navigation filter
+(rf/reg-sub :navigation-list
+  (fn [db _]
     (filter #(str/includes? (:name %)(:navigation db)) (map val (:notes db)))))
 
+; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
   (fn [{:keys [db]} [_ content time]]
     (if (= content (get-in db [:notes (:active-note-name db) :last-saved-content]))
@@ -156,7 +151,7 @@
                   (assoc-in [:notes (:active-note-name db) :time-updated] time))
        :chsk-send [:flo/save [(:active-note-name db) content]]})))
 
-(add-watch-db :drag-changed [:drag-timestamp] (fn [_ _ _ timestamp] (rf/dispatch [:drag-changed timestamp])))
+(add-watch-db :drag-changed [:history-cursor] (fn [_ _ _ timestamp] (rf/dispatch [:drag-changed timestamp])))
 (rf/reg-event-fx
   :drag-changed
   (fn [{:keys [db]} [_ timestamp]]

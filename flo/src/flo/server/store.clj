@@ -68,7 +68,7 @@
     [?tx1 :db/txInstant ?new-time]
     [?tx2 :db/txInstant ?upd-time]])
 
-(defn get-notes-summary []
+(defn get-all-notes []
   (let [db (d/db (get-conn))]
     (for [[name time-created time-updated content] (d/q (all-notes-q) db)]
       {:name name

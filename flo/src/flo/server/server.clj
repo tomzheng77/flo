@@ -21,7 +21,7 @@
             [clojure.data :refer [diff]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
-            [flo.server.store :refer [get-note get-note-at set-note get-notes-summary]]
+            [flo.server.store :refer [get-note get-note-at set-note get-all-notes]]
             [flo.server.static :refer [editor-html login-html]])
   (:import (java.util UUID Date)))
 
@@ -85,7 +85,7 @@
      :body    (login-html)})
   (GET "/editor" request
     (let [name (get (:query-params request) "id" "default")
-          notes-summary (get-notes-summary)
+          notes-summary (get-all-notes)
           session {:uid (.toString (UUID/randomUUID))}]
       {:status  200
        :headers {"Content-Type" "text/html"}

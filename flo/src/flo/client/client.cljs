@@ -39,11 +39,11 @@
 
 (defn on-drag-start [event drag-btn-x]
   (let [clj-event (to-clj-event event)]
-    (rf/dispatch [:set-drag-start {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-btn-x}])))
+    (rf/dispatch [:start-drag {:x (:mouse-x clj-event) :y (:mouse-y clj-event) :position drag-btn-x}])))
 
 (defn drag-button []
-  (let [timestamp (or @(rf/subscribe [:drag-timestamp]) @(rf/subscribe [:active-time-updated]))
-        drag-btn-x @(rf/subscribe [:drag-btn-x])]
+  (let [timestamp (or @(rf/subscribe [:history-cursor]) @(rf/subscribe [:active-time-updated]))
+        drag-btn-x @(rf/subscribe [:history-btn-x])]
     [:div {:style {:height           "100%"
                    :text-indent      "0"
                    :text-align       "center"
@@ -84,7 +84,7 @@
 
 (defn navigation []
   [:div#navigation-outer
-   {:on-click #(rf/dispatch [:set-navigation nil])
+   {:on-click #(rf/dispatch [:navigation-input nil])
     :style {:position "absolute"
             :top      0
             :bottom   0
@@ -106,9 +106,9 @@
                       :text-indent 7}
               :auto-focus true
               :value @(rf/subscribe [:navigation])
-              :on-change #(rf/dispatch [:set-navigation (-> % .-target .-value)])}]]
+              :on-change #(rf/dispatch [:navigation-input (-> % .-target .-value)])}]]
     [:div {:style {:height 4}}]
-    (for [note-name (take 20 @(rf/subscribe [:navigation-notes]))]
+    (for [note-name (take 20 @(rf/subscribe [:navigation-list]))]
       ^{:key note-name}
       [navigation-btn note-name])]])
 
@@ -136,8 +136,8 @@
 (defn app []
   [:div#app-inner
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
-   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:drag-timestamp]) "none" "flex") :flex-direction "column"}} [:div#editor]]
-   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:drag-timestamp]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
+   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:history-cursor]) "none" "flex") :flex-direction "column"}} [:div#editor]]
+   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:history-cursor]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [status-bar]
    [drag-bar]])
 
@@ -167,13 +167,13 @@
     (reset! ace-editor-ro-length (count note))
     (ace/set-text @ace-editor-ro (or note ""))))
 
-(add-watches-db :show-history [[:drag-timestamp] active-history]
+(add-watches-db :show-history [[:history-cursor] active-history]
   (fn [_ _ _ [timestamp history]]
     (when timestamp
       (let [[_ note] (avl/nearest history <= timestamp)]
         (show-history note)))))
 
-(add-watches-db :disable-edit [[:search] [:drag-timestamp]]
+(add-watches-db :disable-edit [[:search] [:history-cursor]]
   (fn [_ _ _ [search drag-timestamp]]
     (if (or search drag-timestamp)
       (ace/set-read-only @ace-editor true)
@@ -194,7 +194,7 @@
     (rf/dispatch [:shift-press nil]))
   (when (= "Escape" (:code event))
     (reset! search nil)
-    (rf/dispatch [:set-navigation nil]))
+    (rf/dispatch [:navigation-input nil]))
   (when (and (:ctrl-key event) (= "p" (:key event)))
     (.preventDefault (:original event))
     (rf/dispatch [:toggle-navigation]))
@@ -220,8 +220,8 @@
 (set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))
 (set! (.-onmousemove js/window) #(rf/dispatch [:mouse-move (to-clj-event %)]))
 (set! (.-ontouchmove js/window) #(rf/dispatch [:mouse-move (to-clj-event %)]))
-(set! (.-onmouseup js/window) #(rf/dispatch [:set-drag-start nil]))
-(set! (.-ontouchend js/window) #(rf/dispatch [:set-drag-start nil]))
+(set! (.-onmouseup js/window) #(rf/dispatch [:start-drag nil]))
+(set! (.-ontouchend js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-onresize js/window) (rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 
 (js/setInterval #(rf/dispatch [:editor-tick (ace/get-text @ace-editor) (current-time-millis)]) 1000)
