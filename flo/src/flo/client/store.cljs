@@ -126,6 +126,7 @@
 ; x-position of the history button
 (rf/reg-sub :history-btn-x
   (fn [db _]
+    (println db)
     (/ (* (- (or (:history-cursor db) (active-time-updated db)) (active-time-created db))
           (- (:window-width db) (:drag-btn-width db)))
        (- (active-time-updated db) (active-time-created db)))))
@@ -149,7 +150,7 @@
     (filter #(str/includes? (:name %)(:navigation db)) (map val (:notes db)))))
 
 (rf/reg-event-fx :navigation-select
-  (fn [db [_ note]]
+  (fn [{:keys [db]} [_ note]]
     {:db (assoc db :active-note-name (:name note)
                    :drag-start nil
                    :history-cursor nil)
