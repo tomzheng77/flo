@@ -137,11 +137,11 @@
        (inc (- (active-time-updated db) (active-time-created db))))))
 
 ; turns navigation on/off
-(rf/reg-event-db :toggle-navigation
-  (fn [db v]
+(rf/reg-event-fx :toggle-navigation
+  (fn [{:keys [db]} _]
     (if (nil? (:navigation db))
-      (assoc db :navigation "" :navigation-index nil)
-      (assoc db :navigation nil :navigation-index nil))))
+      {:db db :dispatch [:navigation-input ""]}
+      {:db db :dispatch [:navigation-input nil]})))
 
 ; when the user enters something into the navigation search box
 ; or when navigation is turned on/off
