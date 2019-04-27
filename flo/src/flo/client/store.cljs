@@ -148,6 +148,13 @@
   (fn [db _]
     (filter #(str/includes? (:name %)(:navigation db)) (map val (:notes db)))))
 
+(rf/reg-event-fx :navigation-select
+  (fn [db [_ note]]
+    {:db (assoc db :active-note-name (:name note)
+                   :drag-start nil
+                   :history-cursor nil)
+     :editor (:content note)}))
+
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
   (fn [{:keys [db]} [_ content time]]

@@ -75,7 +75,8 @@
                      :display "flex"
                      :flex-direction "row"}
              :on-mouse-over #(reset! focus? true)
-             :on-mouse-out #(reset! focus? false)}
+             :on-mouse-out #(reset! focus? false)
+             :on-click #(rf/dispatch [:navigation-select note])}
        [:div (:name note)]
        [:div {:style {:flex-grow 1}}]
        [:div {:style {:color "#777"}} (.format (js/moment (:time-created note)) "MM-DD hh:mm:ss")]
@@ -147,6 +148,7 @@
 (ace/set-text @ace-editor (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)
+(rf/reg-fx :editor (fn [text] (ace/set-text @ace-editor text)))
 
 (.addCommand (.-commands @ace-editor)
   (clj->js {:name "toggle-navigation"
