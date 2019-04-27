@@ -138,8 +138,8 @@
 (defn app []
   [:div#app-inner
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
-   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:history-cursor]) "none" "flex") :flex-direction "column"}} [:div#editor]]
-   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:history-cursor]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
+   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "none" "flex") :flex-direction "column"}} [:div#editor]]
+   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [status-bar]
    [drag-bar]])
 

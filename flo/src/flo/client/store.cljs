@@ -158,27 +158,22 @@
 
 (defn navigation-list [db]
   (->> (map val (:notes db))
-       (filter #(str/includes? (:name %) (first (str/split (:navigation db) #"@" 2))))
+       (filter #(str/includes? (:name %) (or (first (str/split (:navigation db) #"@" 2)) "")))
        (sort-by #(vector (not= 0 (count (:content %))) (:time-updated %)))
        (reverse)))
 
-; navigates to the item above
-(rf/reg-event-db :navigate-up
-  (fn [db _]
-    (let [index (:navigation-index db)
-          navs (navigation-list db)
-          max-index (dec (count navs))
-          new-index (if-not index 0 (wrap (dec index) 0 max-index))]
-      (assoc db :navigation-index new-index))))
+(defn update-navigation-index-fx [db f]
+  (let [index (:navigation-index db)
+        navs (navigation-list db)
+        max-index (dec (count navs))
+        new-index (if-not index 0 (wrap (f index) 0 max-index))
+        note (nth navs new-index)]
+    {:db (assoc db :navigation-index new-index)
+     :read-only [(:content note) (:search db)]}))
 
-; navigates to the item below
-(rf/reg-event-db :navigate-down
-  (fn [db _]
-    (let [index (:navigation-index db)
-          navs (navigation-list db)
-          max-index (dec (count navs))
-          new-index (if-not index 0 (wrap (inc index) 0 max-index))]
-      (assoc db :navigation-index new-index))))
+; navigates to the item above/below
+(rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
+(rf/reg-event-fx :navigate-down (fn [{:keys [db]} _] (update-navigation-index-fx db inc)))
 
 (rf/reg-event-fx :navigate-in
   (fn [{:keys [db]} [_ time]]
@@ -226,3 +221,7 @@
   :drag-changed
   (fn [{:keys [db]} [_ timestamp]]
     {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
+
+(rf/reg-sub :show-read-only
+  (fn [db _]
+    (or (:history-cursor db) (:navigation-index db))))
