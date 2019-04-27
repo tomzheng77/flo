@@ -72,7 +72,7 @@
                             ((fn [m] (if (get m active-note-name) m
                                 (assoc m active-note-name
                                   {:name active-note-name
-                                   :time-created (- time 1)
+                                   :time-created time
                                    :time-updated time
                                    :length 0
                                    :content ""
@@ -129,7 +129,7 @@
     (println db)
     (/ (* (- (or (:history-cursor db) (active-time-updated db)) (active-time-created db))
           (- (:window-width db) (:drag-btn-width db)))
-       (- (active-time-updated db) (active-time-created db)))))
+       (inc (- (active-time-updated db) (active-time-created db)))))) ; use inc to deal with zero
 
 ; turns navigation on/off
 (rf/reg-event-db :toggle-navigation
