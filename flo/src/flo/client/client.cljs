@@ -110,9 +110,10 @@
               :value @(rf/subscribe [:navigation])
               :on-change #(rf/dispatch [:navigation-input (-> % .-target .-value)])}]]
     [:div {:style {:height 4}}]
-    (for [[index note] (map-indexed vector (take 20 @(rf/subscribe [:navigation-list])))]
-      ^{:key [index (:name note)]}
-      [navigation-btn note index])]])
+    [:div {:style {:max-height 504 :overflow-y "scroll"}}
+     (for [[index note] (map-indexed vector @(rf/subscribe [:navigation-list]))]
+       ^{:key [index (:name note)]}
+       [navigation-btn note index])]]])
 
 (defn drag-bar []
   [:div {:style {:height           "24px"
