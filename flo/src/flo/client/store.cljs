@@ -195,7 +195,7 @@
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
         {:db db :dispatch [:navigation-select (nth navs (:navigation-index db)) time]}
-        {:db db :dispatch [:navigation-select (:navigation db) time]}))))
+        {:db db :dispatch [:navigation-select (first (str/split (:navigation db) #"@")) time]}))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
