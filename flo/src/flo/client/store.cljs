@@ -195,7 +195,11 @@
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
         {:db db :dispatch [:navigation-select (nth navs (:navigation-index db)) time]}
-        {:db db :dispatch [:navigation-select (first (str/split (:navigation db) #"@")) time]}))))
+        (let [name (first (str/split (:navigation db) #"@"))]
+          (if (or (nil? name) (empty? name))
+            {:db (assoc db :navigation nil :navigation-select nil)
+             :focus-editor true}
+            {:db db :dispatch [:navigation-select name time]}))))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
@@ -219,7 +223,7 @@
                    (assoc :navigation-index nil)
                    (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
       {:title (:name note-or-name)
-       :show-editor [(:content note-or-name) (:search db)]
+       :show-editor [(:content note-or-name) (:search db) true]
        :focus-editor true
        :db (-> db
                (assoc :active-note-name (:name note-or-name))

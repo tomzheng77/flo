@@ -154,10 +154,20 @@
   (fn [_] (.focus @ace-editor)))
 
 (rf/reg-fx :show-editor
-  (fn [[text search]]
+  (fn [[text search & [copy-ro-select]]]
     (ace/set-text @ace-editor text)
     (ace/navigate @ace-editor search)
-    (.focus @ace-editor)))
+    (.focus @ace-editor)
+    (when copy-ro-select
+      (.setSelectionRange
+        (.getSelection @ace-editor)
+        (.getRange
+          (.getSelection @ace-editor-ro))
+        false))))
+
+(rf/reg-fx :copy-from-ro
+  (fn [_]
+    (.setSession @ace-editor (.getSession @ace-editor-ro))))
 
 (rf/reg-fx :show-editor-ro
   (fn [[text search]]
@@ -197,33 +207,33 @@
     (rf/dispatch [:set-search nil])))
 
 (defn on-press-key
-  [event]
+  [{:keys [code key ctrl-key shift-key original]}]
   (when @(rf/subscribe [:navigation])
-    (when (and (#{"ArrowUp"} (:code event)))
+    (when (and (#{"ArrowUp"} code))
       (rf/dispatch [:navigate-up]))
-    (when (and (#{"ArrowDown"} (:code event)))
+    (when (and (#{"ArrowDown"} code))
       (rf/dispatch [:navigate-down]))
-    (when (and (#{"Enter"} (:code event)))
+    (when (and (#{"Enter"} code))
       (rf/dispatch [:navigate-in (current-time-millis)])))
-  (if (= "ShiftLeft" (:code event))
+  (if (= "ShiftLeft" code)
     (rf/dispatch [:shift-press (current-time-millis)])
     (rf/dispatch [:shift-press nil]))
-  (when (= "Escape" (:code event))
+  (when (= "Escape" code)
     (rf/dispatch [:set-search nil])
     (rf/dispatch [:navigation-input nil]))
-  (when (and (:ctrl-key event) (= "p" (:key event)))
-    (.preventDefault (:original event))
+  (when (and ctrl-key (= "p" key))
+    (.preventDefault original)
     (rf/dispatch [:toggle-navigation]))
   (when @(rf/subscribe [:search])
-    (when (#{"Enter" "Tab"} (:key event))
-      (.preventDefault (:original event))
-      (if (:shift-key event)
+    (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
+      (.preventDefault original)
+      (if shift-key
         (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search]) {"backwards" true}))
         (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search])))))
-    (when (= "Backspace" (:key event))
+    (when (= "Backspace" key)
       (rf/dispatch [:swap-search splice-last]))
-    (when (re-matches #"^[A-Za-z0-9]$" (:key event))
-      (rf/dispatch [:swap-search #(str % (str/upper-case (:key event)))]))))
+    (when (re-matches #"^[A-Za-z0-9]$" key)
+      (rf/dispatch [:swap-search #(str % (str/upper-case key))]))))
 
 (defn on-release-key
   [event]
