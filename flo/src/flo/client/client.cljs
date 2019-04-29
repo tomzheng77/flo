@@ -167,7 +167,8 @@
 (def toggle-nav-command
   {:name "toggle-navigation"
    :exec #(rf/dispatch [:toggle-navigation])
-   :bindKey {:mac "cmd-p" :win "ctrl-p"}})
+   :bindKey {:mac "cmd-p" :win "ctrl-p"}
+   :readOnly true})
 
 (.addCommand (.-commands @ace-editor) (clj->js toggle-nav-command))
 (.addCommand (.-commands @ace-editor-ro) (clj->js toggle-nav-command))
