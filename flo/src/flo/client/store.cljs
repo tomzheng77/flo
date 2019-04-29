@@ -172,7 +172,7 @@
                                        (:search db)))]
       (if (:navigation new-db)
         {:db new-db}
-        {:db new-db :editor-focus true}))))
+        {:db new-db :focus-editor true}))))
 
 (defn wrap [x min max]
   (cond (< x min) min (> x max) max true x))
@@ -184,7 +184,7 @@
         new-index (if-not index 0 (wrap (f index) 0 max-index))
         note (nth navs new-index)]
     {:db (assoc db :navigation-index new-index)
-     :read-only [(:content note) (:search db)]}))
+     :show-editor-ro [(:content note) (:search db)]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
@@ -209,8 +209,8 @@
         (if existing-note
           {:dispatch [:navigation-select existing-note]}
           {:title note-or-name
-           :editor ["" (:search db)]
-           :editor-focus true
+           :show-editor ["" (:search db)]
+           :focus-editor true
            :db (-> db
                    (assoc :active-note-name note-or-name)
                    (assoc :drag-start nil)
@@ -219,8 +219,8 @@
                    (assoc :navigation-index nil)
                    (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
       {:title (:name note-or-name)
-       :editor [(:content note-or-name) (:search db)]
-       :editor-focus true
+       :show-editor [(:content note-or-name) (:search db)]
+       :focus-editor true
        :db (-> db
                (assoc :active-note-name (:name note-or-name))
                (assoc :drag-start nil)
