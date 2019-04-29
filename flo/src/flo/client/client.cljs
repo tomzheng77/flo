@@ -35,8 +35,6 @@
   (set! (.-initialized js/document) true)
   (rf/dispatch-sync [:initialize (current-time-millis) init]))
 
-(def search (r/atom nil))
-
 (defn on-drag-start [event drag-btn-x]
   (let [clj-event (to-clj-event event)]
     (rf/dispatch [:start-drag {:mouse-x (:mouse-x clj-event) :btn-x drag-btn-x}])))
