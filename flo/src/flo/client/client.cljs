@@ -223,6 +223,8 @@
     (rf/dispatch [:navigation-input nil]))
   (when (and ctrl-key (= "p" key))
     (.preventDefault original)
+    (let [cursor (js->clj (.getCursor (.getSelection @ace-editor)))
+          line (.getLine (.-session @ace-editor) (:row cursor))])
     (rf/dispatch [:toggle-navigation]))
   (when @(rf/subscribe [:search])
     (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
