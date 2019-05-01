@@ -2679,7 +2679,7 @@ var MarkdownHighlightRules = function() {
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token : "tag.reference",
-            regex : "\\[=[A-Z0-9]+\\]",
+            regex : "\\[=[^\\]]+\\]",
             caseInsensitive: false
         }],
         "allowBlock": [
