@@ -174,9 +174,21 @@
     (ace/set-text @ace-editor-ro (or text ""))
     (ace/navigate @ace-editor-ro search)))
 
+(defn toggle-navigation []
+  (let [cursor (js->clj (.getCursor (.getSelection @ace-editor)))
+        row (get cursor "row")
+        col (get cursor "column")
+        line (.getLine (.-session @ace-editor) row)
+        instances (find-all line #"\[=[^\]]+\]")
+        instance (or (first (filter #(and (>= col (:start %)) (< col (:end %))) instances))
+                     (first (filter #(and (>= col (:start %)) (<= col (:end %))) instances)))
+        substr (:substr instance)
+        substr-nx (if substr (str/replace (subs substr 2 (dec (count substr))) #":" "@"))]
+    (rf/dispatch [:toggle-navigation substr-nx])))
+
 (def toggle-nav-command
   {:name "toggle-navigation"
-   :exec #(rf/dispatch [:toggle-navigation])
+   :exec #(toggle-navigation)
    :bindKey {:mac "cmd-p" :win "ctrl-p"}
    :readOnly true})
 
@@ -223,9 +235,7 @@
     (rf/dispatch [:navigation-input nil]))
   (when (and ctrl-key (= "p" key))
     (.preventDefault original)
-    (let [cursor (js->clj (.getCursor (.getSelection @ace-editor)))
-          line (.getLine (.-session @ace-editor) (:row cursor))])
-    (rf/dispatch [:toggle-navigation]))
+    (toggle-navigation))
   (when @(rf/subscribe [:search])
     (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
       (.preventDefault original)

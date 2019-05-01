@@ -138,9 +138,9 @@
 
 ; turns navigation on/off
 (rf/reg-event-fx :toggle-navigation
-  (fn [{:keys [db]} _]
+  (fn [{:keys [db]} [_ init]]
     (if (nil? (:navigation db))
-      {:db db :dispatch [:navigation-input ""]}
+      {:db db :dispatch [:navigation-input (or init "")]}
       {:db db :dispatch [:navigation-input nil]})))
 
 (defn navigation-list [db]
