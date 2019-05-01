@@ -156,14 +156,19 @@
 (rf/reg-fx :show-editor
   (fn [[text search & [copy-ro-select]]]
     (ace/set-text @ace-editor text)
-    (ace/navigate @ace-editor search)
     (.focus @ace-editor)
-    (when copy-ro-select
-      (.setSelectionRange
-        (.getSelection @ace-editor)
-        (.getRange
-          (.getSelection @ace-editor-ro))
-        false))))
+    (js/setTimeout
+      #(if-not copy-ro-select
+         (ace/navigate @ace-editor search)
+         (let [range (.getRange (.getSelection @ace-editor-ro))
+               cursor (js->clj (.getCursor (.getSelection @ace-editor-ro)))
+               row (get cursor "row")
+               col (get cursor "column")]
+           (println range cursor row col)
+           (.scrollToLine @ace-editor (inc row) true true (fn []))
+           (.gotoLine @ace-editor (+ row 2) col true)
+           (.setSelectionRange (.getSelection @ace-editor) range false)))
+      0)))
 
 (rf/reg-fx :copy-from-ro
   (fn [_]
@@ -172,7 +177,7 @@
 (rf/reg-fx :show-editor-ro
   (fn [[text search]]
     (ace/set-text @ace-editor-ro (or text ""))
-    (ace/navigate @ace-editor-ro search)))
+    (js/setTimeout #(ace/navigate @ace-editor-ro search) 0)))
 
 (defn toggle-navigation []
   (let [cursor (js->clj (.getCursor (.getSelection @ace-editor)))

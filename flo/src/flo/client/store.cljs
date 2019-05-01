@@ -207,11 +207,11 @@
     (navigation-list db)))
 
 (rf/reg-event-fx :navigation-select
-  (fn [{:keys [db]} [_ note-or-name time]]
+  (fn [{:keys [db]} [_ note-or-name time & [open-by-name]]]
     (if (string? note-or-name)
       (let [existing-note (get (:notes db) note-or-name)]
         (if existing-note
-          {:db db :dispatch [:navigation-select existing-note]}
+          {:db db :dispatch [:navigation-select existing-note time true]}
           {:title note-or-name
            :show-editor ["" (:search db)]
            :focus-editor true
@@ -223,7 +223,7 @@
                    (assoc :navigation-index nil)
                    (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
       {:title (:name note-or-name)
-       :show-editor [(:content note-or-name) (:search db) true]
+       :show-editor [(:content note-or-name) (:search db) (not open-by-name)]
        :focus-editor true
        :db (-> db
                (assoc :active-note-name (:name note-or-name))
