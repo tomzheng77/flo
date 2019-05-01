@@ -211,7 +211,7 @@
     (if (string? note-or-name)
       (let [existing-note (get (:notes db) note-or-name)]
         (if existing-note
-          {:dispatch [:navigation-select existing-note]}
+          {:db db :dispatch [:navigation-select existing-note]}
           {:title note-or-name
            :show-editor ["" (:search db)]
            :focus-editor true
