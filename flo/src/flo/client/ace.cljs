@@ -6,6 +6,7 @@
 (defn new-instance [element-id]
   (js/ace.config.set "basePath" "ace")
   (let [instance (js/ace.edit element-id)]
+    (.setOptions instance (clj->js {:fontFamily "Go-Mono" :fontSize "10pt"}))
     (.setTheme instance "ace/theme/monokai")
     (.setMode (.-session instance) "ace/mode/markdown")
     instance))

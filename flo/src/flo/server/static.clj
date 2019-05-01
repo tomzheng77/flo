@@ -30,7 +30,7 @@
       [:meta {:charset "UTF-8"}]
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
       [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
-      [:link {:href "css/highlight/monokai-sublime.css" :rel "stylesheet"}]
+      [:link {:href "css/style.css" :rel "stylesheet"}]
       [:style
        (css [:#app-inner
              {:margin "0" :display "flex" :flex-direction "column" :justify-content "center"}]
