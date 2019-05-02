@@ -17,7 +17,6 @@
     [clojure.data.avl :as avl]
     [cljsjs.jquery]
     [cljsjs.moment]
-    [cljsjs.ace]
     [goog.crypt.base64 :as b64]
     [reagent.core :as r]
     [re-frame.core :as rf]

@@ -41,5 +41,13 @@
      [:body
       [:pre#init {:style "display: none"} (base64-encode (pr-str init))]
       [:div#app]
-      [:script {:src "js/highlight.pack.js" :type "text/javascript"}]
+      [:script {:src "ace/ace.js" :type "text/javascript"}]
+      [:script {:src "ace/ext-emmet.js" :type "text/javascript"}]
+      [:script {:src "ace/ext-searchbox.js" :type "text/javascript"}]
+      [:script {:src "ace/ext-options.js" :type "text/javascript"}]
+      [:script {:src "ace/ext-whitespace.js" :type "text/javascript"}]
+      [:script {:src "ace/ext-linking.js" :type "text/javascript"}]
+      [:script {:src "ace/ext-language_tools.js" :type "text/javascript"}]
+      [:script {:src "ace/ext-split.js" :type "text/javascript"}]
+      [:script {:src "js/ace-ext-fs_previews.js" :type "text/javascript"}]
       [:script {:src "js/compiled/flo.js" :type "text/javascript"}]]]))

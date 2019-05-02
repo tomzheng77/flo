@@ -6,7 +6,15 @@
 (defn new-instance [element-id]
   (js/ace.config.set "basePath" "ace")
   (let [instance (js/ace.edit element-id)]
-    (.setOptions instance (clj->js {:fontFamily "Go-Mono" :fontSize "10pt"}))
+    (.setOptions
+      instance
+      (clj->js {:fontFamily "Go-Mono"
+                :fontSize "10pt"
+                :enableFreeSpacePreviews true
+                :enableBasicAutocompletion true
+                :enableLiveAutocompletion false
+                :enableSnippets false
+                :enableLinking true}))
     (.setTheme instance "ace/theme/monokai")
     (.setMode (.-session instance) "ace/mode/markdown")
     instance))
