@@ -112,6 +112,22 @@
        ^{:key [index (:name note)]}
        [navigation-btn note index])]]])
 
+(defn image-upload []
+  [:div#image-upload-outer
+   {:on-click #(rf/dispatch [:toggle-image-upload])
+    :style {:position "absolute"
+            :top      0
+            :bottom   0
+            :left     0
+            :right    0
+            :z-index  10}}
+   [:div {:style {:max-width 600
+                  :min-height 300
+                  :margin-top 100
+                  :margin-left "auto"
+                  :margin-right "auto"
+                  :background-color "red"}}]])
+
 (defn drag-bar []
   [:div {:style {:height           "24px"
                  :background-color "#9e4446"
@@ -135,7 +151,10 @@
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
+   [:form {:id "file-form"}
+    [:input {:id "file-input" :type "file" :style {:display "none"} :multiple true}]]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
+   (if @(rf/subscribe [:image-upload]) ^{:key "upl"} [image-upload])
    ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "none" "flex") :flex-direction "column"}} [:div#editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [status-bar]
@@ -240,6 +259,9 @@
   (when (and ctrl-key (= "p" key))
     (.preventDefault original)
     (toggle-navigation))
+  (when (and ctrl-key (= "i" key))
+    (.preventDefault original)
+    (.click (js/document.getElementById "file-input")))
   (when @(rf/subscribe [:search])
     (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
       (.preventDefault original)

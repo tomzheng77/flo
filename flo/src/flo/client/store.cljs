@@ -65,6 +65,7 @@
 
      :navigation       nil ; nil means no navigation, "string" means
      :navigation-index nil ; selected item in navigation box
+     :image-upload     nil
 
      ; all the notes organised into a map
      ; including the current note being edited (stored in :active-note-name)
@@ -87,6 +88,7 @@
 (rf/reg-sub :drag-start (fn [db v] (:drag-start db)))
 (rf/reg-sub :navigation (fn [db v] (:navigation db)))
 (rf/reg-sub :navigation-index (fn [db v] (:navigation-index db)))
+(rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
@@ -135,6 +137,10 @@
     (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-created db))
           (- (:window-width db) (:drag-btn-width db)))
        (inc (- (active-time-updated db) (active-time-created db))))))
+
+(rf/reg-event-db :toggle-image-upload
+  (fn [db _]
+    (update db :image-upload not)))
 
 ; turns navigation on/off
 (rf/reg-event-fx :toggle-navigation
