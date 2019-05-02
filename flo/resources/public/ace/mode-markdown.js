@@ -2681,6 +2681,9 @@ var MarkdownHighlightRules = function() {
             token : "tag.reference",
             regex : "\\[=[^\\]]+\\]",
             caseInsensitive: false
+        }, { // ---------- [CUSTOM] ----------
+            token: "link", // URL -> http://example.com
+            regex: "[^\\s]*\\:\\/\\/[^\\s]+"
         }],
         "allowBlock": [
             {token : "support.function", regex : "^ {4}.+", next : "allowBlock"},
