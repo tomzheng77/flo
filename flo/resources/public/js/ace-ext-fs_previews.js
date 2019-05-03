@@ -99,7 +99,7 @@ cursor: text;\
                     var top     = $lg.position().top + $lg.parent().position().top;
                     var ptop  	= (top+$el.height()+2)+"px";
                     var pleft 	= ($el.position().left+6)+"px";
-                    var pheight = Math.min(320, blankH-8)+"px";
+                    var pheight = Math.min(900, blankH-8)+"px";
                     var pwidth  = "auto";
                     var $pel    = $previews.find("#"+pid);
                     // --
