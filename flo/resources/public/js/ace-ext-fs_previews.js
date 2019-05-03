@@ -96,7 +96,8 @@ cursor: text;\
                 }
                 //console.log("URL + Blanklines", url, blanklines, blankH+"px");
                 if (blanklines > 1) {
-                    var ptop  	= ($lg.position().top+$el.height()+2)+"px";
+                    var top     = $lg.position().top + $lg.parent().position().top;
+                    var ptop  	= (top+$el.height()+2)+"px";
                     var pleft 	= ($el.position().left+6)+"px";
                     var pheight = Math.min(320, blankH-8)+"px";
                     var pwidth  = "auto";
@@ -115,7 +116,6 @@ cursor: text;\
                             content = "<a href='"+url+"' target='_blank'><img src='"+url+"' /></a>";
                             break;
                         case "image-uuid":
-                            console.log(url)
                             content = "<a href='"+url+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"' /></a>";
                             break;
                     }
