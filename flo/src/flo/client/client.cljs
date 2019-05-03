@@ -152,19 +152,21 @@
                  :flex-shrink      "0"}}
    (str "Search: " (pr-str @(rf/subscribe [:search])))])
 
+(def ace-editor (r/atom nil))
+(def ace-editor-ro (r/atom nil))
 
 (defn file-uploaded [response]
-  (let [edn (read-string response)]
-    (js/alert (pr-str edn))))
+  ; add [*b82b6c5e-6d44-11e9-a923-1681be663d3e]
+  ; editor.session.insert(editor.getCursorPosition(), text)
+  (doseq [{:keys [id]} response]
+    (println id)
+    (let [cursor (.getCursor (.getSelection @ace-editor))]
+      (.insert (.-session @ace-editor) cursor (str "[*" id "]\n")))))
 
 
 (defn upload-image []
-  (.ajaxForm
-    (js/$ "#file-form")
-    (clj->js
-      {:beforeSubmit #(js/alert "nope")
-       :success file-uploaded}))
-  (.ajaxSubmit (js/$ "#file-form")))
+  (.ajaxSubmit (js/$ "#file-form")
+    (clj->js {:success #(file-uploaded (read-string %))})))
 
 
 (defn file-form-render []
@@ -192,8 +194,8 @@
    [drag-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
-(def ace-editor (r/atom (ace/new-instance "editor")))
-(def ace-editor-ro (r/atom (ace/new-instance "editor-read-only")))
+(reset! ace-editor (ace/new-instance "editor"))
+(reset! ace-editor-ro (ace/new-instance "editor-read-only"))
 (ace/set-text @ace-editor (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)

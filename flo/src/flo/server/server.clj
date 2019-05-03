@@ -116,7 +116,7 @@
                 {:name (:filename file) :id (.toString uuid)})))]
       {:status 200
        :headers {"Content-Type" "text/plain"}
-       :body (pr-str response)}))
+       :body (pr-str (vec response))}))
   (GET "/login" []
     {:status  200
      :headers {"Content-Type" "text/html"}
