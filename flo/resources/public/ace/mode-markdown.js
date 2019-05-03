@@ -2684,6 +2684,9 @@ var MarkdownHighlightRules = function() {
         }, { // ---------- [CUSTOM] ----------
             token: "link", // URL -> http://example.com
             regex: "[^\\s]*\\:\\/\\/[^\\s]+"
+        }, { // ---------- [CUSTOM] ----------
+            token: "image", // [*614c18b7-1aa5-4dc2-b611-e7a31818c6a1]
+            regex: "\\[\\*[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\\]"
         }],
         "allowBlock": [
             {token : "support.function", regex : "^ {4}.+", next : "allowBlock"},

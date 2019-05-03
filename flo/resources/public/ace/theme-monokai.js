@@ -121,6 +121,11 @@ font-weight: bold;\
 color: #f0c400;\
 /*animation: blinker 1s linear infinite;*/\
 }\
+.ace-monokai .ace_image {\
+font-weight: bold;\
+color: #00AA00;\
+/*animation: blinker 1s linear infinite;*/\
+}\
 ";
 
 var dom = require("../lib/dom");
