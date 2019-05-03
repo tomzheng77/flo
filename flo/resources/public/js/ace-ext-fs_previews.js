@@ -61,13 +61,17 @@ cursor: text;\
         //if(!$previews) return;
         $previews.find(".ace_fs_preview").addClass("unseen");
         // --
-        $(renderer.content).find(".ace_line .ace_link").each(function(index, el){
+        $(renderer.content).find(".ace_line .ace_link, .ace_line .ace_image").each(function(index, el){
             var $el = $(el);
             var url = $el.text();
             // --
             var mtype = null;
             var mres  = null;
             // --
+            if (!mtype) {
+                mres = url.match(/\[\*[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\]/);
+                if (mres) mtype = "image-uuid";
+            }
             if (!mtype) {
                 mres = url.match(/(?:http:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([^<]+)/);
                 if (mres) mtype = "youtube";
@@ -109,6 +113,10 @@ cursor: text;\
                             break;
                         case "image":
                             content = "<a href='"+url+"' target='_blank'><img src='"+url+"' /></a>";
+                            break;
+                        case "image-uuid":
+                            console.log(url)
+                            content = "<a href='"+url+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"' /></a>";
                             break;
                     }
                     // --
