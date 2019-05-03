@@ -88,11 +88,11 @@
 ;   :tempfile
 ;   #object[java.io.File 0x29c0647a "/tmp/ring-multipart-8829745542880348189.tmp"],
 ;   :size 57}}
-(defn store-file [{:keys [content-type tempfile size]} uuid]
+(defn store-file [{:keys [filename content-type tempfile size]} uuid]
   (let [out-file (io/file upload-dir (.toString uuid))
         edn-file (io/file upload-dir (str (.toString uuid) ".edn"))]
     (io/copy tempfile out-file)
-    (spit edn-file (pr-str {:content-type content-type :size size}))))
+    (spit edn-file (pr-str {:name filename :content-type content-type :size size}))))
 
 
 (defroutes app-routes
