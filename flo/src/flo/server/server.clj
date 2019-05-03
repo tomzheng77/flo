@@ -22,8 +22,11 @@
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
             [flo.server.store :refer [get-note get-note-at set-note get-all-notes]]
-            [flo.server.static :refer [editor-html login-html]])
-  (:import (java.util UUID Date)))
+            [flo.server.static :refer [editor-html login-html]]
+            [clojure.java.io :as io])
+  (:import (java.util UUID Date)
+           (java.io FileInputStream ByteArrayOutputStream)
+           (org.httpkit BytesInputStream)))
 
 (timbre/merge-config!
   {:level      :debug
@@ -75,10 +78,45 @@
             (reset! seek-location {})))
         (Thread/sleep 50))))
 
+(def upload-dir "upload")
+(.mkdirs (io/file upload-dir))
+
+
+; stores a file of the format
+;{:filename "1.in",
+;   :content-type "application/octet-stream",
+;   :tempfile
+;   #object[java.io.File 0x29c0647a "/tmp/ring-multipart-8829745542880348189.tmp"],
+;   :size 57}}
+(defn store-file [{:keys [content-type tempfile size]} uuid]
+  (let [out-file (io/file upload-dir (.toString uuid))
+        edn-file (io/file upload-dir (str (.toString uuid) ".edn"))]
+    (io/copy tempfile out-file)
+    (spit edn-file (pr-str {:content-type content-type :size size}))))
+
+
 (defroutes app-routes
   (route/resources "/" {:root "public"})
   (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post req))
+  (GET "/file" req
+    (let [id (get (:query-params req) "id")
+          file (io/file upload-dir id)
+          edn (try (slurp (io/file upload-dir (str id ".edn"))) (catch Exception _ {}))
+          content-type (or (:content-type edn) "text/plain")]
+      (if (and (.exists file) (.isFile file) (.canRead file))
+        {:status 200 :headers {"Content-Type" content-type} :body (new FileInputStream file)}
+        {:status 404 :headers {"Content-Type" "text/plain"} :body (str (pr-str id) " Not Found")})))
+  (POST "/file-upload" req
+    (let [response
+          (let [files (:files (:params req))]
+            (for [file (if (vector? files) files [files])]
+              (let [uuid (UUID/randomUUID)]
+                (store-file file uuid)
+                {:name (:filename file) :id (.toString uuid)})))]
+      {:status 200
+       :headers {"Content-Type" "text/plain"}
+       :body (pr-str response)}))
   (GET "/login" []
     {:status  200
      :headers {"Content-Type" "text/html"}
@@ -99,7 +137,7 @@
 ;; but it's very good to know about
 (def dev-app
   (-> app-routes
-      (wrap-defaults site-defaults)
+      (wrap-defaults (assoc-in site-defaults [:security :anti-forgery] false))
       (wrap-reload)
       (wrap-keyword-params)
       (wrap-params)))

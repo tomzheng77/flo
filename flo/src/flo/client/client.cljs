@@ -15,7 +15,6 @@
     [taoensso.sente.packers.transit :as transit]
     [clojure.string :as str]
     [clojure.data.avl :as avl]
-    [cljsjs.jquery]
     [cljsjs.moment]
     [goog.crypt.base64 :as b64]
     [reagent.core :as r]
@@ -24,11 +23,16 @@
 
 (enable-console-print!)
 (defonce init
-        (->> "init"
-        (.getElementById js/document)
-        (.-innerHTML)
-        (b64/decodeString)
-        (read-string)))
+         (->> "init"
+              (.getElementById js/document)
+              (.-innerHTML)
+              (b64/decodeString)
+              (read-string)))
+
+(defonce anti-forgery-field
+         (->> "anti-forgery-field"
+              (.getElementById js/document)
+              (.-innerHTML)))
 
 (when-not js/document.initialized
   (set! (.-initialized js/document) true)
@@ -148,11 +152,38 @@
                  :flex-shrink      "0"}}
    (str "Search: " (pr-str @(rf/subscribe [:search])))])
 
+
+(defn file-uploaded [response]
+  (let [edn (read-string response)]
+    (js/alert (pr-str edn))))
+
+
+(defn upload-image []
+  (.ajaxForm
+    (js/$ "#file-form")
+    (clj->js
+      {:beforeSubmit #(js/alert "nope")
+       :success file-uploaded}))
+  (.ajaxSubmit (js/$ "#file-form")))
+
+
+(defn file-form-render []
+  [:form {:id "file-form" :method "POST" :action "/file-upload" :encType "multipart/form-data"}
+   [:div {:style {:display "none"} :dangerouslySetInnerHTML {:__html anti-forgery-field}}]
+   [:input {:id "file-input" :type "file" :style {:display "none"} :multiple true
+            :on-change #(upload-image) :name "files"}]])
+
+
+(defn file-form []
+  (r/create-class
+    {:reagent-render file-form-render
+     :component-did-mount (fn [_])}))
+
+
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
-   [:form {:id "file-form"}
-    [:input {:id "file-input" :type "file" :style {:display "none"} :multiple true}]]
+   [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
    (if @(rf/subscribe [:image-upload]) ^{:key "upl"} [image-upload])
    ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "none" "flex") :flex-direction "column"}} [:div#editor]]

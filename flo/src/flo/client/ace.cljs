@@ -1,6 +1,5 @@
 (ns flo.client.ace
-  (:require [cljsjs.ace]
-            [clojure.set :as set]))
+  (:require [clojure.set :as set]))
 
 (def instance (atom nil))
 (defn new-instance [element-id]
