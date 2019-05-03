@@ -116,7 +116,7 @@ cursor: text;\
                             content = "<a href='"+url+"' target='_blank'><img src='"+url+"' /></a>";
                             break;
                         case "image-uuid":
-                            content = "<a href='"+url+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"' /></a>";
+                            content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"' /></a>";
                             break;
                     }
                     // --
