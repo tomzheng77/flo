@@ -102,7 +102,7 @@
   (GET "/file" req
     (let [id (get (:query-params req) "id")
           file (io/file upload-dir id)
-          edn (try (slurp (io/file upload-dir (str id ".edn"))) (catch Exception _ {}))
+          edn (try (read-string (slurp (io/file upload-dir (str id ".edn")))) (catch Exception _ {}))
           content-type (or (:content-type edn) "text/plain")]
       (if (and (.exists file) (.isFile file) (.canRead file))
         {:status 200 :headers {"Content-Type" content-type} :body (new FileInputStream file)}
