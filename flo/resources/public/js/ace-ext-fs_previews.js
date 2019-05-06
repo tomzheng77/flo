@@ -73,14 +73,15 @@ cursor: text;\
     function onAfterRender(err, renderer) {
         var $previews = $(renderer.container).find(".ace_content .ace_layer.ace_fs_previews");
         $previews.find(".ace_fs_preview").addClass("unseen");
+        var cells = $(renderer.container).find(".ace_gutter-cell");
         $(renderer.content).find(".ace_line .ace_link, .ace_line .ace_image").each(function(index, el){
             var $el = $(el);
             var url = $el.text();
             var mtype = urlType(url);
             if (mtype) {
                 var $lg = $el.parents(".ace_line");
-                var pid  = "fsp_id_"+stringHashAbs($lg.text())+"_"+stringHashAbs(url);
-                //console.log($lg, $el);
+                var row_index = parseInt($(cells[$lg.index()]).text());
+                var pid  = "fsp_id_"+row_index+"_"+$el.index();
                 var blanklines = 0;
                 var blankH     = 0;
                 var nexts = $lg.nextAll(".ace_line");
