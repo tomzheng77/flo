@@ -38,18 +38,20 @@
 ; this may contain raw JS objects that cannot be serialized into EDN
 (defn get-selection [this]
   {:cursor (get-cursor this)
-   :ranges (js->clj (.getAllRanges (.getSelection this)))})
+   :ranges (map #(.clone %) (js->clj (.getAllRanges (.getSelection this))))})
 
 (defn set-selection [this selection]
-  (let [ranges (:ranges selection)
-        cursor (:cursor selection)
-        row (:row cursor)
-        col (:column cursor)]
-    (.clearSelection (.getSelection this))
-    (.scrollToLine this (inc row) true true (fn []))
-    (.gotoLine this (+ row 1) col true)
-    (doseq [range ranges]
-      (.addRange (.getSelection this) range false))))
+  (if selection
+    (let [ranges (:ranges selection)
+          cursor (:cursor selection)
+          row (:row cursor)
+          col (:column cursor)]
+      (.clearSelection (.getSelection this))
+      (.scrollToLine this (inc row) true true (fn []))
+      (.gotoLine this (+ row 1) col true)
+      (.moveCursorToPosition (.getSelection this) (clj->js cursor))
+      (doseq [range ranges]
+        (.addRange (.getSelection this) range true)))))
 
 (defn navigate
   "navigates to the next occurrence of the <search> tag"

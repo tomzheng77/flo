@@ -51,7 +51,7 @@
    :time-updated time
    :content ""
    :history (avl/sorted-map)
-   :cursor {:row 0 :column 0}})
+   :selection {:row 0 :column 0}})
 
 (rf/reg-event-db
   :initialize
@@ -73,10 +73,10 @@
      ; including the current note being edited (stored in :active-note-name)
      ; each notes has :name, :time-created, :time-updated
      ; :content is provided by the server initially, then synced from the editor at a fixed interval
-     ; :cursor {:row :column} contains the location of the cursor, initially set to 0, 0
+     ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
      :active-note-name active-note-name
      :notes            (->> notes
-                            (map (fn [n] (assoc n :cursor {:row 0 :column 0})))
+                            (map (fn [n] (assoc n :selection {:row 0 :column 0})))
                             (map (fn [n] [(:name n) n]) notes)
                             (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
                             (into {})
@@ -197,7 +197,7 @@
         new-index (if-not index 0 (wrap (f index) 0 max-index))
         note (nth navs new-index)]
     {:db (assoc db :navigation-index new-index)
-     :show-editor-ro [(:content note) (:search db) (:cursor note)]}))
+     :show-editor-ro [(:content note) (:search db) (:selection note)]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
@@ -230,7 +230,7 @@
           {:db db :dispatch [:navigation-select existing-note time true]}
           (let [a-new-note (new-note note-or-name time)]
             {:title note-or-name
-             :show-editor [(:content a-new-note) (:search db) (:cursor a-new-note)]
+             :show-editor [(:content a-new-note) (:search db) (:selection a-new-note)]
              :db (-> db
                      (assoc-in [:notes note-or-name] a-new-note)
                      (assoc :active-note-name note-or-name)
@@ -249,20 +249,19 @@
                     (assoc :navigation nil)
                     (assoc :navigation-index nil))}]
        (if opened-by-name
-         (assoc fx :show-editor [(:content note) (:search db) (:cursor note) (not opened-by-name)])
+         (assoc fx :show-editor [(:content note) (:search db) (:selection note)])
          (assoc fx :set-session-from-ro true))))))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
-  (fn [{:keys [db]} [_ content cursor time]]
-    (println cursor)
-    (if (= content (get-in db [:notes (:active-note-name db) :content]))
-      {:db db}
-      {:db (-> db
-               (assoc-in [:notes (:active-note-name db) :content] content)
-               (assoc-in [:notes (:active-note-name db) :time-updated] time)
-               (assoc-in [:notes (:active-note-name db) :cursor] cursor))
-       :chsk-send [:flo/save [(:active-note-name db) content]]})))
+  (fn [{:keys [db]} [_ content selection time]]
+    (let [upd-selection (assoc-in db [:notes (:active-note-name db) :selection] selection)]
+      (if (= content (get-in db [:notes (:active-note-name db) :content]))
+        {:db upd-selection}
+        {:db (-> upd-selection
+                 (assoc-in [:notes (:active-note-name db) :content] content)
+                 (assoc-in [:notes (:active-note-name db) :time-updated] time))
+         :chsk-send [:flo/save [(:active-note-name db) content]]}))))
 
 (add-watch-db :drag-changed [:history-cursor]
   (fn [_ _ _ timestamp]

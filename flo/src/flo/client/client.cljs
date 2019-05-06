@@ -209,15 +209,20 @@
     (ace/set-selection @ace-editor (ace/get-selection @ace-editor-ro))))
 
 (rf/reg-fx :show-editor
-  (fn [[text search cursor]]
+  (fn [[text search selection]]
     (ace/set-text @ace-editor text)
-    (js/setTimeout #(ace/navigate @ace-editor search) 0)
-    (.focus @ace-editor)))
+    (js/setTimeout
+      #(do (ace/set-selection @ace-editor selection)
+           (ace/navigate @ace-editor search)
+           (.focus @ace-editor)) 0)))
 
 (rf/reg-fx :show-editor-ro
-  (fn [[text search cursor]]
+  (fn [[text search selection]]
+    (println selection)
     (ace/set-text @ace-editor-ro (or text ""))
-    (js/setTimeout #(ace/navigate @ace-editor-ro search) 0)))
+    (js/setTimeout
+      #(do (ace/set-selection @ace-editor-ro selection)
+           (ace/navigate @ace-editor-ro search)) 0)))
 
 (defn toggle-navigation []
   (let [cursor (js->clj (.getCursor (.getSelection @ace-editor)))
