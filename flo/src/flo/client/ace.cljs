@@ -30,7 +30,8 @@
   (.setReadOnly this value))
 
 (defn get-cursor [this]
-  (.getCursor (.getSelection this)))
+  (let [csr (js->clj (.getCursor (.getSelection this)))]
+    {:row (get csr "row") :column (get csr "column")}))
 
 (defn navigate
   "navigates to the next occurrence of the <search> tag"

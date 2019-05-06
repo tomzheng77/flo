@@ -202,21 +202,23 @@
 (rf/reg-fx :focus-editor
   (fn [_] (.focus @ace-editor)))
 
+; copies all the contents of ace-editor-ro and displays them to ace-editor
+(rf/reg-fx :set-session-from-ro
+  (fn []
+    (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
+    (let [range (.getRange (.getSelection @ace-editor-ro))
+          cursor (js->clj (.getCursor (.getSelection @ace-editor-ro)))
+          row (get cursor "row")
+          col (get cursor "column")]
+      (.scrollToLine @ace-editor (inc row) true true (fn []))
+      (.gotoLine @ace-editor (+ row 2) col true)
+      (.setSelectionRange (.getSelection @ace-editor) range false))))
+
 (rf/reg-fx :show-editor
-  (fn [[text search cursor & [copy-ro-select]]]
+  (fn [[text search cursor]]
     (ace/set-text @ace-editor text)
-    (.focus @ace-editor)
-    (js/setTimeout
-      #(if-not copy-ro-select
-         (ace/navigate @ace-editor search)
-         (let [range (.getRange (.getSelection @ace-editor-ro))
-               cursor (js->clj (.getCursor (.getSelection @ace-editor-ro)))
-               row (get cursor "row")
-               col (get cursor "column")]
-           (.scrollToLine @ace-editor (inc row) true true (fn []))
-           (.gotoLine @ace-editor (+ row 2) col true)
-           (.setSelectionRange (.getSelection @ace-editor) range false)))
-      0)))
+    (js/setTimeout #(ace/navigate @ace-editor search) 0)
+    (.focus @ace-editor)))
 
 (rf/reg-fx :show-editor-ro
   (fn [[text search cursor]]

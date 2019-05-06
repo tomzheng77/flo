@@ -219,6 +219,9 @@
   (fn [db _]
     (navigation-list db)))
 
+; when possible, copy from the read-only editor (incl. select range)
+; only if the action is initiated directly by name, rather than a preview first
+; then the read-only editor does not have the contents
 (rf/reg-event-fx :navigation-select
   (fn [{:keys [db]} [_ note-or-name time & [opened-by-name]]]
     (if (string? note-or-name)
@@ -228,7 +231,6 @@
           (let [a-new-note (new-note note-or-name time)]
             {:title note-or-name
              :show-editor [(:content a-new-note) (:search db) (:cursor a-new-note)]
-             :focus-editor true
              :db (-> db
                      (assoc-in [:notes note-or-name] a-new-note)
                      (assoc :active-note-name note-or-name)
@@ -237,21 +239,23 @@
                      (assoc :history-direction nil)
                      (assoc :navigation nil)
                      (assoc :navigation-index nil))})))
-     (let [note note-or-name]
-       {:title (:name note)
-        :show-editor [(:content note) (:search db) (:cursor note) (not opened-by-name)]
-        :focus-editor true
-        :db (-> db
-                (assoc :active-note-name (:name note))
-                (assoc :drag-start nil)
-                (assoc :history-cursor nil)
-                (assoc :history-direction nil)
-                (assoc :navigation nil)
-                (assoc :navigation-index nil))}))))
+     (let [note note-or-name
+           fx {:title (:name note)
+               :db (-> db
+                    (assoc :active-note-name (:name note))
+                    (assoc :drag-start nil)
+                    (assoc :history-cursor nil)
+                    (assoc :history-direction nil)
+                    (assoc :navigation nil)
+                    (assoc :navigation-index nil))}]
+       (if opened-by-name
+         (assoc fx :show-editor [(:content note) (:search db) (:cursor note) (not opened-by-name)])
+         (assoc fx :set-session-from-ro true))))))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
   (fn [{:keys [db]} [_ content cursor time]]
+    (println cursor)
     (if (= content (get-in db [:notes (:active-note-name db) :content]))
       {:db db}
       {:db (-> db
