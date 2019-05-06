@@ -91,7 +91,10 @@ cursor: text;\
                 for (var i = 0; i < nexts.length; i++) {
                     var $next = $(nexts[i]);
                     if($.trim($next.text()) != "") break;
-                    blankH += $next.height();
+                    var height = $next[0].style.height;
+                    height = height.substring(0, height.length - 2);
+                    height = parseFloat(height);
+                    blankH += height;
                     blanklines++;
                 }
                 //console.log("URL + Blanklines", url, blanklines, blankH+"px");
