@@ -96,21 +96,19 @@ cursor: text;\
                 }
 
                 if (blankline_count > 1) {
-                    var top     = $lg.position().top + $lg.parent().position().top;
-                    var ptop  	= (top+$el.height()+2)+"px";
-                    var pleft 	= ($el.position().left+6)+"px";
-                    var pheight = Math.min(900, blanklines_height-8)+"px";
-                    var pwidth  = "auto";
-                    var $existing_preview = $previews.find("#"+preview_id);
-                    // --
+                    var top = $lg.position().top + $lg.parent().position().top;
+                    var y = (top + $el.height() + 2) + "px";
+                    var x = ($el.position().left + 6) + "px";
+                    var height_el = Math.min(900, blanklines_height - 8) + "px";
+                    var width_el = "auto";
+                    var $existing_preview = $previews.find("#" + preview_id);
                     var content = "...";
                     switch (mtype) {
                         case "youtube":
                             content = '<iframe src="http://www.youtube.com/embed/'+mres[1]+
                                 '?modestbranding=1&rel=0&wmode=transparent&theme=light&color=white"\
                                  frameborder="0" allowfullscreen></iframe>';
-                            pwidth = Math.max(120, Math.min(640, Math.ceil(parseFloat(pheight)*16.0/9.0))) + "px";
-                            //console.log("Pwidth: ", pwidth);
+                            width_el = Math.max(120, Math.min(640, Math.ceil(parseFloat(height_el)*16.0/9.0))) + "px";
                             break;
                         case "image":
                             content = "<a href='"+url+"' target='_blank'><img src='"+url+"' /></a>";
@@ -119,11 +117,10 @@ cursor: text;\
                             content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"' /></a>";
                             break;
                     }
-                    // --
                     if ($existing_preview.length == 0) {
-                        $previews.prepend("<div class='ace_fs_preview' id='"+preview_id+"' style='top: "+ptop+"; left: "+pleft+"; height: "+pheight+"; width: "+pwidth+";'>"+content+"</div>");
+                        $previews.prepend("<div class='ace_fs_preview' id='"+preview_id+"' style='top: "+y+"; left: "+x+"; height: "+height_el+"; width: "+width_el+";'>"+content+"</div>");
                     } else {
-                        $existing_preview.css({top: ptop, left: pleft, height: pheight, width: pwidth}).removeClass("unseen").show();
+                        $existing_preview.css({top: y, left: x, height: height_el, width: width_el}).removeClass("unseen").show();
                     }
                 }
             }
