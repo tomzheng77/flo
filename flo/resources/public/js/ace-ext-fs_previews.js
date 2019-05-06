@@ -131,8 +131,8 @@ cursor: text;\
         // --
         var $unseen = $previews.find(".ace_fs_preview.unseen");
         $unseen.hide();
-        if($unseen.length > MAX_UNSEEN){
-            //console.log("Removing extra unseen previews:", $unseen.length-MAX_UNSEEN);
+        if ($unseen.length > MAX_UNSEEN) {
+            console.log("Removing extra unseen previews:", $unseen.length-MAX_UNSEEN);
             $unseen.slice(-($unseen.length-MAX_UNSEEN)).remove();
         }
     }
