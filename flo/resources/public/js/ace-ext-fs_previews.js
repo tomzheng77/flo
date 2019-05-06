@@ -78,7 +78,7 @@ cursor: text;\
         var cell_index = $cell.index();
         var line_index = parseInt($(line_numbers[$line.index()]).text());
         var url = $cell.text();
-        var preview_id = "preview_" + line_index + "_" + cell_index;
+        var preview_id = "preview_" + line_index + "_" + cell_index + "_" + stringHashAbs(url);
 
         var url_type = typeOf(url);
         if (!url_type) return null;
@@ -113,6 +113,9 @@ cursor: text;\
                 content = "<a href='"+url+"' target='_blank'><img src='"+url+"'/></a>";
                 break;
             case "image-top":
+                content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"'/></a>";
+                break;
+            case "image-bottom":
                 content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"'/></a>";
                 break;
         }
