@@ -2689,7 +2689,8 @@ var MarkdownHighlightRules = function() {
             regex: "\\[\\*[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\\]"
         }],
         "allowBlock": [
-            {token : "support.function", regex : "^ {4}.+", next : "allowBlock"},
+            // ---------- [CUSTOM-RM] ----------
+            // {token : "support.function", regex : "^ {4}.+", next : "allowBlock"},
             {token : "empty_line", regex : '^$', next: "allowBlock"},
             {token : "empty", regex : "", next : "start"}
         ],
