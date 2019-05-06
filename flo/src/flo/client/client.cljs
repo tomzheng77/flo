@@ -29,10 +29,8 @@
               (b64/decodeString)
               (read-string)))
 
-(defonce anti-forgery-field
-         (->> "anti-forgery-field"
-              (.getElementById js/document)
-              (.-innerHTML)))
+(def anti-forgery-field (:anti-forgery-field init))
+(def shift-interval 100)
 
 (when-not js/document.initialized
   (set! (.-initialized js/document) true)
@@ -310,7 +308,7 @@
   [event]
   (if (= "ShiftLeft" (:code event))
     (let [delta (- (current-time-millis) (or @(rf/subscribe [:last-shift-press]) 0))]
-      (when (> 200 delta)
+      (when (> shift-interval delta)
         (on-hit-shift)))))
 
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))

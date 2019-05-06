@@ -23,7 +23,8 @@
             [taoensso.timbre.appenders.core :as appenders]
             [flo.server.store :refer [get-note get-note-at set-note get-all-notes]]
             [flo.server.static :refer [editor-html login-html]]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [ring.util.anti-forgery :refer [anti-forgery-field]])
   (:import (java.util UUID Date)
            (java.io FileInputStream ByteArrayOutputStream)
            (org.httpkit BytesInputStream)))
@@ -124,13 +125,15 @@
   (GET "/editor" request
     (let [name (get (:query-params request) "id" "default")
           notes (get-all-notes)
-          session {:uid (.toString (UUID/randomUUID))}]
+          session {:uid (.toString (UUID/randomUUID))}
+          field (anti-forgery-field)]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session session
        :body    (editor-html name
                   {:active-note-name name
-                   :notes notes})}))
+                   :notes notes
+                   :anti-forgery-field field})}))
            (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel

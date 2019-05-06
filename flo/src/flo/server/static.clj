@@ -1,8 +1,7 @@
 (ns flo.server.static
   (:require [hiccup.page :refer [html5]]
             [garden.core :refer [css]]
-            [flo.server.codec :refer [base64-encode]]
-            [ring.util.anti-forgery :refer [anti-forgery-field]]))
+            [flo.server.codec :refer [base64-encode]]))
 
 (defn login-html []
   (html5
@@ -40,7 +39,6 @@
              {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}])]
       [:title title]]
      [:body
-      [:pre#anti-forgery-field (anti-forgery-field)]
       [:pre#init {:style "display: none"} (base64-encode (pr-str init))]
       [:div#app]
       [:script {:src "ace/ace.js" :type "text/javascript"}]
