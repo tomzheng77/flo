@@ -267,7 +267,7 @@
     (ace/navigate @ace-editor-ro search)))
 
 (defn on-hit-shift []
-  (if-not (= "" @(rf/subscribe [:search]))
+  (if-not @(rf/subscribe [:search])
     (rf/dispatch [:set-search ""])
     (rf/dispatch [:set-search nil])))
 
