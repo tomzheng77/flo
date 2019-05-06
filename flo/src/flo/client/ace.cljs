@@ -13,7 +13,9 @@
                 :enableBasicAutocompletion true
                 :enableLiveAutocompletion false
                 :enableSnippets false
-                :enableLinking true}))
+                :enableLinking true
+                :tabSize 4
+                :useSoftTabs true}))
     (.setTheme instance "ace/theme/monokai")
     (.setMode (.-session instance) "ace/mode/markdown")
     instance))
