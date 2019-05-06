@@ -126,6 +126,9 @@ font-weight: bold;\
 color: #00AA00;\
 /*animation: blinker 1s linear infinite;*/\
 }\
+.ace-monokai .ace_emphasis {\
+font-weight: bold;\
+}\
 ";
 
 var dom = require("../lib/dom");
