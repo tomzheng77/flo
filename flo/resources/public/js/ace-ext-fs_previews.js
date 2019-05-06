@@ -52,7 +52,7 @@ cursor: text;\
         return hash < 0 ? -hash : hash;
     }
 
-    function urlType(url) {
+    function typeOf(url) {
         var mtype = null;
         var mres  = null;
         if (!mtype) {
@@ -70,23 +70,29 @@ cursor: text;\
         return mtype;
     }
 
+    function makeElement(url) {
+
+    }
+
     function onAfterRender(err, renderer) {
         var $previews = $(renderer.container).find(".ace_content .ace_layer.ace_fs_previews");
         $previews.find(".ace_fs_preview").addClass("unseen");
         var cells = $(renderer.container).find(".ace_gutter-cell");
         $(renderer.content).find(".ace_line .ace_link, .ace_line .ace_image").each(function(index, el){
-            var $el = $(el);
-            var url = $el.text();
-            var mtype = urlType(url);
-            if (mtype) {
-                var $lg = $el.parents(".ace_line");
-                var row_index = parseInt($(cells[$lg.index()]).text());
-                var preview_id  = "fsp_id_"+row_index+"_"+$el.index();
+            // the element containing the url
+            var $element = $(el);
+            var url = $element.text();
+            var url_type = typeOf(url);
+
+            if (url_type) {
+                var $line = $element.parents(".ace_line");
+                var row_index = parseInt($(cells[$line.index()]).text());
+                var preview_id  = "fsp_id_"+row_index+"_"+$element.index();
                 var blankline_count = 0;
                 var blanklines_height = 0;
-                var nexts = $lg.nextAll(".ace_line");
-                for (var i = 0; i < nexts.length; i++) {
-                    var $next = $(nexts[i]);
+                var next_lines = $line.nextAll(".ace_line");
+                for (var i = 0; i < next_lines.length; i++) {
+                    var $next = $(next_lines[i]);
                     if($.trim($next.text()) !== "") break;
                     var height = $next[0].style.height;
                     height = height.substring(0, height.length - 2);
@@ -96,14 +102,14 @@ cursor: text;\
                 }
 
                 if (blankline_count > 1) {
-                    var top = $lg.position().top + $lg.parent().position().top;
-                    var y = (top + $el.height() + 2) + "px";
-                    var x = ($el.position().left + 6) + "px";
+                    var top = $line.position().top + $line.parent().position().top;
+                    var y = (top + $element.height() + 2) + "px";
+                    var x = ($element.position().left + 6) + "px";
                     var height_el = Math.min(900, blanklines_height - 8) + "px";
                     var width_el = "auto";
                     var $existing_preview = $previews.find("#" + preview_id);
                     var content = "...";
-                    switch (mtype) {
+                    switch (url_type) {
                         case "youtube":
                             content = '<iframe src="http://www.youtube.com/embed/'+mres[1]+
                                 '?modestbranding=1&rel=0&wmode=transparent&theme=light&color=white"\
@@ -117,7 +123,7 @@ cursor: text;\
                             content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"' /></a>";
                             break;
                     }
-                    if ($existing_preview.length == 0) {
+                    if ($existing_preview.length === 0) {
                         $previews.prepend("<div class='ace_fs_preview' id='"+preview_id+"' style='top: "+y+"; left: "+x+"; height: "+height_el+"; width: "+width_el+";'>"+content+"</div>");
                     } else {
                         $existing_preview.css({top: y, left: x, height: height_el, width: width_el}).removeClass("unseen").show();
@@ -125,7 +131,7 @@ cursor: text;\
                 }
             }
         });
-        // --
+
         var $unseen = $previews.find(".ace_fs_preview.unseen");
         $unseen.hide();
         if ($unseen.length > MAX_UNSEEN) {
