@@ -230,15 +230,16 @@
                    (assoc :navigation nil)
                    (assoc :navigation-index nil)
                    (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
-      {:title (:name note-or-name)
-       :show-editor [(:content note-or-name) (:search db) (not opened-by-name)]
-       :focus-editor true
-       :db (-> db
-               (assoc :active-note-name (:name note-or-name))
-               (assoc :drag-start nil)
-               (assoc :history-cursor nil)
-               (assoc :navigation nil)
-               (assoc :navigation-index nil))})))
+     (let [note note-or-name]
+       {:title (:name note)
+        :show-editor [(:content note) (:search db) (not opened-by-name)]
+        :focus-editor true
+        :db (-> db
+                (assoc :active-note-name (:name note))
+                (assoc :drag-start nil)
+                (assoc :history-cursor nil)
+                (assoc :navigation nil)
+                (assoc :navigation-index nil))}))))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
