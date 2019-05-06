@@ -208,7 +208,8 @@
 (rf/reg-fx :set-session-from-ro
   (fn []
     (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
-    (ace/set-selection @ace-editor (ace/get-selection @ace-editor-ro))))
+    (ace/set-selection @ace-editor (ace/get-selection @ace-editor-ro))
+    (.focus @ace-editor)))
 
 (rf/reg-fx :show-editor
   (fn [[text search selection]]
