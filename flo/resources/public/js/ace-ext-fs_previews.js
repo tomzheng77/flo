@@ -85,29 +85,38 @@ cursor: text;\
 
         var blankline_count = 0;
         var blanklines_height = 0;
-        var next_lines = $line.nextAll(".ace_line");
-        for (var i = 0; i < next_lines.length; i++) {
-            var $next = $(next_lines[i]);
+        var lines;
+        if (url_type ==="image-bottom") {
+            lines = $line.prevAll(".ace_line");
+        } else {
+            lines = $line.nextAll(".ace_line");
+        }
+        for (var i = 0; i < lines.length; i++) {
+            var $next = $(lines[i]);
             if($.trim($next.text()) !== "") break;
-            var height = $next[0].style.height;
-            height = height.substring(0, height.length - 2);
-            height = parseFloat(height);
-            blanklines_height += height;
+            var line_height = $next[0].style.height;
+            line_height = line_height.substring(0, line_height.length - 2);
+            line_height = parseFloat(line_height);
+            blanklines_height += line_height;
             blankline_count++;
         }
 
-        var top = $line.position().top + $line.parent().position().top;
-        var y = (top + $cell.height() + 2) + "px";
-        var x = ($cell.position().left + 6) + "px";
-        var height_el = Math.min(900, blanklines_height - 8) + "px";
-        var width_el = "auto";
+        var cell_height = $line[0].style.height;
+        cell_height = cell_height.substring(0, cell_height.length - 2);
+        cell_height = parseFloat(cell_height);
+
+        var y = $line.position().top + $line.parent().position().top + $cell.height() + 2;
+        var x = ($cell.position().left + 6);
+        var height = Math.min(900, blanklines_height - 8);
+        var height_px = height + "px";
+        var width_px = "auto";
         var content = "...";
         switch (url_type) {
             case "youtube":
                 content = '<iframe src="http://www.youtube.com/embed/'+mres[1]+
                     '?modestbranding=1&rel=0&wmode=transparent&theme=light&color=white"\
                      frameborder="0" allowfullscreen></iframe>';
-                width_el = Math.max(120, Math.min(640, Math.ceil(parseFloat(height_el)*16.0/9.0))) + "px";
+                width_px = Math.max(120, Math.min(640, Math.ceil(parseFloat(height_px)*16.0/9.0))) + "px";
                 break;
             case "image":
                 content = "<a href='"+url+"' target='_blank'><img src='"+url+"'/></a>";
@@ -117,11 +126,16 @@ cursor: text;\
                 break;
             case "image-bottom":
                 content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"'/></a>";
+                y -= height;
+                y -= cell_height;
+                y -= 8;
                 break;
         }
 
-        var css = {top: y, left: x, height: height_el, width: width_el};
-        var preview = "<div class='ace_fs_preview' id='"+preview_id+"' style='top: "+y+"; left: "+x+"; height: "+height_el+"; width: "+width_el+";'>"+content+"</div>";
+        var y_px = y + "px";
+        var x_px = x + "px";
+        var css = {top: y_px, left: x_px, height: height_px, width: width_px};
+        var preview = "<div class='ace_fs_preview' id='"+preview_id+"' style='top: "+y_px+"; left: "+x_px+"; height: "+height_px+"; width: "+width_px+";'>"+content+"</div>";
         return {id: preview_id, css: css, html: preview};
     }
 
