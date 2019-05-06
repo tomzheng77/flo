@@ -81,27 +81,27 @@ cursor: text;\
             if (mtype) {
                 var $lg = $el.parents(".ace_line");
                 var row_index = parseInt($(cells[$lg.index()]).text());
-                var pid  = "fsp_id_"+row_index+"_"+$el.index();
-                var blanklines = 0;
-                var blankH     = 0;
+                var preview_id  = "fsp_id_"+row_index+"_"+$el.index();
+                var blankline_count = 0;
+                var blanklines_height = 0;
                 var nexts = $lg.nextAll(".ace_line");
                 for (var i = 0; i < nexts.length; i++) {
                     var $next = $(nexts[i]);
-                    if($.trim($next.text()) != "") break;
+                    if($.trim($next.text()) !== "") break;
                     var height = $next[0].style.height;
                     height = height.substring(0, height.length - 2);
                     height = parseFloat(height);
-                    blankH += height;
-                    blanklines++;
+                    blanklines_height += height;
+                    blankline_count++;
                 }
 
-                if (blanklines > 1) {
+                if (blankline_count > 1) {
                     var top     = $lg.position().top + $lg.parent().position().top;
                     var ptop  	= (top+$el.height()+2)+"px";
                     var pleft 	= ($el.position().left+6)+"px";
-                    var pheight = Math.min(900, blankH-8)+"px";
+                    var pheight = Math.min(900, blanklines_height-8)+"px";
                     var pwidth  = "auto";
-                    var $pel    = $previews.find("#"+pid);
+                    var $pel    = $previews.find("#"+preview_id);
                     // --
                     var content = "...";
                     switch (mtype) {
@@ -121,7 +121,7 @@ cursor: text;\
                     }
                     // --
                     if ($pel.length == 0) {
-                        $previews.prepend("<div class='ace_fs_preview' id='"+pid+"' style='top: "+ptop+"; left: "+pleft+"; height: "+pheight+"; width: "+pwidth+";'>"+content+"</div>");
+                        $previews.prepend("<div class='ace_fs_preview' id='"+preview_id+"' style='top: "+ptop+"; left: "+pleft+"; height: "+pheight+"; width: "+pwidth+";'>"+content+"</div>");
                     } else {
                         $pel.css({top: ptop, left: pleft, height: pheight, width: pwidth}).removeClass("unseen").show();
                     }
