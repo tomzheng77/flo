@@ -254,7 +254,7 @@
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
-  (fn [{:keys [db]} [_ content selection time]]
+  (fn [{:keys [db]} [_ content time]]
     (if (= content (get-in db [:notes (:active-note-name db) :content]))
       {:db db}
       {:db (-> db
