@@ -197,6 +197,9 @@
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)
 
+(.on @ace-editor "changeSelection"
+  #(rf/dispatch [:change-selection (ace/get-selection @ace-editor)]))
+
 (rf/reg-fx :title (fn [title] (set! (.-title js/document) title)))
 (rf/reg-fx :focus-editor
   (fn [_] (.focus @ace-editor)))

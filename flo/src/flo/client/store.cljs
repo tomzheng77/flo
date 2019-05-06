@@ -255,13 +255,16 @@
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
   (fn [{:keys [db]} [_ content selection time]]
-    (let [upd-selection (assoc-in db [:notes (:active-note-name db) :selection] selection)]
-      (if (= content (get-in db [:notes (:active-note-name db) :content]))
-        {:db upd-selection}
-        {:db (-> upd-selection
-                 (assoc-in [:notes (:active-note-name db) :content] content)
-                 (assoc-in [:notes (:active-note-name db) :time-updated] time))
-         :chsk-send [:flo/save [(:active-note-name db) content]]}))))
+    (if (= content (get-in db [:notes (:active-note-name db) :content]))
+      {:db db}
+      {:db (-> db
+               (assoc-in [:notes (:active-note-name db) :content] content)
+               (assoc-in [:notes (:active-note-name db) :time-updated] time))
+       :chsk-send [:flo/save [(:active-note-name db) content]]})))
+
+(rf/reg-event-db :change-selection
+  (fn [db [_ selection]]
+    (assoc-in db [:notes (:active-note-name db) :selection] selection)))
 
 (add-watch-db :drag-changed [:history-cursor]
   (fn [_ _ _ timestamp]
