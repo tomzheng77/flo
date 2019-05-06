@@ -206,13 +206,7 @@
 (rf/reg-fx :set-session-from-ro
   (fn []
     (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
-    (let [range (.getRange (.getSelection @ace-editor-ro))
-          cursor (js->clj (.getCursor (.getSelection @ace-editor-ro)))
-          row (get cursor "row")
-          col (get cursor "column")]
-      (.scrollToLine @ace-editor (inc row) true true (fn []))
-      (.gotoLine @ace-editor (+ row 2) col true)
-      (.setSelectionRange (.getSelection @ace-editor) range false))))
+    (ace/set-selection @ace-editor (ace/get-selection @ace-editor-ro))))
 
 (rf/reg-fx :show-editor
   (fn [[text search cursor]]
@@ -321,7 +315,7 @@
   #(rf/dispatch
      [:editor-tick
       (ace/get-text @ace-editor)
-      (ace/get-cursor @ace-editor)
+      (ace/get-selection @ace-editor)
       (current-time-millis)])
   1000)
 

@@ -33,6 +33,24 @@
   (let [csr (js->clj (.getCursor (.getSelection this)))]
     {:row (get csr "row") :column (get csr "column")}))
 
+; receives a selection configuration object which
+; can later be used in set-selection
+; this may contain raw JS objects that cannot be serialized into EDN
+(defn get-selection [this]
+  {:cursor (get-cursor this)
+   :ranges (js->clj (.getAllRanges (.getSelection this)))})
+
+(defn set-selection [this selection]
+  (let [ranges (:ranges selection)
+        cursor (:cursor selection)
+        row (:row cursor)
+        col (:column cursor)]
+    (.clearSelection (.getSelection this))
+    (.scrollToLine this (inc row) true true (fn []))
+    (.gotoLine this (+ row 1) col true)
+    (doseq [range ranges]
+      (.addRange (.getSelection this) range false))))
+
 (defn navigate
   "navigates to the next occurrence of the <search> tag"
   ([this search] (navigate this search {}))
