@@ -218,10 +218,6 @@
            (.setSelectionRange (.getSelection @ace-editor) range false)))
       0)))
 
-(rf/reg-fx :copy-from-ro
-  (fn [_]
-    (.setSession @ace-editor (.getSession @ace-editor-ro))))
-
 (rf/reg-fx :show-editor-ro
   (fn [[text search cursor]]
     (ace/set-text @ace-editor-ro (or text ""))
