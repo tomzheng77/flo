@@ -71,8 +71,10 @@
      ; including the current note being edited (stored in :active-note-name)
      ; each notes has :name, :time-created, :time-updated
      ; :content is provided by the server initially, then synced from the editor at a fixed interval
+     ; :cursor {:row :column} contains the location of the cursor, initially set to 0, 0
      :active-note-name active-note-name
      :notes            (->> notes
+                            (map (fn [n] (assoc n :cursor {:row 0 :column 0})))
                             (map (fn [n] [(:name n) n]) notes)
                             (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
                             (into {})
@@ -213,7 +215,7 @@
     (navigation-list db)))
 
 (rf/reg-event-fx :navigation-select
-  (fn [{:keys [db]} [_ note-or-name time & [open-by-name]]]
+  (fn [{:keys [db]} [_ note-or-name time & [opened-by-name]]]
     (if (string? note-or-name)
       (let [existing-note (get (:notes db) note-or-name)]
         (if existing-note
@@ -229,7 +231,7 @@
                    (assoc :navigation-index nil)
                    (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
       {:title (:name note-or-name)
-       :show-editor [(:content note-or-name) (:search db) (not open-by-name)]
+       :show-editor [(:content note-or-name) (:search db) (not opened-by-name)]
        :focus-editor true
        :db (-> db
                (assoc :active-note-name (:name note-or-name))
@@ -240,11 +242,13 @@
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
-  (fn [{:keys [db]} [_ content time]]
+  (fn [{:keys [db]} [_ content cursor time]]
     (if (= content (get-in db [:notes (:active-note-name db) :content]))
       {:db db}
-      {:db (-> db (assoc-in [:notes (:active-note-name db) :content] content)
-                  (assoc-in [:notes (:active-note-name db) :time-updated] time))
+      {:db (-> db
+               (assoc-in [:notes (:active-note-name db) :content] content)
+               (assoc-in [:notes (:active-note-name db) :time-updated] time)
+               (assoc-in [:notes (:active-note-name db) :cursor] cursor))
        :chsk-send [:flo/save [(:active-note-name db) content]]})))
 
 (add-watch-db :drag-changed [:history-cursor] (fn [_ _ _ timestamp] (rf/dispatch [:drag-changed timestamp])))

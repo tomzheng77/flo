@@ -158,7 +158,7 @@
   ; editor.session.insert(editor.getCursorPosition(), text)
   (doseq [{:keys [id]} response]
     (println id)
-    (let [cursor (.getCursor (.getSelection @ace-editor))]
+    (let [cursor (ace/get-cursor @ace-editor)]
       (.insert (.-session @ace-editor) cursor (str "[*" id "]\n")))))
 
 
@@ -319,5 +319,12 @@
 (set! (.-ontouchend js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-onresize js/window) #(rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 
-(js/setInterval #(rf/dispatch [:editor-tick (ace/get-text @ace-editor) (current-time-millis)]) 1000)
+(js/setInterval
+  #(rf/dispatch
+     [:editor-tick
+      (ace/get-text @ace-editor)
+      (ace/get-cursor @ace-editor)
+      (current-time-millis)])
+  1000)
+
 (defn on-js-reload [])

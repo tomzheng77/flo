@@ -29,6 +29,9 @@
 (defn set-read-only [this value]
   (.setReadOnly this value))
 
+(defn get-cursor [this]
+  (.getCursor (.getSelection this)))
+
 (defn navigate
   "navigates to the next occurrence of the <search> tag"
   ([this search] (navigate this search {}))
