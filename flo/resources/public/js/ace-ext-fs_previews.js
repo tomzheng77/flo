@@ -101,6 +101,8 @@ cursor: text;\
             blankline_count++;
         }
 
+        if (blankline_count < 1) return;
+
         var cell_height = $line[0].style.height;
         cell_height = cell_height.substring(0, cell_height.length - 2);
         cell_height = parseFloat(cell_height);
