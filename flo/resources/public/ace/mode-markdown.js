@@ -2686,7 +2686,7 @@ var MarkdownHighlightRules = function() {
             regex: "[^\\s]*\\:\\/\\/[^\\s]+"
         }, { // ---------- [CUSTOM] ----------
             token: "image", // [*614c18b7-1aa5-4dc2-b611-e7a31818c6a1]
-            regex: "\\[\\*[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\\]"
+            regex: "\\[\\*[^\\]]+\\]"
         }],
         "allowBlock": [
             // ---------- [CUSTOM-RM] ----------

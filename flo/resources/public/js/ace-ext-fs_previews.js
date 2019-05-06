@@ -56,8 +56,12 @@ cursor: text;\
         var mtype = null;
         var mres  = null;
         if (!mtype) {
-            mres = url.match(/\[\*[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\]/);
-            if (mres) mtype = "image-uuid";
+            mres = url.match(/\[\*[^\]]+\]/);
+            if (mres) mtype = "image-top";
+        }
+        if (!mtype) {
+            mres = url.match(/\[-[^\]]+\]/);
+            if (mres) mtype = "image-bottom";
         }
         if (!mtype) {
             mres = url.match(/(?:http:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([^<]+)/);
@@ -108,7 +112,7 @@ cursor: text;\
             case "image":
                 content = "<a href='"+url+"' target='_blank'><img src='"+url+"'/></a>";
                 break;
-            case "image-uuid":
+            case "image-top":
                 content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"'/></a>";
                 break;
         }
