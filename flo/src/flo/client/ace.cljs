@@ -51,7 +51,7 @@
       (.gotoLine this (+ row 1) col true)
       (.moveCursorToPosition (.getSelection this) (clj->js cursor))
       (doseq [range ranges]
-        (.addRange (.getSelection this) range true)))))
+        (.addRange (.getSelection this) (.clone range) true)))))
 
 (defn navigate
   "navigates to the next occurrence of the <search> tag"
