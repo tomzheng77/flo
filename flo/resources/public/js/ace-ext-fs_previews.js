@@ -38,29 +38,23 @@ cursor: text;\
     dom.importCssString(fsPreviewCss, "ace_fs_previews");
 
     var Editor = require("ace/editor").Editor;
-
     var MAX_UNSEEN = 25; // don't immediately remove unseen previews. keep the last few around.
 
     function stringHashAbs(str){
-        str = str||"";
+        str = str || "";
         var hash = 0, i, chr, len;
-        if (str.length == 0) return hash;
+        if (str.length === 0) return hash;
         for (i = 0, len = str.length; i < len; i++) {
             chr   = str.charCodeAt(i);
             hash  = ((hash << 5) - hash) + chr;
             hash |= 0; // Convert to 32bit integer
         }
-        return hash<0?-hash:hash;
+        return hash < 0 ? -hash : hash;
     }
 
-    function onAfterRender(err,renderer) {
-        //console.log("afterRender", renderer);
-        // $renderSimpleLine, $renderWrappedLine
-        // --
+    function onAfterRender(err, renderer) {
         var $previews = $(renderer.container).find(".ace_content .ace_layer.ace_fs_previews");
-        //if(!$previews) return;
         $previews.find(".ace_fs_preview").addClass("unseen");
-        // --
         $(renderer.content).find(".ace_line .ace_link, .ace_line .ace_image").each(function(index, el){
             var $el = $(el);
             var url = $el.text();
@@ -132,7 +126,7 @@ cursor: text;\
             }
         });
         // --
-        $unseen = $previews.find(".ace_fs_preview.unseen");
+        var $unseen = $previews.find(".ace_fs_preview.unseen");
         $unseen.hide();
         if($unseen.length > MAX_UNSEEN){
             //console.log("Removing extra unseen previews:", $unseen.length-MAX_UNSEEN);
