@@ -157,7 +157,6 @@
   ; add [*b82b6c5e-6d44-11e9-a923-1681be663d3e]
   ; editor.session.insert(editor.getCursorPosition(), text)
   (doseq [{:keys [id]} response]
-    (println id)
     (let [cursor (ace/get-cursor @ace-editor)]
       (.insert (.-session @ace-editor) cursor (str "[*" id "]\n")))))
 
@@ -218,7 +217,6 @@
 
 (rf/reg-fx :show-editor-ro
   (fn [[text search selection]]
-    (println selection)
     (ace/set-text @ace-editor-ro (or text ""))
     (js/setTimeout
       #(do (ace/set-selection @ace-editor-ro selection)
