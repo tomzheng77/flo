@@ -247,9 +247,9 @@
 (add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
     (println direction)
-    (let [f (if (= :L direction) >= <=)]
+    (let [cmp (if (= :bkwd direction) >= <=)]
       (when timestamp
-        (let [[_ note] (avl/nearest history f timestamp)]
+        (let [[_ note] (avl/nearest history cmp timestamp)]
           (ace/set-text @ace-editor-ro (or note ""))
           (ace/navigate @ace-editor-ro @(rf/subscribe [:search])))))))
 

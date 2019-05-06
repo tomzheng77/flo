@@ -62,7 +62,7 @@
 
      :drag-btn-width   80
      :history-cursor   nil
-     :history-direction nil ; last direction the history cursor was moved in #{nil :L :R}
+     :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
      :drag-start       nil
 
      :navigation       nil ; nil means no navigation, "string" means
@@ -124,7 +124,7 @@
             (if (= drag-position max-drag-position)
               (assoc db :history-cursor nil :history-direction nil)
               (let [old-history-cursor (:history-cursor db)
-                    new-direction (if (or (nil? old-history-cursor) (< new-history-cursor old-history-cursor)) :L :R)]
+                    new-direction (if (or (nil? old-history-cursor) (< new-history-cursor old-history-cursor)) :bkwd :fwd)]
                 (if (= new-history-cursor old-history-cursor) db
                   (assoc db :history-cursor new-history-cursor :history-direction new-direction)))))))))
 
