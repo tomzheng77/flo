@@ -244,12 +244,14 @@
 (.addCommand (.-commands @ace-editor) (clj->js toggle-nav-command))
 (.addCommand (.-commands @ace-editor-ro) (clj->js toggle-nav-command))
 
-(add-watches-db :show-history [[:history-cursor] active-history]
-  (fn [_ _ _ [timestamp history]]
-    (when timestamp
-      (let [[_ note] (avl/nearest history <= timestamp)]
-        (ace/set-text @ace-editor-ro (or note ""))
-        (ace/navigate @ace-editor-ro @(rf/subscribe [:search]))))))
+(add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
+  (fn [_ _ _ [timestamp history direction]]
+    (println direction)
+    (let [f (if (= :L direction) >= <=)]
+      (when timestamp
+        (let [[_ note] (avl/nearest history f timestamp)]
+          (ace/set-text @ace-editor-ro (or note ""))
+          (ace/navigate @ace-editor-ro @(rf/subscribe [:search])))))))
 
 (add-watches-db :disable-edit [[:search] [:history-cursor]]
   (fn [_ _ _ [search drag-timestamp]]

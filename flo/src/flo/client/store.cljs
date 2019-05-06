@@ -62,6 +62,7 @@
 
      :drag-btn-width   80
      :history-cursor   nil
+     :history-direction nil ; last direction the history cursor was moved in #{nil :L :R}
      :drag-start       nil
 
      :navigation       nil ; nil means no navigation, "string" means
@@ -121,8 +122,11 @@
                                     (/ (* (- (active-time-updated db) (active-time-created db)) drag-position)
                                        max-drag-position))]
             (if (= drag-position max-drag-position)
-              (assoc db :history-cursor nil)
-              (assoc db :history-cursor new-history-cursor)))))))
+              (assoc db :history-cursor nil :history-direction nil)
+              (let [old-history-cursor (:history-cursor db)
+                    new-direction (if (or (nil? old-history-cursor) (< new-history-cursor old-history-cursor)) :L :R)]
+                (if (= new-history-cursor old-history-cursor) db
+                  (assoc db :history-cursor new-history-cursor :history-direction new-direction)))))))))
 
 ; whenever a message has been received from sente
 (rf/reg-event-db
@@ -226,12 +230,13 @@
              :show-editor [(:content a-new-note) (:search db) (:cursor a-new-note)]
              :focus-editor true
              :db (-> db
+                     (assoc-in [:notes note-or-name] a-new-note)
                      (assoc :active-note-name note-or-name)
                      (assoc :drag-start nil)
                      (assoc :history-cursor nil)
+                     (assoc :history-direction nil)
                      (assoc :navigation nil)
-                     (assoc :navigation-index nil)
-                     (assoc-in [:notes note-or-name] a-new-note))})))
+                     (assoc :navigation-index nil))})))
      (let [note note-or-name]
        {:title (:name note)
         :show-editor [(:content note) (:search db) (:cursor note) (not opened-by-name)]
@@ -240,6 +245,7 @@
                 (assoc :active-note-name (:name note))
                 (assoc :drag-start nil)
                 (assoc :history-cursor nil)
+                (assoc :history-direction nil)
                 (assoc :navigation nil)
                 (assoc :navigation-index nil))}))))
 
@@ -254,7 +260,10 @@
                (assoc-in [:notes (:active-note-name db) :cursor] cursor))
        :chsk-send [:flo/save [(:active-note-name db) content]]})))
 
-(add-watch-db :drag-changed [:history-cursor] (fn [_ _ _ timestamp] (rf/dispatch [:drag-changed timestamp])))
+(add-watch-db :drag-changed [:history-cursor]
+  (fn [_ _ _ timestamp]
+    (rf/dispatch [:drag-changed timestamp])))
+
 (rf/reg-event-fx
   :drag-changed
   (fn [{:keys [db]} [_ timestamp]]
