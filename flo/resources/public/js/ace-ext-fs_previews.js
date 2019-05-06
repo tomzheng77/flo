@@ -70,8 +70,28 @@ cursor: text;\
         return mtype;
     }
 
-    function makeElement(url) {
-
+    function makeElement(url, $element, $line) {
+        var url_type = typeOf(url);
+        var top = $line.position().top + $line.parent().position().top;
+        var y = (top + $element.height() + 2) + "px";
+        var x = ($element.position().left + 6) + "px";
+        var height_el = Math.min(900, blanklines_height - 8) + "px";
+        var width_el = "auto";
+        var content = "...";
+        switch (url_type) {
+            case "youtube":
+                content = '<iframe src="http://www.youtube.com/embed/'+mres[1]+
+                    '?modestbranding=1&rel=0&wmode=transparent&theme=light&color=white"\
+                     frameborder="0" allowfullscreen></iframe>';
+                width_el = Math.max(120, Math.min(640, Math.ceil(parseFloat(height_el)*16.0/9.0))) + "px";
+                break;
+            case "image":
+                content = "<a href='"+url+"' target='_blank'><img src='"+url+"' /></a>";
+                break;
+            case "image-uuid":
+                content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"' /></a>";
+                break;
+        }
     }
 
     function onAfterRender(err, renderer) {
@@ -80,14 +100,15 @@ cursor: text;\
         var cells = $(renderer.container).find(".ace_gutter-cell");
         $(renderer.content).find(".ace_line .ace_link, .ace_line .ace_image").each(function(index, el){
             // the element containing the url
-            var $element = $(el);
-            var url = $element.text();
+            var $cell = $(el);
+            var $line = $cell.parents(".ace_line");
+            var cell_index = $cell.index();
+            var line_index = parseInt($(cells[$line.index()]).text());
+            var url = $cell.text();
             var url_type = typeOf(url);
+            var preview_id = "preview_" + line_index + "_" + cell_index;
 
             if (url_type) {
-                var $line = $element.parents(".ace_line");
-                var row_index = parseInt($(cells[$line.index()]).text());
-                var preview_id  = "fsp_id_"+row_index+"_"+$element.index();
                 var blankline_count = 0;
                 var blanklines_height = 0;
                 var next_lines = $line.nextAll(".ace_line");
@@ -103,8 +124,8 @@ cursor: text;\
 
                 if (blankline_count > 1) {
                     var top = $line.position().top + $line.parent().position().top;
-                    var y = (top + $element.height() + 2) + "px";
-                    var x = ($element.position().left + 6) + "px";
+                    var y = (top + $cell.height() + 2) + "px";
+                    var x = ($cell.position().left + 6) + "px";
                     var height_el = Math.min(900, blanklines_height - 8) + "px";
                     var width_el = "auto";
                     var $existing_preview = $previews.find("#" + preview_id);
