@@ -101,7 +101,7 @@ cursor: text;\
                     var pleft 	= ($el.position().left+6)+"px";
                     var pheight = Math.min(900, blanklines_height-8)+"px";
                     var pwidth  = "auto";
-                    var $pel    = $previews.find("#"+preview_id);
+                    var $existing_preview = $previews.find("#"+preview_id);
                     // --
                     var content = "...";
                     switch (mtype) {
@@ -120,10 +120,10 @@ cursor: text;\
                             break;
                     }
                     // --
-                    if ($pel.length == 0) {
+                    if ($existing_preview.length == 0) {
                         $previews.prepend("<div class='ace_fs_preview' id='"+preview_id+"' style='top: "+ptop+"; left: "+pleft+"; height: "+pheight+"; width: "+pwidth+";'>"+content+"</div>");
                     } else {
-                        $pel.css({top: ptop, left: pleft, height: pheight, width: pwidth}).removeClass("unseen").show();
+                        $existing_preview.css({top: ptop, left: pleft, height: pheight, width: pwidth}).removeClass("unseen").show();
                     }
                 }
             }
