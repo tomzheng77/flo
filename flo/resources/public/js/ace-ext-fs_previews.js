@@ -72,6 +72,21 @@ cursor: text;\
 
     function makeElement(url, $element, $line) {
         var url_type = typeOf(url);
+        if (!url_type) return null;
+
+        var blankline_count = 0;
+        var blanklines_height = 0;
+        var next_lines = $line.nextAll(".ace_line");
+        for (var i = 0; i < next_lines.length; i++) {
+            var $next = $(next_lines[i]);
+            if($.trim($next.text()) !== "") break;
+            var height = $next[0].style.height;
+            height = height.substring(0, height.length - 2);
+            height = parseFloat(height);
+            blanklines_height += height;
+            blankline_count++;
+        }
+
         var top = $line.position().top + $line.parent().position().top;
         var y = (top + $element.height() + 2) + "px";
         var x = ($element.position().left + 6) + "px";
@@ -128,7 +143,6 @@ cursor: text;\
                     var x = ($cell.position().left + 6) + "px";
                     var height_el = Math.min(900, blanklines_height - 8) + "px";
                     var width_el = "auto";
-                    var $existing_preview = $previews.find("#" + preview_id);
                     var content = "...";
                     switch (url_type) {
                         case "youtube":
@@ -144,6 +158,7 @@ cursor: text;\
                             content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"' /></a>";
                             break;
                     }
+                    var $existing_preview = $previews.find("#" + preview_id);
                     if ($existing_preview.length === 0) {
                         $previews.prepend("<div class='ace_fs_preview' id='"+preview_id+"' style='top: "+y+"; left: "+x+"; height: "+height_el+"; width: "+width_el+";'>"+content+"</div>");
                     } else {
