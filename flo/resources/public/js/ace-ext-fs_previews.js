@@ -93,7 +93,7 @@ cursor: text;\
                     blankH += height;
                     blanklines++;
                 }
-                //console.log("URL + Blanklines", url, blanklines, blankH+"px");
+
                 if (blanklines > 1) {
                     var top     = $lg.position().top + $lg.parent().position().top;
                     var ptop  	= (top+$el.height()+2)+"px";
