@@ -52,29 +52,31 @@ cursor: text;\
         return hash < 0 ? -hash : hash;
     }
 
+    function urlType(url) {
+        var mtype = null;
+        var mres  = null;
+        if (!mtype) {
+            mres = url.match(/\[\*[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\]/);
+            if (mres) mtype = "image-uuid";
+        }
+        if (!mtype) {
+            mres = url.match(/(?:http:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([^<]+)/);
+            if (mres) mtype = "youtube";
+        }
+        if (!mtype) {
+            mres = url.match(/.*\.(jpg|gif|png|jpeg|ico|svg|bmp)$/);
+            if (mres) mtype = "image";
+        }
+        return mtype;
+    }
+
     function onAfterRender(err, renderer) {
         var $previews = $(renderer.container).find(".ace_content .ace_layer.ace_fs_previews");
         $previews.find(".ace_fs_preview").addClass("unseen");
         $(renderer.content).find(".ace_line .ace_link, .ace_line .ace_image").each(function(index, el){
             var $el = $(el);
             var url = $el.text();
-            // --
-            var mtype = null;
-            var mres  = null;
-            // --
-            if (!mtype) {
-                mres = url.match(/\[\*[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\]/);
-                if (mres) mtype = "image-uuid";
-            }
-            if (!mtype) {
-                mres = url.match(/(?:http:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([^<]+)/);
-                if (mres) mtype = "youtube";
-            }
-            if (!mtype) {
-                mres = url.match(/.*\.(jpg|gif|png|jpeg|ico|svg|bmp)$/);
-                if (mres) mtype = "image";
-            }
-            // --
+            var mtype = urlType(url);
             if (mtype) {
                 var $lg = $el.parents(".ace_line");
                 var pid  = "fsp_id_"+stringHashAbs($lg.text())+"_"+stringHashAbs(url);
