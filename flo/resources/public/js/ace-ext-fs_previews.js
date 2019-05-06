@@ -38,7 +38,7 @@ cursor: text;\
     dom.importCssString(fsPreviewCss, "ace_fs_previews");
 
     var Editor = require("ace/editor").Editor;
-    var MAX_UNSEEN = 25; // don't immediately remove unseen previews. keep the last few around.
+    var MAX_UNSEEN = 100; // don't immediately remove unseen previews. keep the last few around.
 
     function stringHashAbs(str){
         str = str || "";
