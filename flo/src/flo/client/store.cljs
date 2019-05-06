@@ -50,7 +50,8 @@
    :time-created time
    :time-updated time
    :content ""
-   :history (avl/sorted-map)})
+   :history (avl/sorted-map)
+   :cursor {:row 0 :column 0}})
 
 (rf/reg-event-db
   :initialize
@@ -192,7 +193,7 @@
         new-index (if-not index 0 (wrap (f index) 0 max-index))
         note (nth navs new-index)]
     {:db (assoc db :navigation-index new-index)
-     :show-editor-ro [(:content note) (:search db)]}))
+     :show-editor-ro [(:content note) (:search db) (:cursor note)]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
@@ -220,19 +221,20 @@
       (let [existing-note (get (:notes db) note-or-name)]
         (if existing-note
           {:db db :dispatch [:navigation-select existing-note time true]}
-          {:title note-or-name
-           :show-editor ["" (:search db)]
-           :focus-editor true
-           :db (-> db
-                   (assoc :active-note-name note-or-name)
-                   (assoc :drag-start nil)
-                   (assoc :history-cursor nil)
-                   (assoc :navigation nil)
-                   (assoc :navigation-index nil)
-                   (assoc-in [:notes note-or-name] (new-note note-or-name time)))}))
+          (let [a-new-note (new-note note-or-name time)]
+            {:title note-or-name
+             :show-editor [(:content a-new-note) (:search db) (:cursor a-new-note)]
+             :focus-editor true
+             :db (-> db
+                     (assoc :active-note-name note-or-name)
+                     (assoc :drag-start nil)
+                     (assoc :history-cursor nil)
+                     (assoc :navigation nil)
+                     (assoc :navigation-index nil)
+                     (assoc-in [:notes note-or-name] a-new-note))})))
      (let [note note-or-name]
        {:title (:name note)
-        :show-editor [(:content note) (:search db) (not opened-by-name)]
+        :show-editor [(:content note) (:search db) (:cursor note) (not opened-by-name)]
         :focus-editor true
         :db (-> db
                 (assoc :active-note-name (:name note))

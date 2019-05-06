@@ -203,7 +203,7 @@
   (fn [_] (.focus @ace-editor)))
 
 (rf/reg-fx :show-editor
-  (fn [[text search & [copy-ro-select]]]
+  (fn [[text search cursor & [copy-ro-select]]]
     (ace/set-text @ace-editor text)
     (.focus @ace-editor)
     (js/setTimeout
@@ -213,7 +213,6 @@
                cursor (js->clj (.getCursor (.getSelection @ace-editor-ro)))
                row (get cursor "row")
                col (get cursor "column")]
-           (println range cursor row col)
            (.scrollToLine @ace-editor (inc row) true true (fn []))
            (.gotoLine @ace-editor (+ row 2) col true)
            (.setSelectionRange (.getSelection @ace-editor) range false)))
@@ -224,7 +223,7 @@
     (.setSession @ace-editor (.getSession @ace-editor-ro))))
 
 (rf/reg-fx :show-editor-ro
-  (fn [[text search]]
+  (fn [[text search cursor]]
     (ace/set-text @ace-editor-ro (or text ""))
     (js/setTimeout #(ace/navigate @ace-editor-ro search) 0)))
 
