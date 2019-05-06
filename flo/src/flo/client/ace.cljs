@@ -60,3 +60,14 @@
    (if (and search (not-empty search))
      (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))]
        (.find this (str "\\[=?" search "=?\\]") settings)))))
+
+; indents all the selected ranges in the editor
+(defn indent-selection [this]
+  (let [selection (get-selection this)
+        session (.getSession this)]
+    (doseq [range (:ranges selection)]
+      (.indentRows
+        session
+        (.-row (.-start range))
+        (.-row (.-end range))
+        "    "))))

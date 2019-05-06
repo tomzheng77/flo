@@ -244,7 +244,14 @@
    :bindKey {:mac "cmd-p" :win "ctrl-p"}
    :readOnly true})
 
+(def tab-command
+  {:name "tab-command"
+   :exec #(ace/indent-selection @ace-editor)
+   :bindKey {:mac "tab" :win "tab"}
+   :readOnly false})
+
 (.addCommand (.-commands @ace-editor) (clj->js toggle-nav-command))
+(.addCommand (.-commands @ace-editor) (clj->js tab-command))
 (.addCommand (.-commands @ace-editor-ro) (clj->js toggle-nav-command))
 
 (add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
