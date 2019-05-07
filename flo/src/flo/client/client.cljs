@@ -76,7 +76,7 @@
                      :flex-direction "row"}
              :on-mouse-over #(reset! focus? true)
              :on-mouse-out #(reset! focus? false)
-             :on-click #(rf/dispatch [:navigation-select note (current-time-millis)])}
+             :on-click #(rf/dispatch [:navigation-select note (current-time-millis) true])}
        [:div (:name note)]
        [:div {:style {:flex-grow 1}}]
        [:div {:style {:color "#777"}} (count (:content note))]

@@ -207,12 +207,13 @@
   (fn [{:keys [db]} [_ time]]
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
+        ; must have already previewed, no need for explicit
         {:db db :dispatch [:navigation-select (nth navs (:navigation-index db)) time]}
         (let [name (first (str/split (:navigation db) #"@"))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-select nil)
              :focus-editor true}
-            {:db db :dispatch [:navigation-select name time]}))))))
+            {:db db :dispatch [:navigation-select name time true]}))))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
@@ -223,7 +224,7 @@
 ; only if the action is initiated directly by name, rather than a preview first
 ; then the read-only editor does not have the contents
 (rf/reg-event-fx :navigation-select
-  (fn [{:keys [db]} [_ note-or-name time & [read-only-ready]]]
+  (fn [{:keys [db]} [_ note-or-name time & [explicit]]]
     (if (string? note-or-name)
       (let [existing-note (get (:notes db) note-or-name)]
         (if existing-note
@@ -248,7 +249,7 @@
                     (assoc :history-direction nil)
                     (assoc :navigation nil)
                     (assoc :navigation-index nil))}]
-       (if read-only-ready
+       (if explicit
          (assoc fx :show-editor [(:content note) (:search db) (:selection note)])
          (assoc fx :set-session-from-ro true))))))
 
