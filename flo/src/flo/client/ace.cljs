@@ -49,7 +49,7 @@
       (.clearSelection (.getSelection this))
       (.scrollToLine this (inc row) true true (fn []))
       (.gotoLine this (+ row 1) col true)
-      (.moveCursorToPosition (.getSelection this) (clj->js cursor))
+      (if cursor (.moveCursorToPosition (.getSelection this) (clj->js cursor)))
       (doseq [range ranges]
         (.addRange (.getSelection this) (.clone range) true)))))
 
