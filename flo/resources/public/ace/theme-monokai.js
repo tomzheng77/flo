@@ -129,7 +129,10 @@ color: #00AA00;\
 .ace-monokai .ace_emphasis {\
 font-weight: bold;\
 }\
-";
+.ace-monokai .ace_markup.ace_list {\
+color: #777;\
+font-weight: bold;\
+}";
 
 var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);

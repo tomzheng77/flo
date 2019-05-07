@@ -2600,7 +2600,10 @@ var MarkdownHighlightRules = function() {
             return this.token;
         }
     }];
-
+    // [ORIGINAL]
+    // var markupListRegex = "^\\s{0,3}(?:[*+-]|\\d+\\.)\\s+";
+    // [CUSTOM]
+    var markupListRegex = "^\\s{0,300}(?:[*+-]|\\d+\\.)\\s+";
     this.$rules["start"].unshift({
         token : "empty_line",
         regex : '^$',
@@ -2629,7 +2632,7 @@ var MarkdownHighlightRules = function() {
         next: "allowBlock"
     }, { // list
         token : "markup.list",
-        regex : "^\\s{0,3}(?:[*+-]|\\d+\\.)\\s+",
+        regex : markupListRegex,
         next  : "listblock-start"
     }, {
         include : "basic"
@@ -2716,7 +2719,7 @@ var MarkdownHighlightRules = function() {
             next  : "start"
         }, { // list
             token : "markup.list",
-            regex : "^\\s{0,3}(?:[*+-]|\\d+\\.)\\s+",
+            regex : markupListRegex,
             next  : "listblock-start"
         }, {
             include : "basic", noEscape: true
