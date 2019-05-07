@@ -2652,7 +2652,7 @@ var MarkdownHighlightRules = function() {
             token : ["text", "string", "text", "constant", "text"],
             regex : "(\\[)(" + escaped("]") + ")(\\]\\s*\\[)("+ escaped("]") + ")(\\])"
         }, { // link by url
-            token : ["text", "string", "text", "markup.underline", "string", "text"],
+            token : ["text", "string", "text", "markup.underline.link", "string", "text"],
             regex : "(\\!?\\[)(" +                                        // [
                     escaped("]") +                                    // link text or alt text
                     ")(\\]\\()"+                                      // ](

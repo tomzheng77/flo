@@ -197,6 +197,22 @@
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)
 
+(defn on-click-link [editor {:keys [type value]}]
+  (let [cats (into #{} (str/split type #"\."))]
+    (when (set/subset? #{"tag" "declaration"} cats)
+      (let [search (subs value 1 (dec (count value)))]
+        (ace/navigate editor search)))
+    (when (set/subset? #{"tag" "reference"} cats)
+      (let [navigation (subs value 2 (dec (count value)))]
+        (println navigation)))
+    (when (cats "link")
+      (js/window.open value "_blank"))))
+
+(.on @ace-editor "linkClick"
+  (fn [event-raw]
+    (let [event {:type (.. event-raw -token -type) :value (.. event-raw -token -value)}]
+      (on-click-link @ace-editor event))))
+
 (.on @ace-editor "changeSelection"
   #(rf/dispatch [:change-selection (ace/get-selection @ace-editor)]))
 
