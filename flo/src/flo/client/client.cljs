@@ -213,7 +213,7 @@
 
 (rf/reg-fx :show-editor
   (fn [[text search selection]]
-    (ace/set-text @ace-editor text)
+    (ace/set-text @ace-editor (or text ""))
     (js/setTimeout
       #(do (ace/set-selection @ace-editor selection)
            (ace/navigate @ace-editor search)
