@@ -2670,16 +2670,16 @@ var MarkdownHighlightRules = function() {
                       "(?:mailto:)?[-.\\w]+\\@[-a-z0-9]+(?:\\.[-a-z0-9]+)*\\.[a-z]+"+
                     ")(>)"
         }, { // ---------- [CUSTOM] ----------
-            token : "tag.declaration",
-            regex : "\\[[A-Z0-9]+\\]",
+            token: "tag.declaration",
+            regex: "\\[[A-Z0-9]+\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
-            token : "tag.definition",
-            regex : "\\[[A-Z0-9]+=\\]",
+            token: "tag.definition",
+            regex: "\\[[A-Z0-9]+=\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
-            token : "tag.reference",
-            regex : "\\[=[^\\]]+\\]",
+            token: "tag.reference",
+            regex: "\\[=[^\\]]+\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "link", // URL -> http://example.com
