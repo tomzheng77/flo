@@ -242,11 +242,11 @@
       #(do (ace/set-selection @ace-editor-ro selection)
            (ace/navigate @ace-editor-ro search)) 0)))
 
-(defn toggle-navigation []
-  (let [cursor (js->clj (.getCursor (.getSelection @ace-editor)))
+(defn toggle-navigation [editor]
+  (let [cursor (js->clj (.getCursor (.getSelection editor)))
         row (get cursor "row")
         col (get cursor "column")
-        line (.getLine (.-session @ace-editor) row)
+        line (.getLine (.-session editor) row)
         instances (find-all line #"\[=[^\]]+\]")
         instance (or (first (filter #(and (>= col (:start %)) (< col (:end %))) instances))
                      (first (filter #(and (>= col (:start %)) (<= col (:end %))) instances)))
@@ -254,9 +254,9 @@
         substr-nx (if substr (str/replace (subs substr 2 (dec (count substr))) #":" "@"))]
     (rf/dispatch [:toggle-navigation substr-nx])))
 
-(def toggle-nav-command
+(defn toggle-nav-command [editor]
   {:name "toggle-navigation"
-   :exec #(toggle-navigation)
+   :exec #(toggle-navigation editor)
    :bindKey {:mac "cmd-p" :win "ctrl-p"}
    :readOnly true})
 
@@ -266,9 +266,9 @@
    :bindKey {:mac "tab" :win "tab"}
    :readOnly false})
 
-(.addCommand (.-commands @ace-editor) (clj->js toggle-nav-command))
+(.addCommand (.-commands @ace-editor) (clj->js (toggle-nav-command @ace-editor)))
 (.addCommand (.-commands @ace-editor) (clj->js tab-command))
-(.addCommand (.-commands @ace-editor-ro) (clj->js toggle-nav-command))
+(.addCommand (.-commands @ace-editor-ro) (clj->js (toggle-nav-command @ace-editor-ro)))
 
 (add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
@@ -311,7 +311,7 @@
     (rf/dispatch [:navigation-input nil]))
   (when (and ctrl-key (= "p" key))
     (.preventDefault original)
-    (toggle-navigation))
+    (toggle-navigation @ace-editor))
   (when (and ctrl-key (= "i" key))
     (.preventDefault original)
     (.click (js/document.getElementById "file-input")))
