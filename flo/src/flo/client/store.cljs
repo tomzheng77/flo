@@ -223,7 +223,7 @@
 ; only if the action is initiated directly by name, rather than a preview first
 ; then the read-only editor does not have the contents
 (rf/reg-event-fx :navigation-select
-  (fn [{:keys [db]} [_ note-or-name time & [opened-by-name]]]
+  (fn [{:keys [db]} [_ note-or-name time & [read-only-ready]]]
     (if (string? note-or-name)
       (let [existing-note (get (:notes db) note-or-name)]
         (if existing-note
@@ -248,7 +248,7 @@
                     (assoc :history-direction nil)
                     (assoc :navigation nil)
                     (assoc :navigation-index nil))}]
-       (if opened-by-name
+       (if read-only-ready
          (assoc fx :show-editor [(:content note) (:search db) (:selection note)])
          (assoc fx :set-session-from-ro true))))))
 
