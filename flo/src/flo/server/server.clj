@@ -122,6 +122,7 @@
     {:status  200
      :headers {"Content-Type" "text/html"}
      :body    (login-html)})
+  (GET "/" [] {:status 302 :headers {"Location" "/editor"} :body ""})
   (GET "/editor" request
     (let [name (get (:query-params request) "id" "default")
           notes (get-all-notes)
