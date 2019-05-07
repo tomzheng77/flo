@@ -203,8 +203,10 @@
       (let [search (subs value 1 (dec (count value)))]
         (ace/navigate editor search)))
     (when (set/subset? #{"tag" "reference"} cats)
-      (let [navigation (subs value 2 (dec (count value)))]
-        (println navigation)))
+      (let [navigation (str/replace (subs value 2 (dec (count value))) ":" "@")
+            [name search] (str/split navigation #"@")]
+        (rf/dispatch [:set-search search])
+        (rf/dispatch [:navigation-select name (current-time-millis) false])))
     (when (cats "link")
       (js/window.open value "_blank"))))
 
