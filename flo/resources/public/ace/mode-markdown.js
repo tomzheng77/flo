@@ -2691,8 +2691,8 @@ var MarkdownHighlightRules = function() {
         "allowBlock": [
             // ---------- [CUSTOM-RM] ----------
             // {token : "support.function", regex : "^ {4}.+", next : "allowBlock"},
-            {token : "empty_line", regex : '^$', next: "allowBlock"},
-            {token : "empty", regex : "", next : "start"}
+            {token: "empty_line", regex: '^$', next: "allowBlock"},
+            {token: "empty", regex: "", next: "start"}
         ],
 
         "header" : [{
