@@ -33,6 +33,10 @@
   (let [csr (js->clj (.getCursor (.getSelection this)))]
     {:row (get csr "row") :column (get csr "column")}))
 
+(defn insert-at-cursor [this text]
+  (let [cursor (.getCursor (.getSelection this))]
+    (.insert (.-session this) cursor text)))
+
 ; receives a selection configuration object which
 ; can later be used in set-selection
 ; this may contain raw JS objects that cannot be serialized into EDN

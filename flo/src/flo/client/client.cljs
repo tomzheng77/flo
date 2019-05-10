@@ -157,9 +157,7 @@
   ; add [*b82b6c5e-6d44-11e9-a923-1681be663d3e]
   ; editor.session.insert(editor.getCursorPosition(), text)
   (doseq [{:keys [id]} response]
-    (let [cursor (ace/get-cursor @ace-editor)]
-      (.insert (.-session @ace-editor) cursor (str "[*" id "]\n")))))
-
+    (ace/insert-at-cursor @ace-editor (str "[*" id "]\n"))))
 
 (defn upload-image []
   (.ajaxSubmit (js/$ "#file-form")
