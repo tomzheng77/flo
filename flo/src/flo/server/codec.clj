@@ -5,7 +5,7 @@
 
 ; converts a string or byte array into a Base64 string
 (defn base64-encode [to-encode]
-  (or (and (string? to-encode) (base64-encode (.getBytes to-encode)))
+  (or (and (string? to-encode) (base64-encode (.getBytes to-encode "UTF-8")))
       (and (bytes? to-encode) (.encodeToString (Base64/getEncoder) to-encode))))
 
 ; hashes a password string into a Base64 string

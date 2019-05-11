@@ -49,6 +49,7 @@
       [:script {:src "ace/ext-linking.js" :type "text/javascript"}]
       [:script {:src "ace/ext-language_tools.js" :type "text/javascript"}]
       [:script {:src "ace/ext-split.js" :type "text/javascript"}]
+      [:script {:src "js/string.js" :type "text/javascript"}]
       [:script {:src "js/ace-ext-fs_previews.js" :type "text/javascript"}]
       [:script {:src "js/jquery-2.2.4.min.js" :type "text/javascript"}]
       [:script {:src "js/jquery.form.min.js" :type "text/javascript"}]

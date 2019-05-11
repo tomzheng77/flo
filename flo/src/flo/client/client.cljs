@@ -26,7 +26,8 @@
          (->> "init"
               (.getElementById js/document)
               (.-innerHTML)
-              (b64/decodeString)
+              (b64/decodeStringToByteArray)
+              (js/stringFromUTF8Array)
               (read-string)))
 
 (def anti-forgery-field (:anti-forgery-field init))
