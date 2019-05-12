@@ -62,8 +62,12 @@
   ([this search] (navigate this search {}))
   ([this search opts]
    (if (and search (not-empty search))
-     (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))]
-       (.find this (str "\\[=?" search "=?\\]") settings)))))
+     (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))
+           ; when this option is passed, will only navigate to [TAG=] not [TAG]
+           regex (if (:declaration-only opts)
+                   (str "\\[" search "=\\]")
+                   (str "\\[" search "=?\\]"))]
+       (.find this regex settings)))))
 
 ; indents all the selected ranges in the editor
 (defn indent-selection [this]

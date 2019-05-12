@@ -200,7 +200,7 @@
   (let [cats (into #{} (str/split type #"\."))]
     (when (set/subset? #{"tag" "declaration"} cats)
       (let [search (subs value 1 (dec (count value)))]
-        (ace/navigate editor search)))
+        (ace/navigate editor search {:declaration-only true})))
     (when (set/subset? #{"tag" "reference"} cats)
       (let [navigation (str/replace (subs value 2 (dec (count value))) ":" "@")
             [name search] (str/split navigation #"@")]
