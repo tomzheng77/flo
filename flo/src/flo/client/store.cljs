@@ -11,8 +11,8 @@
 
 ; determines a tag for the note
 (defn find-ntag [content]
-  (let [search (re-find #"\[&[A-Z0-9]+\]" content)]
-    (if search (subs search 2 (dec (count search))))))
+  (let [search (re-find #"\[&[A-Z0-9]+=\]" content)]
+    (if search (subs search 2 (dec (dec (count search)))))))
 
 (defn clamp [min max x]
   (if (< x min)
