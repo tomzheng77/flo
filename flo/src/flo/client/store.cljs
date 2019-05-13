@@ -92,6 +92,13 @@
                                 (assoc m active-note-name
                                   (new-note active-note-name time))))))}))
 
+(defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
+(defn active-time-updated [db] (get-in db [:notes (:active-note-name db) :time-updated]))
+(defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))
+(defn active-time-history-start [db]
+  (let [updated (active-time-updated db)]
+    (clamp (- updated (:history-limit db)) updated (active-time-created db))))
+
 (rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
 (rf/reg-sub :search (fn [db v] (:search db)))
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
@@ -105,14 +112,14 @@
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
-(rf/reg-event-db :set-history-limit (fn [db [_ limit]] (assoc db :history-limit limit)))
-
-(defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
-(defn active-time-updated [db] (get-in db [:notes (:active-note-name db) :time-updated]))
-(defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))
-(defn active-time-history-start [db]
-  (let [updated (active-time-updated db)]
-    (clamp (- updated (:history-limit db)) updated (active-time-created db))))
+(rf/reg-event-db :set-history-limit
+  (fn [db [_ limit]]
+    (-> db
+        (assoc :history-limit limit)
+        (update :history-cursor
+          #(if % (clamp
+             (- (active-time-updated db) limit)
+             (active-time-updated db) %))))))
 
 (rf/reg-sub :active-time-updated (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
 (rf/reg-sub :initial-content (fn [db v] (get-in db [:notes (:active-note-name db) :content])))
