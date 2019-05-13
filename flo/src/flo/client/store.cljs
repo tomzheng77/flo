@@ -9,6 +9,11 @@
             [clojure.string :as str]
             [cljs.core.match :refer-macros [match]]))
 
+(defn clamp [min max x]
+  (if (< x min)
+    min
+    (if (> x max) max x)))
+
 (defn get-x [db fn-or-vec]
   (if (fn? fn-or-vec)
     (fn-or-vec db)
@@ -64,7 +69,9 @@
      :history-cursor   nil
      :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
      :drag-start       nil
-     :history-limit    (* 1000 60 60)
+
+     ; amount of history to allow scroll back, in milliseconds
+     :history-limit    (* 1000 60 60 24)
 
      :navigation       nil ; nil means no navigation, "string" means
      :navigation-index nil ; selected item in navigation box
@@ -101,8 +108,11 @@
 (rf/reg-event-db :set-history-limit (fn [db [_ limit]] (assoc db :history-limit limit)))
 
 (defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
-(defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))
 (defn active-time-updated [db] (get-in db [:notes (:active-note-name db) :time-updated]))
+(defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))
+(defn active-time-history-start [db]
+  (let [updated (active-time-updated db)]
+    (clamp (- updated (:history-limit db)) updated (active-time-created db))))
 
 (rf/reg-sub :active-time-updated (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
 (rf/reg-sub :initial-content (fn [db v] (get-in db [:notes (:active-note-name db) :content])))
@@ -121,8 +131,8 @@
               width (:window-width db)
               drag-position (min (max 0 (+ dx start-position)) (- width 80))
               max-drag-position (- (:window-width db) (:drag-btn-width db))
-              new-history-cursor (+ (active-time-created db)
-                                    (/ (* (- (active-time-updated db) (active-time-created db)) drag-position)
+              new-history-cursor (+ (active-time-history-start db)
+                                    (/ (* (- (active-time-updated db) (active-time-history-start db)) drag-position)
                                        max-drag-position))]
             (if (= drag-position max-drag-position)
               (assoc db :history-cursor nil :history-direction nil)
@@ -140,19 +150,14 @@
       (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))
       :else db)))
 
-(defn clamp [min max x]
-  (if (< x min)
-    min
-    (if (> x max) max x)))
-
 ; x-position of the history button
 (rf/reg-sub :history-btn-x
   (fn [db _]
     ; use inc to deal with zeros
     (clamp 0 (- (:window-width db) (:drag-btn-width db))
-      (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-created db))
+           (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-history-start db))
             (- (:window-width db) (:drag-btn-width db)))
-         (inc (- (active-time-updated db) (active-time-created db)))))))
+              (inc (- (active-time-updated db) (active-time-history-start db)))))))
 
 (rf/reg-event-db :toggle-image-upload
   (fn [db _]
