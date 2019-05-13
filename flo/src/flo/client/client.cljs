@@ -209,10 +209,11 @@
     (when (cats "link")
       (js/window.open value "_blank"))))
 
-(.on @ace-editor "linkClick"
-  (fn [event-raw]
-    (let [event {:type (.. event-raw -token -type) :value (.. event-raw -token -value)}]
-      (on-click-link @ace-editor event))))
+(doseq [editor [@ace-editor @ace-editor-ro]]
+  (.on editor "linkClick"
+    (fn [event-raw]
+      (let [event {:type (.. event-raw -token -type) :value (.. event-raw -token -value)}]
+        (on-click-link editor event)))))
 
 (.on @ace-editor "changeSelection"
   #(rf/dispatch [:change-selection (ace/get-selection @ace-editor)]))
