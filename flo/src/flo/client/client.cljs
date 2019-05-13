@@ -216,7 +216,8 @@
         (on-click-link editor event)))))
 
 (.on @ace-editor "changeSelection"
-  #(rf/dispatch [:change-selection (ace/get-selection @ace-editor)]))
+  #(if-not (.-autoChangeSelection @ace-editor)
+     (rf/dispatch [:change-selection (ace/get-selection @ace-editor)])))
 
 (rf/reg-fx :title (fn [title] (set! (.-title js/document) title)))
 (rf/reg-fx :focus-editor
@@ -225,17 +226,22 @@
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :set-session-from-ro
   (fn []
+    (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
-    (ace/set-selection @ace-editor (ace/get-selection @ace-editor-ro))
-    (.focus @ace-editor)))
+    (js/setTimeout
+      #(do (ace/set-selection @ace-editor (ace/get-selection @ace-editor-ro))
+           (.focus @ace-editor)
+           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
 (rf/reg-fx :show-editor
   (fn [[text search selection]]
+    (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (or text ""))
     (js/setTimeout
       #(do (ace/set-selection @ace-editor selection)
            (ace/navigate @ace-editor search)
-           (.focus @ace-editor)) 0)))
+           (.focus @ace-editor)
+           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
 (rf/reg-fx :show-editor-ro
   (fn [[text search selection]]

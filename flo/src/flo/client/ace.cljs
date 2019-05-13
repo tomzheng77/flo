@@ -50,12 +50,17 @@
           cursor (:cursor selection)
           row (:row cursor)
           col (:column cursor)]
+      ; set this special flag to indicate the selection for this editor is being
+      ; changed automatically and hence should not count as a user action
+      (println "set selection" selection)
+      (set! (.-autoChangeSelection this) true)
       (.clearSelection (.getSelection this))
       (.scrollToLine this (inc row) true true (fn []))
       (.gotoLine this (+ row 1) col true)
       (if cursor (.moveCursorToPosition (.getSelection this) (clj->js cursor)))
       (doseq [range ranges]
-        (.addRange (.getSelection this) (.clone range) true)))))
+        (.addRange (.getSelection this) (.clone range) false))
+      (set! (.-autoChangeSelection this) false))))
 
 (defn navigate
   "navigates to the next occurrence of the <search> tag"
