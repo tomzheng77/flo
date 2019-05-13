@@ -2685,6 +2685,10 @@ var MarkdownHighlightRules = function() {
             regex: "\\[=[^\\]]+\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
+            token: "ntag",
+            regex: "\\[&[A-Z0-9]+\\]",
+            caseInsensitive: false
+        }, { // ---------- [CUSTOM] ----------
             token: "link", // URL -> http://example.com
             regex: "[^\\s]*\\:\\/\\/[^\\s]+"
         }, { // ---------- [CUSTOM] ----------

@@ -129,6 +129,10 @@ color: #00AA00;\
 .ace-monokai .ace_emphasis {\
 font-weight: bold;\
 }\
+.ace-monokai .ace_ntag {\
+font-weight: bold;\
+color: #f442d1\
+}\
 .ace-monokai .ace_markup.ace_list {\
 color: #777;\
 font-weight: bold;\
