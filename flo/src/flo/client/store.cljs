@@ -266,7 +266,6 @@
 ; called whenever the selection of the active note has been changed
 (rf/reg-event-db :change-selection
   (fn [db [_ selection]]
-    (println "save selection" (:active-note-name db) selection)
     (assoc-in db [:notes (:active-note-name db) :selection] selection)))
 
 (add-watch-db :drag-changed [:history-cursor]
