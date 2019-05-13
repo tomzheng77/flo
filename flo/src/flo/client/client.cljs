@@ -79,9 +79,16 @@
              :on-mouse-over #(reset! focus? true)
              :on-mouse-out #(reset! focus? false)
              :on-click #(rf/dispatch [:navigation-select note (current-time-millis) false])}
-       [:div (:ntag note) (:name note)]
+       (if (:ntag note) [:div {:style {:background-color "rgba(0,0,0,0.1)"
+                                       :text-align "center"
+                                       :font-family "Monospace"
+                                       :font-size 12
+                                       :text-indent 0
+                                       :padding-left 10
+                                       :padding-right 10}} (:ntag note)])
+       [:div (:name note)]
        [:div {:style {:flex-grow 1}}]
-       [:div {:style {:color "#777"}} (count (:content note))]
+       [:div {:style {:color "#777"}} (count (:content note)) " chars"]
        [:div {:style {:color "#777"}} (.format (js/moment (:time-updated note)) "MM-DD hh:mm:ss")]
        ])))
 
