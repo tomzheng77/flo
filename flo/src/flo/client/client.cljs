@@ -44,7 +44,8 @@
 (defn drag-button []
   (let [timestamp (or @(rf/subscribe [:history-cursor]) @(rf/subscribe [:active-time-updated]))
         drag-btn-x @(rf/subscribe [:history-btn-x])]
-    [:div {:style {:height           "100%"
+    [:div {:style {:position         "absolute"
+                   :height           "20px"
                    :text-indent      "0"
                    :text-align       "center"
                    :background-color "#9e2023"
@@ -57,7 +58,7 @@
                    :line-height      "10px"
                    :font-size        8
                    :width            @(rf/subscribe [:drag-btn-width])
-                   :margin-left      drag-btn-x}
+                   :left             drag-btn-x}
            :on-touch-start #(on-drag-start % drag-btn-x)
            :on-mouse-down #(on-drag-start % drag-btn-x)}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))

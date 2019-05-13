@@ -137,13 +137,19 @@
       (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))
       :else db)))
 
+(defn clamp [min max x]
+  (if (< x min)
+    min
+    (if (> x max) max x)))
+
 ; x-position of the history button
 (rf/reg-sub :history-btn-x
   (fn [db _]
     ; use inc to deal with zeros
-    (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-created db))
-          (- (:window-width db) (:drag-btn-width db)))
-       (inc (- (active-time-updated db) (active-time-created db))))))
+    (clamp 0 (- (:window-width db) (:drag-btn-width db))
+      (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-created db))
+            (- (:window-width db) (:drag-btn-width db)))
+         (inc (- (active-time-updated db) (active-time-created db)))))))
 
 (rf/reg-event-db :toggle-image-upload
   (fn [db _]
