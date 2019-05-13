@@ -131,12 +131,41 @@
                   :margin-right "auto"
                   :background-color "red"}}]])
 
+(defn history-limit [label milliseconds]
+  (let [hover? (r/atom false)
+        press? (r/atom false)]
+    (fn []
+      [:div {:style {:float "left"
+                     :width "24px"
+                     :height "24px"
+                     :line-height "24px"
+                     :text-align "center"
+                     :color "white"
+                     :user-select "none"
+                     :font-family "Monospace"
+                     :cursor "pointer"
+                     :border-right "1px solid rgba(255, 255, 255, 0.7)"
+                     :background-color
+                     (cond
+                       @press? "rgba(0, 0, 0, 0.3)"
+                       @hover? "rgba(0, 0, 0, 0.1)")}
+             :on-mouse-over #(reset! hover? true)
+             :on-mouse-out #(do (reset! hover? false) (reset! press? false))
+             :on-mouse-down #(reset! press? true)
+             :on-mouse-up #(reset! press? false)} label])))
+
 (defn history-bar []
   [:div {:style {:height           "24px"
                  :background-color "#9e4446"
                  :flex-grow        "0"
                  :flex-shrink      "0"
                  :overflow         "hidden"}}
+   [history-limit "H" (* 1000 60 60)]
+   [history-limit "D" (* 1000 60 60 24)]
+   [history-limit "W" (* 1000 60 60 24 7)]
+   [history-limit "M" (* 1000 60 60 24 30)]
+   [history-limit "Y" (* 1000 60 60 24 365)]
+   [history-limit "A" (* 1000 60 60 24 10000)]
    [drag-button]])
 
 (defn status-bar []
