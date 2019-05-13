@@ -155,8 +155,7 @@
              :on-mouse-out #(do (reset! hover? false) (reset! press? false))
              :on-mouse-down #(reset! press? true)
              :on-mouse-up #(reset! press? false)
-             :on-click #(rf/dispatch [:set-history-limit limit-ms])
-             :on-press #(rf/dispatch [:set-history-limit limit-ms])} label])))
+             :on-click #(rf/dispatch [:set-history-limit limit-ms])} label])))
 
 (defn history-bar []
   [:div {:style {:height           "24px"

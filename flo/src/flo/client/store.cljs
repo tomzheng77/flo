@@ -9,6 +9,11 @@
             [clojure.string :as str]
             [cljs.core.match :refer-macros [match]]))
 
+; determines a tag for the note
+(defn find-ntag [content]
+  (let [search (re-find #"\[&[A-Za-z0-9]+\]" content)]
+    (if search (subs search 2 (dec (count search))))))
+
 (defn clamp [min max x]
   (if (< x min)
     min
@@ -84,8 +89,9 @@
      ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
      :active-note-name active-note-name
      :notes            (->> notes
-                            (map (fn [n] (assoc n :selection {:row 0 :column 0})))
-                            (map (fn [n] [(:name n) n]) notes)
+                            (map #(assoc % :selection {:row 0 :column 0}))
+                            (map #(assoc % :ntag (find-ntag (:content %))))
+                            (map (fn [n] [(:name n) n]))
                             (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
                             (into {})
                             ((fn [m] (if (get m active-note-name) m
@@ -280,6 +286,7 @@
     (if (= content (get-in db [:notes (:active-note-name db) :content]))
       {:db db}
       {:db (-> db
+               (assoc-in [:notes (:active-note-name db) :ntag] (find-ntag content))
                (assoc-in [:notes (:active-note-name db) :content] content)
                (assoc-in [:notes (:active-note-name db) :time-updated] time))
        :chsk-send [:flo/save [(:active-note-name db) content]]})))
