@@ -289,6 +289,7 @@
   (fn [db [_ selection]]
     (assoc-in db [:notes (:active-note-name db) :selection] selection)))
 
+; used only to trigger sending the :flo/seek event to server
 (add-watch-db :drag-changed [:history-cursor]
   (fn [_ _ _ timestamp]
     (rf/dispatch [:drag-changed timestamp])))
@@ -298,6 +299,6 @@
   (fn [{:keys [db]} [_ timestamp]]
     {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
 
-(rf/reg-sub :show-read-only
-  (fn [db _]
-    (or (:history-cursor db) (:navigation-index db))))
+; whether the read-only editor should be shown
+(rf/reg-sub :read-only-visible
+  #(or (:history-cursor %1) (:navigation-index %1)))

@@ -217,8 +217,8 @@
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
    (if @(rf/subscribe [:image-upload]) ^{:key "upl"} [image-upload])
-   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "none" "flex") :flex-direction "column"}} [:div#editor]]
-   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
+   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "none" "flex") :flex-direction "column"}} [:div#editor]]
+   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [search-bar]
    [history-bar]])
 
