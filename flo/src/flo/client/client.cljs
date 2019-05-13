@@ -321,8 +321,11 @@
   (fn [_ _ _ [timestamp history direction]]
     (let [cmp (if (= :bkwd direction) >= <=)]
       (when timestamp
-        (let [[_ note] (avl/nearest history cmp timestamp)]
-          (ace/set-text @ace-editor-ro (or note ""))
+        (let [[latest-timestamp _] (avl/nearest history <= (current-time-millis))
+              [_ note] (avl/nearest history cmp timestamp)]
+          (if (and (= :bkwd direction) (< latest-timestamp timestamp))
+            (ace/set-text @ace-editor-ro (ace/get-text @ace-editor))
+            (ace/set-text @ace-editor-ro (or note "")))
           (ace/navigate @ace-editor-ro @(rf/subscribe [:search])))))))
 
 (add-watches-db :disable-edit [[:search] [:history-cursor]]
