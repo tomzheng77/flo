@@ -290,12 +290,8 @@
     (assoc-in db [:notes (:active-note-name db) :selection] selection)))
 
 ; used only to trigger sending the :flo/seek event to server
-(add-watch-db :drag-changed [:history-cursor]
-  (fn [_ _ _ timestamp]
-    (rf/dispatch [:drag-changed timestamp])))
-
-(rf/reg-event-fx
-  :drag-changed
+(add-watch-db :drag-changed-internal [:history-cursor] #(rf/dispatch [:drag-changed %4]))
+(rf/reg-event-fx :drag-changed
   (fn [{:keys [db]} [_ timestamp]]
     {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
 
