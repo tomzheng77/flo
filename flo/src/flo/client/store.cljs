@@ -64,6 +64,7 @@
      :history-cursor   nil
      :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
      :drag-start       nil
+     :history-limit    (* 1000 60 60)
 
      :navigation       nil ; nil means no navigation, "string" means
      :navigation-index nil ; selected item in navigation box
@@ -93,9 +94,11 @@
 (rf/reg-sub :navigation (fn [db v] (:navigation db)))
 (rf/reg-sub :navigation-index (fn [db v] (:navigation-index db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
+(rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
+(rf/reg-event-db :set-history-limit (fn [db [_ limit]] (assoc db :history-limit limit)))
 
 (defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
 (defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))

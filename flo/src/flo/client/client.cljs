@@ -132,28 +132,31 @@
                   :margin-right "auto"
                   :background-color "red"}}]])
 
-(defn history-limit [label milliseconds]
+(defn history-limit [label limit-ms]
   (let [hover? (r/atom false)
         press? (r/atom false)]
     (fn []
       [:div {:style {:float "left"
                      :width "24px"
                      :height "24px"
+                     :font-size "11px"
                      :line-height "24px"
                      :text-align "center"
-                     :color "white"
+                     :color "rgba(255, 255, 255, 0.5)"
                      :user-select "none"
                      :font-family "Monospace"
                      :cursor "pointer"
-                     :border-right "1px solid rgba(255, 255, 255, 0.7)"
+                     :border-right "1px solid rgba(255, 255, 255, 0.3)"
                      :background-color
                      (cond
-                       @press? "rgba(0, 0, 0, 0.3)"
+                       (or @press? (= limit-ms @(rf/subscribe [:history-limit]))) "rgba(0, 0, 0, 0.3)"
                        @hover? "rgba(0, 0, 0, 0.1)")}
              :on-mouse-over #(reset! hover? true)
              :on-mouse-out #(do (reset! hover? false) (reset! press? false))
              :on-mouse-down #(reset! press? true)
-             :on-mouse-up #(reset! press? false)} label])))
+             :on-mouse-up #(reset! press? false)
+             :on-click #(rf/dispatch [:set-history-limit limit-ms])
+             :on-press #(rf/dispatch [:set-history-limit limit-ms])} label])))
 
 (defn history-bar []
   [:div {:style {:height           "24px"
@@ -169,13 +172,13 @@
    [history-limit "A" (* 1000 60 60 24 10000)]
    [drag-button]])
 
-(defn status-bar []
+(defn search-bar []
   [:div {:style {:height           "24px"
                  :background-color "#3DA1D2"
                  :line-height      "24px"
                  :color            "#FFF"
                  :font-family      "Monospace"
-                 :font-size        "10px"
+                 :font-size        "11px"
                  :text-indent      "10px"
                  :flex-grow        "0"
                  :flex-shrink      "0"}}
@@ -216,7 +219,7 @@
    (if @(rf/subscribe [:image-upload]) ^{:key "upl"} [image-upload])
    ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "none" "flex") :flex-direction "column"}} [:div#editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
-   [status-bar]
+   [search-bar]
    [history-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
