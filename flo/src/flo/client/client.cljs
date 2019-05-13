@@ -131,7 +131,7 @@
                   :margin-right "auto"
                   :background-color "red"}}]])
 
-(defn drag-bar []
+(defn history-bar []
   [:div {:style {:height           "24px"
                  :background-color "#9e4446"
                  :flex-grow        "0"
@@ -187,7 +187,7 @@
    ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "none" "flex") :flex-direction "column"}} [:div#editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:show-read-only]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    [status-bar]
-   [drag-bar]])
+   [history-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
 (reset! ace-editor (ace/new-instance "editor"))
