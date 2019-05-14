@@ -79,7 +79,7 @@
                      :flex-direction "row"}
              :on-mouse-over #(reset! focus? true)
              :on-mouse-out #(reset! focus? false)
-             :on-click #(rf/dispatch [:navigate-to note (current-time-millis) false])}
+             :on-click #(rf/dispatch [:open-note note (current-time-millis) false])}
        (if (:ntag note) [:div {:style {:background-color "rgba(0,0,0,0.1)"
                                        :text-align "center"
                                        :font-family "Monospace"
