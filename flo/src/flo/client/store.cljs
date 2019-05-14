@@ -258,32 +258,25 @@
 (rf/reg-event-fx :navigate-to
   (fn [{:keys [db]} [_ note-or-query time copy-from-ro]]
     (if (string? note-or-query)
-      (let [existing-note (get (:notes db) note-or-query)]
+      (let [query note-or-query
+            existing-note (get (:notes db) query)]
         (if existing-note
           {:db db :dispatch [:navigate-to existing-note time false]}
-          (let [a-new-note (new-note note-or-query time)]
-            {:title note-or-query
-             :show-editor [(:content a-new-note) (:search db) (:selection a-new-note)]
-             :db (-> db
-                     (assoc-in [:notes note-or-query] a-new-note)
-                     (assoc :active-note-name note-or-query)
+          (let [new-note (new-note query time)]
+            {:title    query
+             :dispatch [:navigate-to new-note]})))
+      (let [note note-or-query
+            fx {:title (:name note)
+                :db (-> db
+                     (assoc :active-note-name (:name note))
                      (assoc :drag-start nil)
                      (assoc :history-cursor nil)
                      (assoc :history-direction nil)
                      (assoc :navigation nil)
-                     (assoc :navigation-index nil))})))
-     (let [note note-or-query
-           fx {:title (:name note)
-               :db (-> db
-                    (assoc :active-note-name (:name note))
-                    (assoc :drag-start nil)
-                    (assoc :history-cursor nil)
-                    (assoc :history-direction nil)
-                    (assoc :navigation nil)
-                    (assoc :navigation-index nil))}]
-       (if-not copy-from-ro
-         (assoc fx :show-editor [(:content note) (:search db) (:selection note)])
-         (assoc fx :show-editor-from-ro true))))))
+                     (assoc :navigation-index nil))}]
+        (if-not copy-from-ro
+          (assoc fx :show-editor [(:content note) (:search db) (:selection note)])
+          (assoc fx :show-editor-from-ro true))))))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
