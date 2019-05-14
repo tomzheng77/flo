@@ -261,7 +261,7 @@
   (fn [{:keys [db]} [_ indicator time copy-from-ro]]
     (cond
       (integer? indicator)
-      (println indicator)
+      (let [index indicator])
 
       (string? indicator)
       (let [query indicator
