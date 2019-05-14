@@ -245,8 +245,7 @@
         {:db db :dispatch [:navigate-to (nth navs (:navigation-index db)) time true]}
         (let [name (first (str/split (:navigation db) #"@"))]
           (if (or (nil? name) (empty? name))
-            {:db (assoc db :navigation nil :navigation-index nil)
-             :focus-editor true}
+            {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
             {:db db :dispatch [:navigate-to name time false]}))))))
 
 ; list of notes to display after passing through the navigation filter
