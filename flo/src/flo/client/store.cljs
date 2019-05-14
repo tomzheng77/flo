@@ -63,40 +63,42 @@
    :history (avl/sorted-map)
    :selection {:row 0 :column 0}})
 
-(rf/reg-event-db
+(rf/reg-event-fx
   :initialize
   (fn [_ [_ time {:keys [active-note-name notes]}]]
-    {:last-shift-press nil ; the time when the shift key was last pressed
-     :search           nil ; the active label being searched, nil means no search
-     :window-width     (.-innerWidth js/window)
+    {:dispatch [:navigate-to active-note-name]
+     :db
+     {:last-shift-press nil ; the time when the shift key was last pressed
+      :search           nil ; the active label being searched, nil means no search
+      :window-width     (.-innerWidth js/window)
 
-     :drag-btn-width   80
-     :history-cursor   nil
-     :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
-     :drag-start       nil
+      :drag-btn-width   80
+      :history-cursor   nil
+      :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
+      :drag-start       nil
 
-     ; amount of history to allow scroll back, in milliseconds
-     :history-limit    (* 1000 60 60 24)
+      ; amount of history to allow scroll back, in milliseconds
+      :history-limit    (* 1000 60 60 24)
 
-     :navigation       nil ; nil means no navigation, "string" means
-     :navigation-index nil ; selected item in navigation box
-     :image-upload     nil
+      :navigation       nil ; nil means no navigation, "string" means
+      :navigation-index nil ; selected item in navigation box
+      :image-upload     nil
 
-     ; all the notes organised into a map
-     ; including the current note being edited (stored in :active-note-name)
-     ; each notes has :name, :time-created, :time-updated
-     ; :content is provided by the server initially, then synced from the editor at a fixed interval
-     ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
-     :active-note-name active-note-name
-     :notes            (->> notes
-                            (map #(assoc % :selection {:row 0 :column 0}))
-                            (map #(assoc % :ntag (find-ntag (:content %))))
-                            (map (fn [n] [(:name n) n]))
-                            (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
-                            (into {})
-                            ((fn [m] (if (get m active-note-name) m
-                                (assoc m active-note-name
-                                  (new-note active-note-name time))))))}))
+      ; all the notes organised into a map
+      ; including the current note being edited (stored in :active-note-name)
+      ; each notes has :name, :time-created, :time-updated
+      ; :content is provided by the server initially, then synced from the editor at a fixed interval
+      ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
+      :active-note-name active-note-name
+      :notes            (->> notes
+                             (map #(assoc % :selection {:row 0 :column 0}))
+                             (map #(assoc % :ntag (find-ntag (:content %))))
+                             (map (fn [n] [(:name n) n]))
+                             (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
+                             (into {})
+                             ((fn [m] (if (get m active-note-name) m
+                               (assoc m active-note-name
+                                 (new-note active-note-name time))))))}}))
 
 (defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
 (defn active-time-updated [db] (get-in db [:notes (:active-note-name db) :time-updated]))
