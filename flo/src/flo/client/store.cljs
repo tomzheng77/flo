@@ -64,9 +64,11 @@
    :selection {:row 0 :column 0}})
 
 (defn parse-navigation-query [query]
-  (let [[name search] (str/split query #"@" 2)]
-    {:name name
-     :search search}))
+  (if-not query
+    {:name nil :search nil}
+    (let [[name search] (str/split query #"@" 2)]
+      {:name name
+       :search search})))
 
 (rf/reg-event-fx
   :initialize
@@ -212,19 +214,28 @@
       {:db db :dispatch [:navigation-input nil]})))
 
 (defn navigation-list [db]
-  (->> (map val (:notes db))
-       (filter #(str/includes? (:name %) (or (first (str/split (:navigation db) #"@" 2)) "")))
-       (sort-by #(vector (not= 0 (count (:content %))) (:time-updated %)))
-       (reverse)))
+  (let [{:keys [name]} (parse-navigation-query (:navigation db))
+        ntag (if name (str/upper-case name))]
+    (->> (map val (:notes db))
+         (filter
+           #(or
+             (str/includes? (:name %) (or name ""))
+             (= (:ntag %) (or ntag ""))))
+         (sort-by
+           #(vector
+             (not= 0 (count (:content %)))
+             (= (:ntag %) (or ntag ""))
+             (:time-updated %)))
+         (reverse))))
 
 ; when the user enters something into the navigation search box
 ; or when navigation is turned on/off
 (rf/reg-event-fx :navigation-input
   (fn [{:keys [db]} [_ new-input]]
-    (let [search-subquery (and new-input (second (str/split new-input #"@" 2)))
+    (let [search-subquery (:search (parse-navigation-query new-input))
           old-input (:navigation db)
-          old-name (and old-input (first (str/split old-input #"@" 2)))
-          new-name (and new-input (first (str/split new-input #"@" 2)))
+          old-name (:name (parse-navigation-query old-input))
+          new-name (:name (parse-navigation-query new-input))
           old-index (:navigation-index db)
 
           ; attempt to find the index of the note which has been selected
@@ -261,10 +272,12 @@
 (rf/reg-event-fx :navigate-direct
   (fn [{:keys [db]} [_ time navigation]]
     (let [navs (navigation-list (update db :navigation #(or navigation %)))
-          note (first navs)]
+          note (first navs)
+          search-raw (:search (parse-navigation-query (or navigation (:navigation db))))
+          search (if search-raw (str/upper-case search-raw))]
       (if-not note
-        {:db db}
-        {:db db :dispatch [:navigate-to note time false]}))))
+        {:db (assoc db :search search)}
+        {:db (assoc db :search search) :dispatch [:navigate-to note time false]}))))
 
 ; either navigates to a result of the :navigation query based on :navigation-index
 ; or navigates based on name entirely
@@ -276,7 +289,7 @@
         {:db db :dispatch [:navigate-to (nth navs (:navigation-index db)) time true]}
 
         ; otherwise navigate to name
-        (let [name (first (str/split (:navigation db) #"@"))]
+        (let [{:keys [name]} (parse-navigation-query (:navigation db))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
             {:db db :dispatch [:navigate-to name time false]}))))))
