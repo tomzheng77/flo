@@ -172,6 +172,13 @@
             (- (:window-width db) (:drag-btn-width db)))
               (inc (- (active-time-updated db) (active-time-history-start db)))))))
 
+(rf/reg-event-fx :hash-change
+  (fn [db [_ new-url]]
+    (let [note-name (re-find #"(?<=#)[^#]*$" new-url)]
+      (if note-name
+        {:db db :dispatch [:navigation-select note-name]}
+        {:db db}))))
+
 (rf/reg-event-db :toggle-image-upload
   (fn [db _]
     (update db :image-upload not)))
