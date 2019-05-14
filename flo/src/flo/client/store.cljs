@@ -63,7 +63,10 @@
    :history (avl/sorted-map)
    :selection {:row 0 :column 0}})
 
-(defn parse-navigation-query [query])
+(defn parse-navigation-query [query]
+  (let [[name search] (str/split query #"@" 2)]
+    {:name name
+     :search search}))
 
 (rf/reg-event-fx
   :initialize
