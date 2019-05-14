@@ -262,9 +262,10 @@
             existing-note (get (:notes db) query)]
         (if existing-note
           {:db db :dispatch [:navigate-to existing-note time false]}
-          (let [new-note (new-note query time)]
+          (let [a-new-note (new-note query time)]
             {:title    query
-             :dispatch [:navigate-to new-note]})))
+             :db       (assoc-in db [:notes query] a-new-note)
+             :dispatch [:navigate-to a-new-note]})))
       (let [note note-or-query
             fx {:title (:name note)
                 :db (-> db
