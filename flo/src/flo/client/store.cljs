@@ -56,7 +56,8 @@
 
 (def db db/app-db)
 (defn new-note [name time]
-  {:name name
+  {:type :note
+   :name name
    :time-created time
    :time-updated time
    :content ""
