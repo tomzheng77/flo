@@ -393,6 +393,7 @@
 (set! (.-onmouseup js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-ontouchend js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-onresize js/window) #(rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
+(set! (.-onhashchange js/window) #(rf/dispatch [:hash-change (.-newURL %)]))
 
 (js/setInterval #(rf/dispatch [:editor-tick (ace/get-text @ace-editor) (current-time-millis)]) 1000)
 (defn on-js-reload [])
