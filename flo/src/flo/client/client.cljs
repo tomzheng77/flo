@@ -261,7 +261,8 @@
   #(if-not (.-autoChangeSelection @ace-editor)
      (rf/dispatch [:change-selection (ace/get-selection @ace-editor)])))
 
-(rf/reg-fx :title (fn [title] (set! (.-title js/document) title)))
+(rf/reg-fx :set-hash (fn [hash] (set! (.. js/window -location -hash) hash)))
+(rf/reg-fx :set-title (fn [title] (set! (.-title js/document) title)))
 (rf/reg-fx :focus-editor
   (fn [_] (.focus @ace-editor)))
 

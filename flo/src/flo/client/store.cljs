@@ -263,11 +263,11 @@
         (if existing-note
           {:db db :dispatch [:navigate-to existing-note time false]}
           (let [a-new-note (new-note query time)]
-            {:title    query
-             :db       (assoc-in db [:notes query] a-new-note)
+            {:db       (assoc-in db [:notes query] a-new-note)
              :dispatch [:navigate-to a-new-note]})))
       (let [note note-or-query
-            fx {:title (:name note)
+            fx {:set-title (:name note)
+                :set-hash (:name note)
                 :db (-> db
                      (assoc :active-note-name (:name note))
                      (assoc :drag-start nil)
