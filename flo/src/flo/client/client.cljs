@@ -359,7 +359,7 @@
     (when (and (#{"Enter"} code))
       (rf/dispatch [:navigate-enter (current-time-millis)]))
     (when (and (#{"Tab"} code))
-      (rf/dispatch [:navigate-enter (current-time-millis)])))
+      (rf/dispatch [:navigate-direct (current-time-millis)])))
   (if (= "ShiftLeft" code)
     (rf/dispatch [:shift-press (current-time-millis)])
     (rf/dispatch [:shift-press nil]))

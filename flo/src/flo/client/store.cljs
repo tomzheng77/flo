@@ -81,7 +81,7 @@
         ; amount of history to allow scroll back, in milliseconds
         :history-limit    (* 1000 60 60 24)
 
-        :navigation       nil ; nil means no navigation, "string" means
+        :navigation       nil ; nil means no navigation, "string" means navigation query
         :navigation-index nil ; selected item in navigation box
         :image-upload     nil
 
@@ -92,6 +92,7 @@
         ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
         :active-note-name active-note-name
         :notes            (->> notes
+                               (map #(assoc % :type :note))
                                (map #(assoc % :selection {:row 0 :column 0}))
                                (map #(assoc % :ntag (find-ntag (:content %))))
                                (map (fn [n] [(:name n) n]))
@@ -238,12 +239,26 @@
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
 (rf/reg-event-fx :navigate-down (fn [{:keys [db]} _] (update-navigation-index-fx db inc)))
 
+; navigates to the first result of the :navigation query
+; regardless of :navigation-index
+(rf/reg-event-fx :navigate-direct
+  (fn [{:keys [db]} [_ time]]
+    (let [navs (navigation-list db)
+          note (first navs)]
+      (if-not note
+        {:db db}
+        {:db db :dispatch [:navigate-to note time false]}))))
+
+; either navigates to a result of the :navigation query based on :navigation-index
+; or navigates based on name entirely
 (rf/reg-event-fx :navigate-enter
   (fn [{:keys [db]} [_ time]]
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
         ; must have already previewed, can copy from read-only editor
         {:db db :dispatch [:navigate-to (nth navs (:navigation-index db)) time true]}
+
+        ; otherwise navigate to name
         (let [name (first (str/split (:navigation db) #"@"))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
@@ -260,9 +275,6 @@
 (rf/reg-event-fx :navigate-to
   (fn [{:keys [db]} [_ indicator time copy-from-ro]]
     (cond
-      (integer? indicator)
-      (let [index indicator])
-
       (string? indicator)
       (let [query indicator
             existing-note (get (:notes db) query)]
@@ -270,9 +282,9 @@
           {:db db :dispatch [:navigate-to existing-note time false]}
           (let [a-new-note (new-note query time)]
             {:db       (assoc-in db [:notes query] a-new-note)
-             :dispatch [:navigate-to a-new-note]})))
+             :dispatch [:navigate-to a-new-note time false]})))
 
-      (map? indicator)
+      (and (map? indicator) (= :note (:type indicator)))
       (let [note indicator
             fx {:set-title (:name note)
                 :set-hash (:name note)
