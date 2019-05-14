@@ -266,7 +266,7 @@
   (fn [_] (.focus @ace-editor)))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
-(rf/reg-fx :set-session-from-ro
+(rf/reg-fx :show-editor-from-ro
   (fn []
     (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))

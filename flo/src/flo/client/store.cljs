@@ -283,7 +283,7 @@
                     (assoc :navigation-index nil))}]
        (if-not copy-from-ro
          (assoc fx :show-editor [(:content note) (:search db) (:selection note)])
-         (assoc fx :set-session-from-ro true))))))
+         (assoc fx :show-editor-from-ro true))))))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
