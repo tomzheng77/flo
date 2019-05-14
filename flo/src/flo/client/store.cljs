@@ -176,7 +176,7 @@
   (fn [db [_ new-url]]
     (let [note-name (re-find #"(?<=#)[^#]*$" new-url)]
       (if note-name
-        {:db db :dispatch [:navigation-select note-name]}
+        {:db db :dispatch [:navigate-to note-name]}
         {:db db}))))
 
 (rf/reg-event-db :toggle-image-upload
@@ -240,12 +240,12 @@
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
         ; must have already previewed, can copy from read-only editor
-        {:db db :dispatch [:navigation-select (nth navs (:navigation-index db)) time true]}
+        {:db db :dispatch [:navigate-to (nth navs (:navigation-index db)) time true]}
         (let [name (first (str/split (:navigation db) #"@"))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-index nil)
              :focus-editor true}
-            {:db db :dispatch [:navigation-select name time false]}))))))
+            {:db db :dispatch [:navigate-to name time false]}))))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
@@ -255,12 +255,12 @@
 ; copy from the read-only editor whenever possible
 ; otherwise, if the copy-from-ro flag is not set to true
 ; then the editor state will be explicitly set
-(rf/reg-event-fx :navigation-select
+(rf/reg-event-fx :navigate-to
   (fn [{:keys [db]} [_ note-or-name time copy-from-ro]]
     (if (string? note-or-name)
       (let [existing-note (get (:notes db) note-or-name)]
         (if existing-note
-          {:db db :dispatch [:navigation-select existing-note time false]}
+          {:db db :dispatch [:navigate-to existing-note time false]}
           (let [a-new-note (new-note note-or-name time)]
             {:title note-or-name
              :show-editor [(:content a-new-note) (:search db) (:selection a-new-note)]

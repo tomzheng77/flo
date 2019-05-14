@@ -78,7 +78,7 @@
                      :flex-direction "row"}
              :on-mouse-over #(reset! focus? true)
              :on-mouse-out #(reset! focus? false)
-             :on-click #(rf/dispatch [:navigation-select note (current-time-millis) false])}
+             :on-click #(rf/dispatch [:navigate-to note (current-time-millis) false])}
        (if (:ntag note) [:div {:style {:background-color "rgba(0,0,0,0.1)"
                                        :text-align "center"
                                        :font-family "Monospace"
@@ -244,7 +244,7 @@
       (let [navigation (str/replace (subs value 2 (dec (count value))) ":" "@")
             [name search] (str/split navigation #"@")]
         (rf/dispatch [:set-search search])
-        (rf/dispatch [:navigation-select name (current-time-millis) false])))
+        (rf/dispatch [:navigate-to name (current-time-millis) false])))
     (when (types "link")
       (js/window.open value "_blank"))))
 
