@@ -280,7 +280,7 @@
         {:db (assoc db :search search) :dispatch [:open-note note time false]}))))
 
 ; either navigates to a result of the :navigation query based on :navigation-index
-; or navigates based on name entirely
+; or navigates based on name only
 (rf/reg-event-fx :navigate-enter
   (fn [{:keys [db]} [_ time]]
     (let [navs (navigation-list db)]
