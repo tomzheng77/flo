@@ -173,7 +173,7 @@
               (inc (- (active-time-updated db) (active-time-history-start db)))))))
 
 (rf/reg-event-fx :hash-change
-  (fn [db [_ new-url]]
+  (fn [{:keys [db]} [_ new-url]]
     (let [note-name (re-find #"(?<=#)[^#]*$" new-url)]
       (if note-name
         {:db db :dispatch [:navigate-to note-name]}
