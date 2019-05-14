@@ -243,7 +243,7 @@
         {:db db :dispatch [:navigation-select (nth navs (:navigation-index db)) time true]}
         (let [name (first (str/split (:navigation db) #"@"))]
           (if (or (nil? name) (empty? name))
-            {:db (assoc db :navigation nil :navigation-select nil)
+            {:db (assoc db :navigation nil :navigation-index nil)
              :focus-editor true}
             {:db db :dispatch [:navigation-select name time false]}))))))
 
