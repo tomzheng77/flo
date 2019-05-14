@@ -251,7 +251,10 @@
 (doseq [editor [@ace-editor @ace-editor-ro]]
   (.on editor "linkClick"
     (fn [event-raw]
-      (let [event {:type (.. event-raw -token -type) :value (.. event-raw -token -value)}]
+      (let [token (.. event-raw -token)
+            type (if token (.. token -type))
+            value (if token (.. token -value))
+            event {:type type :value value}]
         (on-click-link editor event)))))
 
 (.on @ace-editor "changeSelection"
