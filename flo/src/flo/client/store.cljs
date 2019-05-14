@@ -214,14 +214,12 @@
         {:db new-db}
         {:db new-db :focus-editor true}))))
 
-(defn wrap [x min max]
-  (cond (< x min) min (> x max) max true x))
-
+; updates the navigation index using a fn
 (defn update-navigation-index-fx [db f]
   (let [index (:navigation-index db)
         navs (navigation-list db)
         max-index (dec (count navs))
-        new-index (if-not index 0 (wrap (f index) 0 max-index))
+        new-index (if-not index 0 (clamp 0 max-index (f index)))
         note (nth navs new-index)]
     {:db (assoc db :navigation-index new-index)
      :show-editor-ro [(:content note) (:search db) (:selection note)]}))
