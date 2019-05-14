@@ -243,7 +243,7 @@
         (rf/dispatch [:set-search search])))
     (when (set/subset? #{"tag" "reference"} types)
       (let [navigation (subs value 2 (dec (count value)))]
-        (rf/dispatch [:navigate-to navigation (current-time-millis) false])))
+        (rf/dispatch [:navigate-direct (current-time-millis) navigation])))
     (when (types "link")
       (js/window.open value "_blank"))))
 
