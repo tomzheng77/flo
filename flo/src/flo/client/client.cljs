@@ -35,7 +35,8 @@
 
 (when-not js/document.initialized
   (set! (.-initialized js/document) true)
-  (rf/dispatch-sync [:initialize (current-time-millis) init]))
+  (let [href js/window.location.href]
+    (rf/dispatch-sync [:initialize (current-time-millis) init href])))
 
 (defn on-drag-start [event drag-btn-x]
   (let [clj-event (to-clj-event event)]
@@ -356,6 +357,8 @@
     (when (and (#{"ArrowDown"} code))
       (rf/dispatch [:navigate-down]))
     (when (and (#{"Enter"} code))
+      (rf/dispatch [:navigate-enter (current-time-millis)]))
+    (when (and (#{"Tab"} code))
       (rf/dispatch [:navigate-enter (current-time-millis)])))
   (if (= "ShiftLeft" code)
     (rf/dispatch [:shift-press (current-time-millis)])
@@ -395,7 +398,7 @@
 (set! (.-ontouchend js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-onresize js/window) #(rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 (set! (.-onhashchange js/window) #(rf/dispatch [:hash-change (.-newURL %)]))
-(rf/dispatch [:hash-change js/window.location.href])
+(rf/dispatch-sync [:hash-change js/window.location.href])
 
 (js/setInterval #(rf/dispatch [:editor-tick (ace/get-text @ace-editor) (current-time-millis)]) 1000)
 (defn on-js-reload [])
