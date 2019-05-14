@@ -242,7 +242,7 @@
       (let [search (subs value 1 (dec (count value)))]
         (rf/dispatch [:set-search search])))
     (when (set/subset? #{"tag" "reference"} types)
-      (let [navigation (str/replace (subs value 2 (dec (count value))) ":" "@")
+      (let [navigation (subs value 2 (dec (count value)))
             [name search] (str/split navigation #"@")]
         (rf/dispatch [:set-search search])
         (rf/dispatch [:navigate-to name (current-time-millis) false])))
