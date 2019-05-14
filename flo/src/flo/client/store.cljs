@@ -256,23 +256,23 @@
 ; otherwise, if the copy-from-ro flag is not set to true
 ; then the editor state will be explicitly set
 (rf/reg-event-fx :navigate-to
-  (fn [{:keys [db]} [_ note-or-name time copy-from-ro]]
-    (if (string? note-or-name)
-      (let [existing-note (get (:notes db) note-or-name)]
+  (fn [{:keys [db]} [_ note-or-query time copy-from-ro]]
+    (if (string? note-or-query)
+      (let [existing-note (get (:notes db) note-or-query)]
         (if existing-note
           {:db db :dispatch [:navigate-to existing-note time false]}
-          (let [a-new-note (new-note note-or-name time)]
-            {:title note-or-name
+          (let [a-new-note (new-note note-or-query time)]
+            {:title note-or-query
              :show-editor [(:content a-new-note) (:search db) (:selection a-new-note)]
              :db (-> db
-                     (assoc-in [:notes note-or-name] a-new-note)
-                     (assoc :active-note-name note-or-name)
+                     (assoc-in [:notes note-or-query] a-new-note)
+                     (assoc :active-note-name note-or-query)
                      (assoc :drag-start nil)
                      (assoc :history-cursor nil)
                      (assoc :history-direction nil)
                      (assoc :navigation nil)
                      (assoc :navigation-index nil))})))
-     (let [note note-or-name
+     (let [note note-or-query
            fx {:title (:name note)
                :db (-> db
                     (assoc :active-note-name (:name note))
