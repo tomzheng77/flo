@@ -242,10 +242,8 @@
       (let [search (subs value 1 (dec (count value)))]
         (rf/dispatch [:set-search search])))
     (when (set/subset? #{"tag" "reference"} types)
-      (let [navigation (subs value 2 (dec (count value)))
-            [name search] (str/split navigation #"@")]
-        (rf/dispatch [:set-search search])
-        (rf/dispatch [:navigate-to name (current-time-millis) false])))
+      (let [navigation (subs value 2 (dec (count value)))]
+        (rf/dispatch [:navigate-to navigation (current-time-millis) false])))
     (when (types "link")
       (js/window.open value "_blank"))))
 

@@ -259,8 +259,8 @@
 ; navigates to the first result of the :navigation query
 ; regardless of :navigation-index
 (rf/reg-event-fx :navigate-direct
-  (fn [{:keys [db]} [_ time]]
-    (let [navs (navigation-list db)
+  (fn [{:keys [db]} [_ time navigation]]
+    (let [navs (navigation-list (update db :navigation #(or navigation %)))
           note (first navs)]
       (if-not note
         {:db db}
@@ -293,12 +293,12 @@
   (fn [{:keys [db]} [_ indicator time copy-from-ro]]
     (cond
       (string? indicator)
-      (let [query indicator
-            existing-note (get (:notes db) query)]
+      (let [name indicator
+            existing-note (get (:notes db) name)]
         (if existing-note
           {:db db :dispatch [:navigate-to existing-note time false]}
-          (let [a-new-note (new-note query time)]
-            {:db       (assoc-in db [:notes query] a-new-note)
+          (let [a-new-note (new-note name time)]
+            {:db       (assoc-in db [:notes name] a-new-note)
              :dispatch [:navigate-to a-new-note time false]})))
 
       (and (map? indicator) (= :note (:type indicator)))
