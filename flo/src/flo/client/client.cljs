@@ -240,7 +240,7 @@
   (let [types (into #{} (str/split type #"\."))]
     (when (set/subset? #{"tag" "declaration"} types)
       (let [search (subs value 1 (dec (count value)))]
-        (ace/navigate editor search {:declaration-only true})))
+        (rf/dispatch [:set-search search])))
     (when (set/subset? #{"tag" "reference"} types)
       (let [navigation (str/replace (subs value 2 (dec (count value))) ":" "@")
             [name search] (str/split navigation #"@")]
