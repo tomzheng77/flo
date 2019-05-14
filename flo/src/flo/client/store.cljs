@@ -187,10 +187,11 @@
 (rf/reg-sub :history-button-x
   (fn [db _]
     ; use inc to deal with zeros
-    (clamp 0 (- (:window-width db) (:drag-btn-width db))
-           (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-history-start db))
-            (- (:window-width db) (:drag-btn-width db)))
-              (inc (- (active-time-updated db) (active-time-history-start db)))))))
+    (clamp
+      0 (- (:window-width db) (:drag-btn-width db))
+      (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-history-start db))
+        (- (:window-width db) (:drag-btn-width db)))
+          (inc (- (active-time-updated db) (active-time-history-start db)))))))
 
 (rf/reg-event-fx :hash-change
   (fn [{:keys [db]} [_ new-url]]
