@@ -41,9 +41,9 @@
   (let [clj-event (to-clj-event event)]
     (rf/dispatch [:start-drag {:mouse-x (:mouse-x clj-event) :btn-x drag-btn-x}])))
 
-(defn drag-button []
+(defn history-button []
   (let [timestamp (or @(rf/subscribe [:history-cursor]) @(rf/subscribe [:active-time-updated]))
-        drag-btn-x @(rf/subscribe [:history-btn-x])]
+        drag-btn-x @(rf/subscribe [:history-button-x])]
     [:div {:style {:position         "absolute"
                    :height           "20px"
                    :text-indent      "0"
@@ -176,7 +176,7 @@
    [history-limit "M" (* 1000 60 60 24 30)]
    [history-limit "Y" (* 1000 60 60 24 365)]
    [history-limit "A" (* 1000 60 60 24 10000)]
-   [drag-button]])
+   [history-button]])
 
 (defn search-bar []
   [:div {:style {:height           "24px"

@@ -164,7 +164,7 @@
       :else db)))
 
 ; x-position of the history button
-(rf/reg-sub :history-btn-x
+(rf/reg-sub :history-button-x
   (fn [db _]
     ; use inc to deal with zeros
     (clamp 0 (- (:window-width db) (:drag-btn-width db))
