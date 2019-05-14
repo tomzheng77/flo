@@ -381,7 +381,9 @@
     (when (= "Backspace" key)
       (rf/dispatch [:swap-search splice-last]))
     (when (re-matches #"^[A-Za-z0-9]$" key)
-      (rf/dispatch [:swap-search #(str % (str/upper-case key))]))))
+      (rf/dispatch [:swap-search #(str % (str/upper-case key))]))
+    (when (= "=" key)
+      (rf/dispatch [:swap-search #(str % "=")]))))
 
 (defn on-release-key
   [event]
