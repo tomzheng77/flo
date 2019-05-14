@@ -236,16 +236,16 @@
 (ace/set-read-only @ace-editor-ro true)
 
 (defn on-click-link [editor {:keys [type value]}]
-  (let [cats (into #{} (str/split type #"\."))]
-    (when (set/subset? #{"tag" "declaration"} cats)
+  (let [types (into #{} (str/split type #"\."))]
+    (when (set/subset? #{"tag" "declaration"} types)
       (let [search (subs value 1 (dec (count value)))]
         (ace/navigate editor search {:declaration-only true})))
-    (when (set/subset? #{"tag" "reference"} cats)
+    (when (set/subset? #{"tag" "reference"} types)
       (let [navigation (str/replace (subs value 2 (dec (count value))) ":" "@")
             [name search] (str/split navigation #"@")]
         (rf/dispatch [:set-search search])
         (rf/dispatch [:navigation-select name (current-time-millis) false])))
-    (when (cats "link")
+    (when (types "link")
       (js/window.open value "_blank"))))
 
 (doseq [editor [@ace-editor @ace-editor-ro]]
