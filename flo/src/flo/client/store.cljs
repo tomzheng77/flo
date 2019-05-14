@@ -258,16 +258,22 @@
 ; otherwise, if the copy-from-ro flag is not set to true
 ; then the editor state will be explicitly set
 (rf/reg-event-fx :navigate-to
-  (fn [{:keys [db]} [_ note-or-query time copy-from-ro]]
-    (if (string? note-or-query)
-      (let [query note-or-query
+  (fn [{:keys [db]} [_ indicator time copy-from-ro]]
+    (cond
+      (integer? indicator)
+      (println indicator)
+
+      (string? indicator)
+      (let [query indicator
             existing-note (get (:notes db) query)]
         (if existing-note
           {:db db :dispatch [:navigate-to existing-note time false]}
           (let [a-new-note (new-note query time)]
             {:db       (assoc-in db [:notes query] a-new-note)
              :dispatch [:navigate-to a-new-note]})))
-      (let [note note-or-query
+
+      (map? indicator)
+      (let [note indicator
             fx {:set-title (:name note)
                 :set-hash (:name note)
                 :db (-> db
