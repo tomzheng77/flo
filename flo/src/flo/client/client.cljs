@@ -63,7 +63,7 @@
            :on-mouse-down #(on-drag-start % drag-btn-x)}
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
-(defn navigation-btn [note index]
+(defn navigation-row [note index]
   (let [focus? (r/atom false)]
     (fn []
       [:div {:style {:width "auto" :height 24
@@ -121,7 +121,7 @@
     [:div {:style {:max-height 504 :overflow-y "scroll"}}
      (for [[index note] (map-indexed vector @(rf/subscribe [:navigation-list]))]
        ^{:key [index (:name note)]}
-       [navigation-btn note index])]]])
+       [navigation-row note index])]]])
 
 (defn image-upload []
   [:div#image-upload-outer
