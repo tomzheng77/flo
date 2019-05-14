@@ -237,7 +237,7 @@
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
 (rf/reg-event-fx :navigate-down (fn [{:keys [db]} _] (update-navigation-index-fx db inc)))
 
-(rf/reg-event-fx :navigate-in
+(rf/reg-event-fx :navigate-enter
   (fn [{:keys [db]} [_ time]]
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
