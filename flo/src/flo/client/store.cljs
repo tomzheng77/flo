@@ -63,6 +63,8 @@
    :history (avl/sorted-map)
    :selection {:row 0 :column 0}})
 
+(defn parse-navigation-query [query])
+
 (rf/reg-event-fx
   :initialize
   (fn [_ [_ time {:keys [notes]} href]]
@@ -81,7 +83,18 @@
         ; amount of history to allow scroll back, in milliseconds
         :history-limit    (* 1000 60 60 24)
 
-        :navigation       nil ; nil means no navigation, "string" means navigation query
+        ; global navigation query
+        ; consists of a name and location part
+        ; e.g. "fl@fx" means
+        ;   go to the note with either ntag or name "FL"
+        ;   within it search for [FX] or [FX=]
+        ; e.g. "fl@fx=" means
+        ;   ...
+        ;   within it search for [FX=]
+        ; e.g. "fl:100" means
+        ;   ...
+        ;   within it go to line 100
+        :navigation       nil
         :navigation-index nil ; selected item in navigation box
         :image-upload     nil
 
