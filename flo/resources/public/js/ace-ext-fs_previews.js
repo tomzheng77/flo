@@ -74,23 +74,9 @@ cursor: text;\
         return mtype;
     }
 
-    function makePreview(line_numbers, $cell, $line) {
-        var cell_index = $cell.index();
-        var line_index = parseInt($(line_numbers[$line.index()]).text());
-        var text = $cell.text();
-        var preview_id = "preview_" + line_index + "_" + cell_index + "_" + stringHashAbs(text);
-
-        var url_type = typeOf(text);
-        if (!url_type) return null;
-
+    function countBlankLines(lines) {
         var blankline_count = 0;
         var blanklines_height = 0;
-        var lines;
-        if (url_type ==="image-bottom") {
-            lines = $line.prevAll(".ace_line");
-        } else {
-            lines = $line.nextAll(".ace_line");
-        }
         for (var i = 0; i < lines.length; i++) {
             var $next = $(lines[i]);
             if($.trim($next.text()) !== "") break;
@@ -100,7 +86,26 @@ cursor: text;\
             blanklines_height += line_height;
             blankline_count++;
         }
+        return [blankline_count, blanklines_height];
+    }
 
+    function makePreview(line_numbers, $cell, $line) {
+        var cell_index = $cell.index();
+        var line_index = parseInt($(line_numbers[$line.index()]).text());
+        var text = $cell.text();
+        var preview_id = "preview_" + line_index + "_" + cell_index + "_" + stringHashAbs(text);
+
+        var preview_type = typeOf(text);
+        if (!preview_type) return null;
+
+        var lines;
+        if (preview_type ==="image-bottom") {
+            lines = $line.prevAll(".ace_line");
+        } else {
+            lines = $line.nextAll(".ace_line");
+        }
+
+        var [blankline_count, blanklines_height] = countBlankLines(lines);
         if (blankline_count < 1) return;
 
         var cell_height = $line[0].style.height;
@@ -113,7 +118,7 @@ cursor: text;\
         var height_px = height + "px";
         var width_px = "auto";
         var content = "...";
-        switch (url_type) {
+        switch (preview_type) {
             case "youtube":
                 content = '<iframe src="http://www.youtube.com/embed/'+mres[1]+
                     '?modestbranding=1&rel=0&wmode=transparent&theme=light&color=white"\
