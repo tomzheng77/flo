@@ -77,10 +77,10 @@ cursor: text;\
     function makePreview(line_numbers, $cell, $line) {
         var cell_index = $cell.index();
         var line_index = parseInt($(line_numbers[$line.index()]).text());
-        var url = $cell.text();
-        var preview_id = "preview_" + line_index + "_" + cell_index + "_" + stringHashAbs(url);
+        var text = $cell.text();
+        var preview_id = "preview_" + line_index + "_" + cell_index + "_" + stringHashAbs(text);
 
-        var url_type = typeOf(url);
+        var url_type = typeOf(text);
         if (!url_type) return null;
 
         var blankline_count = 0;
@@ -121,13 +121,13 @@ cursor: text;\
                 width_px = Math.max(120, Math.min(640, Math.ceil(parseFloat(height_px)*16.0/9.0))) + "px";
                 break;
             case "image":
-                content = "<a href='"+url+"' target='_blank'><img src='"+url+"'/></a>";
+                content = "<a href='"+text+"' target='_blank'><img src='"+text+"'/></a>";
                 break;
             case "image-top":
-                content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"'/></a>";
+                content = "<a href='/file?id="+text.substring(2, text.length - 1)+"' target='_blank'><img src='/file?id="+text.substring(2, text.length - 1)+"'/></a>";
                 break;
             case "image-bottom":
-                content = "<a href='/file?id="+url.substring(2, url.length - 1)+"' target='_blank'><img src='/file?id="+url.substring(2, url.length - 1)+"'/></a>";
+                content = "<a href='/file?id="+text.substring(2, text.length - 1)+"' target='_blank'><img src='/file?id="+text.substring(2, text.length - 1)+"'/></a>";
                 y -= height;
                 y -= cell_height;
                 y -= 8;
