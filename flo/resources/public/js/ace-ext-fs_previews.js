@@ -106,6 +106,20 @@ cursor: text;\
         }
 
         var [blankline_count, blanklines_height] = countBlankLines(lines);
+        var url = text;
+        if (preview_type === "image-top" || preview_type === "image-bottom") {
+            url = text.substring(2, text.length - 1);
+            if (url.indexOf(',') !== -1) {
+                var [a, b] = url.split(',');
+                url = a;
+                blankline_count = parseInt(b);
+                blanklines_height = $line[0].style.height;
+                blanklines_height = blanklines_height.substring(0, blanklines_height.length - 2);
+                blanklines_height = parseFloat(blanklines_height);
+                blanklines_height *= blankline_count;
+            }
+        }
+
         if (blankline_count < 1) return;
 
         var cell_height = $line[0].style.height;
@@ -129,10 +143,10 @@ cursor: text;\
                 content = "<a href='"+text+"' target='_blank'><img src='"+text+"'/></a>";
                 break;
             case "image-top":
-                content = "<a href='/file?id="+text.substring(2, text.length - 1)+"' target='_blank'><img src='/file?id="+text.substring(2, text.length - 1)+"'/></a>";
+                content = "<a href='/file?id="+url+"' target='_blank'><img src='/file?id="+url+"'/></a>";
                 break;
             case "image-bottom":
-                content = "<a href='/file?id="+text.substring(2, text.length - 1)+"' target='_blank'><img src='/file?id="+text.substring(2, text.length - 1)+"'/></a>";
+                content = "<a href='/file?id="+url+"' target='_blank'><img src='/file?id="+url+"'/></a>";
                 y -= height;
                 y -= cell_height;
                 y -= 8;
