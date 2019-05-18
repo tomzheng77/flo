@@ -1,6 +1,7 @@
 (ns flo.client.ace
   (:require [clojure.set :as set]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [re-frame.core :as rf]))
 
 (defn $ [& args] (apply js/$ args))
 
@@ -107,6 +108,7 @@
     background: rgba(0,0,0,0);
     opacity: 0;
     user-select: none;
+    text-decoration: underline;
   }
   .ace_clickables .ace_clickable_link:hover {
     opacity: 1;
@@ -150,10 +152,9 @@
           (.appendTo $added $clickables)
           (.click $added
             (fn [event]
-              (println types)
               (.stopPropagation event)
               (.preventDefault event)
-              )))))))
+              (rf/dispatch [:click-link types text]))))))))
 
 (defn enable-clickables [this]
   (js/console.log "Clickables: Enabled")

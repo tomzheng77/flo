@@ -237,26 +237,6 @@
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)
 
-(defn on-click-link [editor {:keys [type value]}]
-  (let [types (into #{} (str/split type #"\."))]
-    (when (set/subset? #{"tag" "declaration"} types)
-      (let [search (subs value 1 (dec (count value)))]
-        (rf/dispatch [:set-search (str (str/upper-case search) "=")])))
-    (when (set/subset? #{"tag" "reference"} types)
-      (let [navigation (subs value 1 (dec (count value)))]
-        (rf/dispatch [:navigate-direct (current-time-millis) navigation])))
-    (when (types "link")
-      (js/window.open value "_blank"))))
-
-(doseq [editor [@ace-editor @ace-editor-ro]]
-  (.on editor "linkClick"
-    (fn [event-raw]
-      (let [token (.. event-raw -token)
-            type (if token (.. token -type))
-            value (if token (.. token -value))
-            event {:type type :value value}]
-        (on-click-link editor event)))))
-
 (.on @ace-editor "changeSelection"
   #(if-not (.-autoChangeSelection @ace-editor)
      (rf/dispatch [:change-selection (ace/get-selection @ace-editor)])))
@@ -324,7 +304,7 @@
         definition (tag-definition-at line col)
         reference (tag-reference-at line col)]
     (cond
-      declaration (rf/dispatch [:set-search declaration])
+      declaration (rf/dispatch [:set-search (str declaration "=")])
       definition (rf/dispatch [:set-search (subs definition 0 (dec (count definition)))])
       reference (rf/dispatch [:navigate-direct (current-time-millis) reference])
       true (rf/dispatch [:toggle-navigation]))))

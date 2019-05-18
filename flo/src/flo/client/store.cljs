@@ -270,6 +270,23 @@
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
 (rf/reg-event-fx :navigate-down (fn [{:keys [db]} _] (update-navigation-index-fx db inc)))
 
+(rf/reg-cofx :time
+  (fn [coeffects _]
+    (assoc coeffects :time (js.Date.))))
+
+(rf/reg-event-fx :click-link
+  [(rf/inject-cofx :time)]
+  (fn [{:keys [time]} [_ types text]]
+    (cond
+      (types "declaration") {:dispatch [:set-search (str (subs text 1 (dec (count text))) "=")]}
+      (types "definition") {:dispatch [:set-search (subs text 1 (dec (dec (count text))))]}
+      (types "reference") {:dispatch [:navigate-direct time (subs text 1 (dec (count text)))]}
+      (types "link") {:open-window text})))
+
+(rf/reg-fx :open-window
+  (fn [url]
+    (js/window.open url "_blank")))
+
 ; navigates to the first result of the :navigation query
 ; regardless of :navigation-index
 (rf/reg-event-fx :navigate-direct
