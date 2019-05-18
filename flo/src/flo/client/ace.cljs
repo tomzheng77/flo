@@ -63,14 +63,11 @@
 
 (defn navigate
   "navigates to the next occurrence of the <search> tag"
-  ([this search] (navigate this search {}))
-  ([this search opts]
-   (if (and search (not-empty search))
+  ([this tag] (navigate this tag {}))
+  ([this tag opts]
+   (if (and tag (not-empty tag))
      (let [settings (clj->js (set/union {"caseSensitive" true "regExp" true "backwards" false} opts))
-           ; when this option is passed, will only navigate to [TAG=] not [TAG]
-           regex (if (:declaration-only opts)
-                   (str "\\[" search "=\\]")
-                   (str "\\[" search "=?\\]"))]
+           regex (str "\\[" tag "=?\\]")]
        (.find this regex settings)))))
 
 ; indents all the selected ranges in the editor
