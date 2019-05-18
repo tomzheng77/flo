@@ -183,9 +183,12 @@
 (rf/reg-event-db
   :chsk-event
   (fn [db [_ event]]
+    (println event)
     (match event
       [:chsk/recv [:flo/history [note]]]
       (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))
+      [:chsk/recv [:flo/note [note]]]
+      (println "received update for" (:name note))
       :else db)))
 
 ; x-position of the history button

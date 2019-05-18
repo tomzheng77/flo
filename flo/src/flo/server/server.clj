@@ -43,14 +43,19 @@
 (defonce run-iteration-id (atom (UUID/randomUUID)))
 (reset! run-iteration-id (UUID/randomUUID))
 
-(defn on-chsk-receive [item]
-  (match (:event item)
+(def connected-uids (atom #{}))
+(defn on-chsk-receive [{:keys [event uid]}]
+  (match event
     [:flo/seek [name timestamp]]
-    (do (swap! seek-location #(assoc % (:uid item) [name timestamp])))
+    (do (swap! seek-location #(assoc % uid [name timestamp])))
     [:flo/save [name content]]
-    (do (debug "saving" name) (set-note name content))
+    (do (debug "saving" name)
+        (set-note name content)
+        (doseq [other-uid (:any @connected-uids)]
+          (when (not= uid other-uid)
+            (send-note-contents other-uid name))))
     [:flo/load [name]]
-    (send-note-contents (:uid item) name)
+    (send-note-contents uid name)
     :else nil))
 
 (let [{:keys [ch-recv send-fn connected-uids
