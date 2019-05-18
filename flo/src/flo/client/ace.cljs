@@ -140,9 +140,8 @@
 (defn enable-clickables [this]
   (js/console.log "Clickables: Enabled")
   (.on (.-renderer this) "afterRender" on-after-render)
-  (-> (.-container this)
-      (js/$)
-      (.append "<div class='ace_layer ace_clickables'></div>")))
+  (let [$clickable-layer ($ "<div class='ace_layer ace_clickables'></div>")]
+    (.appendTo $clickable-layer ($ (.-container this)))))
 
 (defn disable-clickables [this]
   (js/console.log "Clickables: Disabled")
