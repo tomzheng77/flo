@@ -15,7 +15,8 @@
                 :enableSnippets false
                 :enableLinking true
                 :tabSize 4
-                :useSoftTabs true}))
+                :useSoftTabs true
+                :enableClickables true}))
     (.setTheme instance "ace/theme/monokai")
     (.setMode (.-session instance) "ace/mode/markdown")
     instance))
@@ -81,6 +82,28 @@
         (.-row (.-end range))
         "    "))))
 
+(defn on-after-render []
+  (println "on-after-render")
+  (this-as this (println this)))
+
+(defn enable-clickables []
+  (js/console.log "Clickables: Enabled")
+  (this-as this
+    (.on (.-renderer this) "afterRender" on-after-render)
+    (-> (.-container this)
+        (js/$)
+        (.find ".ace_content")
+        (.append "<div class='ace_layer ace_clickables'></div>"))))
+
+(defn disable-clickables []
+  (js/console.log "Clickables: Disabled")
+  (this-as this
+    (.off (.-renderer this) "afterRender" on-after-render)
+    (-> (.-container this)
+        (js/$)
+        (.find ".ace_content .ace_layer.ace_clickables")
+        (.remove))))
+
 ; add separate clickable layer
 ; similar to fs_previews
 ; it adds a layer of some input elements
@@ -88,7 +111,15 @@
   "ace/ext/clickables"
   (clj->js ["ace/editor"])
   (fn [require exports module]
-    (println require)))
+    (println require)
+    (.defineOptions
+      (js/require "../config")
+      (.. (js/require "ace/editor") -Editor -prototype)
+      "editor"
+      (clj->js
+        {:enableClickables
+         {:set (fn [val] (if val (enable-clickables) (disable-clickables)))
+          :value false}}))))
 
 (js/window.require
   (clj->js ["ace/ext/clickables"])
