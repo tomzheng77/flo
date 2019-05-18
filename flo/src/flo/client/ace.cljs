@@ -1,5 +1,6 @@
 (ns flo.client.ace
-  (:require [clojure.set :as set]))
+  (:require [clojure.set :as set]
+            [clojure.string :as str]))
 
 (defn $ [& args] (apply js/$ args))
 
@@ -105,6 +106,7 @@
     border-radius: 2px;
     background: rgba(0,0,0,0);
     opacity: 0;
+    user-select: none;
   }
   .ace_clickables .ace_clickable_link:hover {
     opacity: 1;
@@ -136,6 +138,7 @@
       clickable-list
       (fn [_ cl]
         (let [$cl ($ cl)
+              types (into #{} (map #(subs % 4) (str/split (.-className cl) #"\s+")))
               text (.text $cl)
               pos (get-pos $cl 4)
               $added ($ (str
@@ -147,6 +150,7 @@
           (.appendTo $added $clickables)
           (.click $added
             (fn [event]
+              (println types)
               (.stopPropagation event)
               (.preventDefault event)
               )))))))
