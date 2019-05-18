@@ -267,7 +267,7 @@
   (fn [_] (.focus @ace-editor)))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
-(rf/reg-fx :show-editor-from-ro
+(rf/reg-fx :reset-editor-from-ro
   (fn [name]
     (when @ace-editor-note-name
       (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor) (current-time-millis)]))
@@ -279,7 +279,7 @@
            (.focus @ace-editor)
            (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
-(rf/reg-fx :show-editor
+(rf/reg-fx :reset-editor
   (fn [[name text search selection]]
     (when @ace-editor-note-name
       (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor) (current-time-millis)]))
@@ -292,7 +292,7 @@
            (.focus @ace-editor)
            (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
-(rf/reg-fx :show-editor-ro
+(rf/reg-fx :reset-editor-ro
   (fn [[text search selection]]
     (ace/set-text @ace-editor-ro (or text ""))
     (js/setTimeout
