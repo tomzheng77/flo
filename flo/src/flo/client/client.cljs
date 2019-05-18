@@ -324,6 +324,11 @@
         (rf/dispatch [:set-search declaration])
         (rf/dispatch [:toggle-navigation])))))
 
+(defn next-tag [editor direction]
+  (if (= :up direction)
+    (ace/navigate editor "[A-Z]+(@[A-Z]*)?" {:backwards true})
+    (ace/navigate editor "[A-Z]+(@[A-Z]*)?")))
+
 (defn toggle-nav-command [editor]
   {:name "toggle-navigation"
    :exec #(toggle-navigation editor)
@@ -336,9 +341,26 @@
    :bindKey {:mac "tab" :win "tab"}
    :readOnly false})
 
+(defn ctrl-up-command [editor]
+  {:name "up-tag"
+   :exec #(next-tag editor :up)
+   :bindKey {:mac "cmd-up" :win "ctrl-up"}
+   :readOnly true})
+
+(defn ctrl-down-command [editor]
+  {:name "down-tag"
+   :exec #(next-tag editor :down)
+   :bindKey {:mac "cmd-down" :win "ctrl-down"}
+   :readOnly true})
+
 (.addCommand (.-commands @ace-editor) (clj->js (toggle-nav-command @ace-editor)))
 (.addCommand (.-commands @ace-editor) (clj->js tab-command))
 (.addCommand (.-commands @ace-editor-ro) (clj->js (toggle-nav-command @ace-editor-ro)))
+
+(.addCommand (.-commands @ace-editor) (clj->js (ctrl-up-command @ace-editor)))
+(.addCommand (.-commands @ace-editor) (clj->js (ctrl-down-command @ace-editor)))
+(.addCommand (.-commands @ace-editor-ro) (clj->js (ctrl-up-command @ace-editor-ro)))
+(.addCommand (.-commands @ace-editor-ro) (clj->js (ctrl-down-command @ace-editor-ro)))
 
 (add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
@@ -394,7 +416,7 @@
     (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
       (.preventDefault original)
       (if shift-key
-        (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search]) {"backwards" true}))
+        (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search]) {:backwards true}))
         (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search])))))
     (when (= "Backspace" key)
       (rf/dispatch [:swap-search splice-last]))
