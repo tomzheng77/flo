@@ -69,7 +69,7 @@
     {:name nil :search nil}
     (let [[name search] (str/split query #"@" 2)]
       {:name name
-       :search search})))
+       :search (if (not-empty search) (str (str/upper-case search) "="))})))
 
 (rf/reg-event-fx
   :initialize
@@ -274,8 +274,7 @@
   (fn [{:keys [db]} [_ time navigation]]
     (let [navs (navigation-list (update db :navigation #(or navigation %)))
           note (first navs)
-          search-raw (:search (parse-navigation-query (or navigation (:navigation db))))
-          search (if search-raw (str/upper-case search-raw))]
+          search (:search (parse-navigation-query (or navigation (:navigation db))))]
       (if-not note
         {:db (assoc db :search search)}
         {:db (assoc db :search search) :dispatch [:open-note note time false]}))))

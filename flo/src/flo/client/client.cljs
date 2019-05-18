@@ -240,9 +240,9 @@
   (let [types (into #{} (str/split type #"\."))]
     (when (set/subset? #{"tag" "declaration"} types)
       (let [search (subs value 1 (dec (count value)))]
-        (rf/dispatch [:set-search search])))
+        (rf/dispatch [:set-search (str (str/upper-case search) "=")])))
     (when (set/subset? #{"tag" "reference"} types)
-      (let [navigation (subs value 2 (dec (count value)))]
+      (let [navigation (subs value 1 (dec (count value)))]
         (rf/dispatch [:navigate-direct (current-time-millis) navigation])))
     (when (types "link")
       (js/window.open value "_blank"))))
@@ -292,17 +292,30 @@
       #(do (ace/set-selection @ace-editor-ro selection)
            (ace/navigate @ace-editor-ro search)) 0)))
 
+(defn first-at [search-results index]
+  (or (first (filter #(and (>= index (:start %)) (< index (:end %))) search-results))
+      (first (filter #(and (>= index (:start %)) (<= index (:end %))) search-results))))
+
+(defn tag-declaration-at [line col]
+  (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+\]") col))]
+    (if token (subs token 1 (dec (count token))))))
+
+(defn tag-reference-at [line col]
+  (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+@[A-Z0-9]*\]") col))]
+    (if token (subs token 1 (dec (count token))))))
+
 (defn toggle-navigation [editor]
   (let [cursor (js->clj (.getCursor (.getSelection editor)))
         row (get cursor "row")
         col (get cursor "column")
         line (.getLine (.-session editor) row)
-        instances (find-all line #"\[=[^\]]+\]")
-        instance (or (first (filter #(and (>= col (:start %)) (< col (:end %))) instances))
-                     (first (filter #(and (>= col (:start %)) (<= col (:end %))) instances)))
-        substr (:substr instance)
-        substr-nx (if substr (str/replace (subs substr 2 (dec (count substr))) #":" "@"))]
-    (rf/dispatch [:toggle-navigation substr-nx])))
+        declaration (tag-declaration-at line col)
+        reference (tag-reference-at line col)]
+    (if reference
+      (rf/dispatch [:navigate-direct (current-time-millis) reference])
+      (if declaration
+        (rf/dispatch [:set-search declaration])
+        (rf/dispatch [:toggle-navigation])))))
 
 (defn toggle-nav-command [editor]
   {:name "toggle-navigation"

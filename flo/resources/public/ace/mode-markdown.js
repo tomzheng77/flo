@@ -2682,11 +2682,7 @@ var MarkdownHighlightRules = function() {
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "tag.reference",
-            regex: "\\[=[^\\]]+\\]",
-            caseInsensitive: false
-        }, { // ---------- [CUSTOM] ----------
-            token: "ntag.declaration",
-            regex: "\\[&[A-Z0-9]+\\]",
+            regex: "\\[[A-Z0-9]+@[A-Z0-9]*\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "ntag.definition",
