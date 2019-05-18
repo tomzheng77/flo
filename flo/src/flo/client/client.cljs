@@ -269,7 +269,7 @@
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :show-editor-from-ro
   (fn [name]
-    (if @ace-editor-note-name
+    (when @ace-editor-note-name
       (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor) (current-time-millis)]))
     (reset! ace-editor-note-name name)
     (set! (.-autoChangeSelection @ace-editor) true)
@@ -281,7 +281,7 @@
 
 (rf/reg-fx :show-editor
   (fn [[name text search selection]]
-    (if @ace-editor-note-name
+    (when @ace-editor-note-name
       (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor) (current-time-millis)]))
     (reset! ace-editor-note-name name)
     (set! (.-autoChangeSelection @ace-editor) true)
