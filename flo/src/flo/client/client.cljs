@@ -307,6 +307,10 @@
   (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+\]") col))]
     (if token (subs token 1 (dec (count token))))))
 
+(defn tag-definition-at [line col]
+  (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+=\]") col))]
+    (if token (subs token 1 (dec (count token))))))
+
 (defn tag-reference-at [line col]
   (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+@[A-Z0-9]*\]") col))]
     (if token (subs token 1 (dec (count token))))))
@@ -317,12 +321,13 @@
         col (get cursor "column")
         line (.getLine (.-session editor) row)
         declaration (tag-declaration-at line col)
+        definition (tag-definition-at line col)
         reference (tag-reference-at line col)]
-    (if reference
-      (rf/dispatch [:navigate-direct (current-time-millis) reference])
-      (if declaration
-        (rf/dispatch [:set-search declaration])
-        (rf/dispatch [:toggle-navigation])))))
+    (cond
+      declaration (rf/dispatch [:set-search declaration])
+      definition (rf/dispatch [:set-search (subs definition 0 (dec (count definition)))])
+      reference (rf/dispatch [:navigate-direct (current-time-millis) reference])
+      true (rf/dispatch [:toggle-navigation]))))
 
 (defn next-tag [editor direction]
   (if (= :up direction)
