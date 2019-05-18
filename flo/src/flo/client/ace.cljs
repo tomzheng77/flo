@@ -86,23 +86,21 @@
   (println "on-after-render")
   (this-as this (println this)))
 
-(defn enable-clickables []
+(defn enable-clickables [this]
   (js/console.log "Clickables: Enabled")
-  (this-as this
-    (.on (.-renderer this) "afterRender" on-after-render)
-    (-> (.-container this)
-        (js/$)
-        (.find ".ace_content")
-        (.append "<div class='ace_layer ace_clickables'></div>"))))
+  (.on (.-renderer this) "afterRender" on-after-render)
+  (-> (.-container this)
+      (js/$)
+      (.find ".ace_content")
+      (.append "<div class='ace_layer ace_clickables'></div>")))
 
-(defn disable-clickables []
+(defn disable-clickables [this]
   (js/console.log "Clickables: Disabled")
-  (this-as this
-    (.off (.-renderer this) "afterRender" on-after-render)
-    (-> (.-container this)
-        (js/$)
-        (.find ".ace_content .ace_layer.ace_clickables")
-        (.remove))))
+  (.off (.-renderer this) "afterRender" on-after-render)
+  (-> (.-container this)
+      (js/$)
+      (.find ".ace_content .ace_layer.ace_clickables")
+      (.remove)))
 
 ; add separate clickable layer
 ; similar to fs_previews
@@ -118,7 +116,7 @@
       "editor"
       (clj->js
         {:enableClickables
-         {:set (fn [val] (if val (enable-clickables) (disable-clickables)))
+         {:set (fn [val] (this-as this (if val (enable-clickables this) (disable-clickables this))))
           :value false}}))))
 
 (js/window.require
