@@ -1,6 +1,8 @@
 (ns flo.client.ace
   (:require [clojure.set :as set]))
 
+(defn $ [& args] (apply js/$ args))
+
 (def instance (atom nil))
 (defn new-instance [element-id]
   (js/ace.config.set "basePath" "ace")
@@ -82,16 +84,64 @@
         (.-row (.-end range))
         "    "))))
 
-(defn on-after-render []
-  (println "on-after-render")
-  (this-as this (println this)))
+(def clickable-css
+  "
+  .ace_clickables .ace_clickable_link {
+    position: absolute;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+    pointer-events: auto;
+    background-color: red;
+    border-radius: 2px;
+  }
+  .ace_content .ace_clickable {
+    pointer-events: auto;
+  }")
+
+(defn get-pos
+  ([$el] (get-pos $el 0))
+  ([$el n-parents]
+   (if (>= 0 n-parents)
+    (let [this-pos (js->clj (.position $el))]
+      {:x (or (get this-pos "left") 0)
+       :y (or (get this-pos "top") 0)})
+    (let [parent-pos (get-pos (.parent $el) (dec n-parents))
+          this-pos (get-pos $el)]
+      {:x (+ (:x parent-pos) (:x this-pos))
+       :y (+ (:y parent-pos) (:y this-pos))}))))
+
+(defn on-after-render [err renderer]
+  (let [$scroller ($ (.-container renderer))
+        $content ($ (.-content renderer))
+        $clickables (.find $scroller ".ace_clickables")
+        clickable-list (.find $content ".ace_clickable")]
+    (.empty $clickables)
+    (.each
+      clickable-list
+      (fn [_ cl]
+        (let [$cl ($ cl)
+              text (.text $cl)
+              pos (get-pos $cl 4)
+              $added ($ (str
+                "<div class='ace_clickable_link' style='left: "
+                (+ (:x pos) 4)
+                "px; top: "
+                (:y pos)
+                "px'>" text "</div>"))]
+          (.appendTo $added $clickables)
+          (.click $added
+            (fn [event]
+              (.stopPropagation event)
+              (.preventDefault event)
+              ))
+          )))))
 
 (defn enable-clickables [this]
   (js/console.log "Clickables: Enabled")
   (.on (.-renderer this) "afterRender" on-after-render)
   (-> (.-container this)
       (js/$)
-      (.find ".ace_content")
       (.append "<div class='ace_layer ace_clickables'></div>")))
 
 (defn disable-clickables [this]
@@ -99,7 +149,7 @@
   (.off (.-renderer this) "afterRender" on-after-render)
   (-> (.-container this)
       (js/$)
-      (.find ".ace_content .ace_layer.ace_clickables")
+      (.find ".ace_layer.ace_clickables")
       (.remove)))
 
 ; add separate clickable layer
@@ -109,10 +159,13 @@
   "ace/ext/clickables"
   (clj->js ["ace/editor"])
   (fn [require exports module]
-    (println require)
+    (.importCssString
+      (require "../lib/dom")
+      clickable-css
+      "ace_clickables")
     (.defineOptions
-      (js/require "../config")
-      (.. (js/require "ace/editor") -Editor -prototype)
+      (require "../config")
+      (.. (require "ace/editor") -Editor -prototype)
       "editor"
       (clj->js
         {:enableClickables

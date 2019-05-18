@@ -71,10 +71,12 @@
       {:name name
        :search (if (not-empty search) (str (str/upper-case search) "="))})))
 
+(def name-length-limit 100)
 (rf/reg-event-fx
   :initialize
   (fn [_ [_ time {:keys [notes]} href]]
-    (let [active-note-name (or (re-find #"(?<=#)[^#]*$" href) "default")]
+    (let [active-note-name (or (re-find #"(?<=#)[^#]*$" href) "default")
+          notes-valid (filter #(> name-length-limit (count (:name %))) notes)]
       {:dispatch [:open-note active-note-name]
        :db
        {:last-shift-press nil ; the time when the shift key was last pressed
@@ -110,7 +112,7 @@
         ; :content is provided by the server initially, then synced from the editor at a fixed interval
         ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
         :active-note-name active-note-name
-        :notes            (->> notes
+        :notes            (->> notes-valid
                                (map #(assoc % :type :note))
                                (map #(assoc % :selection {:row 0 :column 0}))
                                (map #(assoc % :ntag (find-ntag (:content %))))

@@ -2673,7 +2673,7 @@ var MarkdownHighlightRules = function() {
                       "(?:mailto:)?[-.\\w]+\\@[-a-z0-9]+(?:\\.[-a-z0-9]+)*\\.[a-z]+"+
                     ")(>)"
         }, { // ---------- [CUSTOM] ----------
-            token: "tag.declaration",
+            token: "tag.declaration.clickable",
             regex: "\\[[A-Z0-9]+\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
@@ -2681,7 +2681,7 @@ var MarkdownHighlightRules = function() {
             regex: "\\[[A-Z0-9]+=\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
-            token: "tag.reference",
+            token: "tag.reference.clickable",
             regex: "\\[[A-Z0-9]+@[A-Z0-9]*\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
