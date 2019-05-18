@@ -80,3 +80,16 @@
         (.-row (.-start range))
         (.-row (.-end range))
         "    "))))
+
+; add separate clickable layer
+; similar to fs_previews
+; it adds a layer of some input elements
+(js/define
+  "ace/ext/clickables"
+  (clj->js ["ace/editor"])
+  (fn [require exports module]
+    (println require)))
+
+(js/window.require
+  (clj->js ["ace/ext/clickables"])
+  (fn []))
