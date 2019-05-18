@@ -391,6 +391,9 @@
 
 (defn on-press-key
   [{:keys [code key ctrl-key shift-key original]}]
+  (when (= "Control" key)
+    (ace/show-clickables @ace-editor)
+    (ace/show-clickables @ace-editor-ro))
   (when @(rf/subscribe [:navigation])
     (when (and (#{"ArrowUp"} code))
       (rf/dispatch [:navigate-up]))
@@ -426,8 +429,15 @@
       (rf/dispatch [:swap-search #(str % "=")]))))
 
 (defn on-release-key
-  [event]
-  (if (= "ShiftLeft" (:code event))
+  [{:keys [code key ctrl-key shift-key original]}]
+  (when (= "Control" key)
+    (ace/hide-clickables @ace-editor)
+    (ace/hide-clickables @ace-editor-ro)
+    (when (not @(rf/subscribe [:navigation]))
+      (if @(rf/subscribe [:read-only-visible])
+        (.focus @ace-editor-ro)
+        (.focus @ace-editor))))
+  (when (= "ShiftLeft" code)
     (let [delta (- (current-time-millis) (or @(rf/subscribe [:last-shift-press]) 0))]
       (when (> shift-interval delta)
         (on-hit-shift)))))

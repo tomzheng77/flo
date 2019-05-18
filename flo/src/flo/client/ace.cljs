@@ -102,8 +102,8 @@
     cursor: pointer;
     z-index: 10;
     pointer-events: auto;
-    background-color: red;
     border-radius: 2px;
+    background: rgba(0,0,0,0);
   }
   .ace_content .ace_clickable {
     pointer-events: auto;
@@ -152,7 +152,8 @@
   (.on (.-renderer this) "afterRender" on-after-render)
   (let [$clickable-layer ($ "<div class='ace_layer ace_clickables'></div>")]
     (set! (.-clickableLayer this) $clickable-layer)
-    (.appendTo $clickable-layer ($ (.-container this)))))
+    (.appendTo $clickable-layer ($ (.-container this)))
+    (hide-clickables this)))
 
 (defn disable-clickables [this]
   (js/console.log "Clickables: Disabled")
