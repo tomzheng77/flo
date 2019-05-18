@@ -84,6 +84,16 @@
         (.-row (.-end range))
         "    "))))
 
+(defn show-clickables [this]
+  (let [$clickable-layer (.-clickableLayer this)]
+    (if $clickable-layer
+      (.show $clickable-layer))))
+
+(defn hide-clickables [this]
+  (let [$clickable-layer (.-clickableLayer this)]
+    (if $clickable-layer
+      (.hide $clickable-layer))))
+
 (def clickable-css
   "
   .ace_clickables .ace_clickable_link {
@@ -141,6 +151,7 @@
   (js/console.log "Clickables: Enabled")
   (.on (.-renderer this) "afterRender" on-after-render)
   (let [$clickable-layer ($ "<div class='ace_layer ace_clickables'></div>")]
+    (set! (.-clickableLayer this) $clickable-layer)
     (.appendTo $clickable-layer ($ (.-container this)))))
 
 (defn disable-clickables [this]
