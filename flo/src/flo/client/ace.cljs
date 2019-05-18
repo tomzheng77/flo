@@ -99,6 +99,7 @@
 (def clickable-css
   "
   .ace_clickables .ace_clickable_link {
+    color: #589DF6;
     position: absolute;
     font-weight: bold;
     cursor: pointer;
