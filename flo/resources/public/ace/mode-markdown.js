@@ -2677,7 +2677,7 @@ var MarkdownHighlightRules = function() {
             regex: "\\[[A-Z0-9]+\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
-            token: "tag.definition",
+            token: "tag.definition.clickable",
             regex: "\\[[A-Z0-9]+=\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------

@@ -104,7 +104,12 @@
     pointer-events: auto;
     border-radius: 2px;
     background: rgba(0,0,0,0);
+    opacity: 0;
   }
+  .ace_clickables .ace_clickable_link:hover {
+    opacity: 1;
+  }
+
   .ace_content .ace_clickable {
     pointer-events: auto;
   }")
@@ -144,8 +149,7 @@
             (fn [event]
               (.stopPropagation event)
               (.preventDefault event)
-              ))
-          )))))
+              )))))))
 
 (defn enable-clickables [this]
   (js/console.log "Clickables: Enabled")
