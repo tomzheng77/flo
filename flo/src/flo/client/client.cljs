@@ -191,6 +191,7 @@
                  :flex-shrink      "0"}}
    (str "Search: " (pr-str @(rf/subscribe [:search])))])
 
+(def ace-editor-note-name (r/atom nil))
 (def ace-editor (r/atom nil))
 (def ace-editor-ro (r/atom nil))
 
@@ -267,7 +268,8 @@
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :show-editor-from-ro
-  (fn []
+  (fn [name]
+    (reset! ace-editor-note-name name)
     (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
     (js/setTimeout
@@ -276,7 +278,8 @@
            (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
 (rf/reg-fx :show-editor
-  (fn [[text search selection]]
+  (fn [[name text search selection]]
+    (reset! ace-editor-note-name name)
     (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (or text ""))
     (js/setTimeout
@@ -413,5 +416,5 @@
 (set! (.-onhashchange js/window) #(rf/dispatch [:hash-change (.-newURL %)]))
 (rf/dispatch-sync [:hash-change js/window.location.href])
 
-(js/setInterval #(rf/dispatch [:editor-tick (ace/get-text @ace-editor) (current-time-millis)]) 1000)
+(js/setInterval #(rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor) (current-time-millis)]) 1000)
 (defn on-js-reload [])

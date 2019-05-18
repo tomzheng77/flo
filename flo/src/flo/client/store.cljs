@@ -326,19 +326,19 @@
                      (assoc :navigation nil)
                      (assoc :navigation-index nil))}]
         (if-not copy-from-ro
-          (assoc fx :show-editor [(:content note) (:search db) (:selection note)])
-          (assoc fx :show-editor-from-ro true))))))
+          (assoc fx :show-editor [(:name note) (:content note) (:search db) (:selection note)])
+          (assoc fx :show-editor-from-ro (:name note)))))))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
-  (fn [{:keys [db]} [_ content time]]
-    (if (= content (get-in db [:notes (:active-note-name db) :content]))
+  (fn [{:keys [db]} [_ name content time]]
+    (if (or (empty? name) (= content (get-in db [:notes name :content])))
       {:db db}
       {:db (-> db
-               (assoc-in [:notes (:active-note-name db) :ntag] (find-ntag content))
-               (assoc-in [:notes (:active-note-name db) :content] content)
-               (assoc-in [:notes (:active-note-name db) :time-updated] time))
-       :chsk-send [:flo/save [(:active-note-name db) content]]})))
+               (assoc-in [:notes name :ntag] (find-ntag content))
+               (assoc-in [:notes name :content] content)
+               (assoc-in [:notes name :time-updated] time))
+       :chsk-send [:flo/save [name content]]})))
 
 ; called whenever the selection of the active note has been changed
 (rf/reg-event-db :change-selection
