@@ -86,6 +86,10 @@
         (.-row (.-end range))
         "    "))))
 
+(defn apply-deltas [this deltas]
+  (let [doc (.getDocument (.getSession this))]
+    (.applyDeltas doc (clj->js deltas))))
+
 (defn show-clickables [this]
   (let [$clickable-layer (.-clickableLayer this)]
     (if $clickable-layer

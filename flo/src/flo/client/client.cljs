@@ -257,9 +257,9 @@
       (let [head (first remain)
             lines (str/split (:value head) #"\n")
             end-row (+ row (dec (count lines)))
-            end-col (if (>= 1 (count row))
-                      (+ col (count (first row)))
-                      (count (last row)))
+            end-col (if (>= 1 (count lines))
+                      (+ col (count (first lines)))
+                      (count (last lines)))
             is-add (true? (:added head))
             is-remove (true? (:removed head))]
         (cond is-add
@@ -287,10 +287,9 @@
 (rf/reg-fx :refresh-editor
   (fn [content]
     (println "update")
-    (let [changes (js->clj (.diffChars diff (ace/get-text @ace-editor) content) :keywordize-keys true)]
-      (js/console.log changes)
-      (js/console.log (changes->deltas changes))
-      (ace/set-text @ace-editor content))))
+    (let [changes (js->clj (.diffChars diff (ace/get-text @ace-editor) content) :keywordize-keys true)
+          deltas (changes->deltas changes)]
+      (ace/apply-deltas @ace-editor deltas))))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :reset-editor-from-ro
