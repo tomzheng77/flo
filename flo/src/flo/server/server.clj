@@ -129,7 +129,7 @@
     (if (:login (:session request))
       {:status  302 :headers {"Location" "/editor"} :body ""}
       (let [password (:password (:params request))]
-        (if (= "watchneverland" password)
+        (if (= "b3ngM9EeYhma" password)
           {:status 302 :headers {"Location" "/editor"} :body "" :session {:login true}}
           {:status 302 :headers {"Location" "/login"} :body ""}))))
   (GET "/login" request
