@@ -180,18 +180,18 @@
                   (assoc db :history-cursor new-history-cursor :history-direction new-direction)))))))))
 
 ; whenever a message has been received from sente
-(rf/reg-event-db
+(rf/reg-event-fx
   :chsk-event
-  (fn [db [_ event]]
+  (fn [{:keys [db]} [_ event]]
     (println event)
     (match event
       [:chsk/recv [:flo/history [note]]]
-      (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))
+      {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
       [:chsk/recv [:flo/refresh [note]]]
-      (-> db
-          (assoc-in [:notes (:name note) :time-updated] (:time-updated note))
-          (assoc-in [:notes (:name note) :content] (:content note)))
-      :else db)))
+      {:db (-> db
+               (assoc-in [:notes (:name note) :time-updated] (:time-updated note))
+               (assoc-in [:notes (:name note) :content] (:content note)))}
+      :else {:db db})))
 
 ; x-position of the history button
 (rf/reg-sub :history-button-x
