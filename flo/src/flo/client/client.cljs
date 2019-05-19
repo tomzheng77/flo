@@ -252,7 +252,8 @@
   (fn [content]
     (println "update")
     (let [changes (.diffChars diff (ace/get-text @ace-editor) content)]
-      )))
+      (js/console.log changes)
+      (ace/set-text @ace-editor content))))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :reset-editor-from-ro
