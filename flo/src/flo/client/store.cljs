@@ -74,7 +74,7 @@
 (def name-length-limit 100)
 (rf/reg-event-fx
   :initialize
-  (fn [_ [_ time {:keys [notes]} href]]
+  (fn [_ [_ time {:keys [notes read-only]} href]]
     (let [active-note-name (or (re-find #"(?<=#)[^#]*$" href) "default")
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)]
       {:dispatch [:open-note active-note-name]
@@ -82,6 +82,11 @@
        {:last-shift-press nil ; the time when the shift key was last pressed
         :search           nil ; the active label being searched, nil means no search
         :window-width     (.-innerWidth js/window)
+
+        ; if this flag is set to true
+        ; changes [:flo/save [name content]] will not be sent
+        ; refreshes [:flo/refresh note] will not be handled
+        :read-only        read-only
 
         :drag-btn-width   80
         :history-cursor   nil
@@ -187,10 +192,12 @@
       [:chsk/recv [:flo/history note]]
       {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
       [:chsk/recv [:flo/refresh note]]
-      {:refresh-editor (if (= (:name note) (:active-note-name db)) (:content note))
-       :db (-> db
-               (assoc-in [:notes (:name note) :time-updated] (:time-updated note))
-               (assoc-in [:notes (:name note) :content] (:content note)))}
+      (if (:read-only db)
+        {:db db}
+        {:refresh-editor (if (= (:name note) (:active-note-name db)) (:content note))
+         :db (-> db
+                 (assoc-in [:notes (:name note) :time-updated] (:time-updated note))
+                 (assoc-in [:notes (:name note) :content] (:content note)))})
       :else {:db db})))
 
 ; x-position of the history button
@@ -362,7 +369,8 @@
                (assoc-in [:notes name :ntag] (find-ntag content))
                (assoc-in [:notes name :content] content)
                (assoc-in [:notes name :time-updated] time))
-       :chsk-send [:flo/save [name content]]})))
+       :chsk-send
+       (if-not (:read-only db) [:flo/save [name content]])})))
 
 ; called whenever the selection of the active note has been changed
 (rf/reg-event-db :change-selection
