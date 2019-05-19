@@ -251,14 +251,38 @@
 ; :action :insert
 ; :action :remove
 (defn changes->deltas [changes]
-  (loop [remain changes row 0 col 0]
-    (let [item (first remain)
-          lines (str/split (:value item) #"\n")
-          is-add (true? (:added item))
-          removed (true? (:removed item))]
-      (js/console.log lines))))
-
-(.on @ace-editor "change" (fn [e] (js/console.log e)))
+  (loop [remain changes row 0 col 0 deltas []]
+    (if (empty? remain)
+      deltas
+      (let [head (first remain)
+            lines (str/split (:value head) #"\n")
+            end-row (+ row (dec (count lines)))
+            end-col (if (>= 1 (count row))
+                      (+ col (count (first row)))
+                      (count (last row)))
+            is-add (true? (:added head))
+            is-remove (true? (:removed head))]
+        (cond is-add
+              (recur (next remain)
+                     end-row
+                     end-col
+                     (conj deltas
+                       {:start {:row row :column col}
+                        :end {:row end-row :column end-col}
+                        :action "insert" :lines lines}))
+              is-remove
+              (recur (next remain)
+                     end-row
+                     end-col
+                     (conj deltas
+                       {:start {:row row :column col}
+                        :end {:row end-row :column end-col}
+                        :action "remove" :lines lines}))
+              true
+              (recur (next remain)
+                     end-row
+                     end-col
+                     deltas))))))
 
 (rf/reg-fx :refresh-editor
   (fn [content]
