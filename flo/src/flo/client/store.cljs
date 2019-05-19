@@ -183,7 +183,6 @@
 (rf/reg-event-fx
   :chsk-event
   (fn [{:keys [db]} [_ event]]
-    (println event)
     (match event
       [:chsk/recv [:flo/history [note]]]
       {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
