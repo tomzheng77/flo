@@ -19,7 +19,8 @@
     [goog.crypt.base64 :as b64]
     [reagent.core :as r]
     [re-frame.core :as rf]
-    [clojure.set :as set]))
+    [clojure.set :as set]
+    [diff :as diff]))
 
 (enable-console-print!)
 (defonce init
@@ -245,6 +246,13 @@
 (rf/reg-fx :set-title (fn [title] (set! (.-title js/document) title)))
 (rf/reg-fx :focus-editor
   (fn [_] (.focus @ace-editor)))
+
+; (js/console.log (.diffChars diff "this is" "is a\n test"))
+(rf/reg-fx :refresh-editor
+  (fn [content]
+    (println "update")
+    (let [changes (.diffChars diff (ace/get-text @ace-editor) content)]
+      )))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :reset-editor-from-ro

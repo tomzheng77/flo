@@ -82,7 +82,7 @@
           (when (not-empty @seek-location)
             (doseq [[uid [name timestamp]] @seek-location]
               (let [note (get-note-at name timestamp)]
-                (when note (chsk-send! uid [:flo/history [note]]))))
+                (when note (chsk-send! uid [:flo/history note]))))
             (reset! seek-location {})))
         (Thread/sleep 50))))
 

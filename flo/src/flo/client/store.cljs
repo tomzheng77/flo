@@ -184,9 +184,9 @@
   :chsk-event
   (fn [{:keys [db]} [_ event]]
     (match event
-      [:chsk/recv [:flo/history [note]]]
+      [:chsk/recv [:flo/history note]]
       {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
-      [:chsk/recv [:flo/refresh [note]]]
+      [:chsk/recv [:flo/refresh note]]
       {:refresh-editor (if (= (:name note) (:active-note-name db)) (:content note))
        :db (-> db
                (assoc-in [:notes (:name note) :time-updated] (:time-updated note))
