@@ -74,7 +74,7 @@
                            ;; To console.log CLJS data-structures make sure you enable devtools in Chrome
                            ;; https://github.com/binaryage/cljs-devtools
                            :preloads [devtools.preload]
-                           :npm-deps {:quill-image-resize-module "3.0.0"}
+                           :npm-deps {:quill-image-resize-module "3.0.0" :diff "4.0.1"}
                            :install-deps true}}
                ;; This next build is a compressed minified build for
                ;; production. You can build this with:
@@ -85,7 +85,7 @@
                            :main flo.client.client
                            :optimizations :simple
                            :pretty-print false
-                           :npm-deps {:quill-image-resize-module "3.0.0"}
+                           :npm-deps {:quill-image-resize-module "3.0.0" :diff "4.0.1"}
                            :externs ["externs.js"]
                            :install-deps true}}]}
 
