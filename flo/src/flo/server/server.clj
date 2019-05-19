@@ -140,7 +140,8 @@
        :session session
        :body    (editor-html
                   {:notes notes
-                   :anti-forgery-field field})}))
+                   :anti-forgery-field field
+                   :read-only true})}))
   (GET "/editor" []
     (let [notes (get-all-notes)
           session {:uid (.toString (UUID/randomUUID))}
