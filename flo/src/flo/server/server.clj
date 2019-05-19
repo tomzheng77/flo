@@ -37,8 +37,8 @@
 (defn send-note-contents [uid name & [content]]
   (let [note (get-note name)]
     (if content
-      (chsk-send! uid [:flo/note (assoc note :content content :time-updated (System/currentTimeMillis))])
-      (chsk-send! uid [:flo/note note]))))
+      (chsk-send! uid [:flo/refresh (assoc note :content content :time-updated (System/currentTimeMillis))])
+      (chsk-send! uid [:flo/refresh note]))))
 
 ; map of client-id => timestamp
 (def seek-location (atom {}))

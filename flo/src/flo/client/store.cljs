@@ -187,8 +187,10 @@
     (match event
       [:chsk/recv [:flo/history [note]]]
       (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))
-      [:chsk/recv [:flo/note [note]]]
-      (println "received update for" (:name note))
+      [:chsk/recv [:flo/refresh [note]]]
+      (-> db
+          (assoc-in [:notes (:name note) :time-updated] (:time-updated note))
+          (assoc-in [:notes (:name note) :content] (:content note)))
       :else db)))
 
 ; x-position of the history button
