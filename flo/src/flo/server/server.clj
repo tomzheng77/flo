@@ -34,9 +34,11 @@
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
 (defn chsk-send! [& args])
-(defn send-note-contents [uid name]
+(defn send-note-contents [uid name & [content]]
   (let [note (get-note name)]
-    (chsk-send! uid [:flo/note note])))
+    (if content
+      (chsk-send! uid [:flo/note (assoc note :content content :time-updated (System/currentTimeMillis))])
+      (chsk-send! uid [:flo/note note]))))
 
 ; map of client-id => timestamp
 (def seek-location (atom {}))
@@ -53,7 +55,7 @@
         (set-note name content)
         (doseq [other-uid (:any @connected-uids)]
           (when (not= uid other-uid)
-            (send-note-contents other-uid name))))
+            (send-note-contents other-uid name content))))
     [:flo/load [name]]
     (send-note-contents uid name)
     :else nil))
