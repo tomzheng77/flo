@@ -144,7 +144,7 @@
       {:status 302 :headers {"Location" "/login"} :body ""}
       (let [time (get (:query-params request) "t" "2019-05-06T12:00:00")
             notes (get-all-notes time)
-            session {:uid (.toString (UUID/randomUUID))}
+            session (assoc (:session request) :uid (.toString (UUID/randomUUID)))
             field (anti-forgery-field)]
         {:status  200
          :headers {"Content-Type" "text/html"}
@@ -154,10 +154,11 @@
                      :anti-forgery-field field
                      :read-only true})})))
   (GET "/editor" request
+    (println (:session request))
     (if-not (:login (:session request))
       {:status 302 :headers {"Location" "/login"} :body ""}
       (let [notes (get-all-notes)
-            session {:uid (.toString (UUID/randomUUID))}
+            session (assoc (:session request) :uid (.toString (UUID/randomUUID)))
             field (anti-forgery-field)]
         {:status  200
          :headers {"Content-Type" "text/html"}
