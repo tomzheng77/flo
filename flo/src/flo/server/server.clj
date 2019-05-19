@@ -125,34 +125,47 @@
       {:status 200
        :headers {"Content-Type" "text/plain"}
        :body (pr-str (vec response))}))
-  (GET "/login" []
-    {:status  200
-     :headers {"Content-Type" "text/html"}
-     :body    (login-html)})
-  (GET "/" [] {:status 302 :headers {"Location" "/editor"} :body ""})
+  (POST "/login" request
+    (if (:login (:session request))
+      {:status  302 :headers {"Location" "/editor"} :body ""}
+      (let [password (:password (:params request))]
+        (if (= "watchneverland" password)
+          {:status 302 :headers {"Location" "/editor"} :body "" :session {:login true}}
+          {:status 302 :headers {"Location" "/login"} :body ""}))))
+  (GET "/login" request
+    (if (:login (:session request))
+      {:status  302 :headers {"Location" "/editor"} :body ""}
+      {:status  200
+       :headers {"Content-Type" "text/html"}
+       :body    (login-html)}))
+  (GET "/" [] {:status 302 :headers {"Location" "/login"} :body ""})
   (GET "/history" request
-    (let [time (get (:query-params request) "t" "2019-05-06T12:00:00")
-          notes (get-all-notes time)
-          session {:uid (.toString (UUID/randomUUID))}
-          field (anti-forgery-field)]
-      {:status  200
-       :headers {"Content-Type" "text/html"}
-       :session session
-       :body    (editor-html
-                  {:notes notes
-                   :anti-forgery-field field
-                   :read-only true})}))
-  (GET "/editor" []
-    (let [notes (get-all-notes)
-          session {:uid (.toString (UUID/randomUUID))}
-          field (anti-forgery-field)]
-      {:status  200
-       :headers {"Content-Type" "text/html"}
-       :session session
-       :body    (editor-html
-                  {:notes notes
-                   :anti-forgery-field field})}))
-           (route/not-found "Not Found"))
+    (if-not (:login (:session request))
+      {:status 302 :headers {"Location" "/login"} :body ""}
+      (let [time (get (:query-params request) "t" "2019-05-06T12:00:00")
+            notes (get-all-notes time)
+            session {:uid (.toString (UUID/randomUUID))}
+            field (anti-forgery-field)]
+        {:status  200
+         :headers {"Content-Type" "text/html"}
+         :session session
+         :body    (editor-html
+                    {:notes notes
+                     :anti-forgery-field field
+                     :read-only true})})))
+  (GET "/editor" request
+    (if-not (:login (:session request))
+      {:status 302 :headers {"Location" "/login"} :body ""}
+      (let [notes (get-all-notes)
+            session {:uid (.toString (UUID/randomUUID))}
+            field (anti-forgery-field)]
+        {:status  200
+         :headers {"Content-Type" "text/html"}
+         :session session
+         :body    (editor-html
+                    {:notes notes
+                     :anti-forgery-field field})})))
+  (route/not-found "Not Found"))
 
 ;; NOTE: wrap reload isn't needed when the clj sources are watched by figwheel
 ;; but it's very good to know about

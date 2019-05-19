@@ -12,16 +12,32 @@
       [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
       [:style
        (css [:html :body {:margin 0 :height "100%"}]
-            [:body {:background-color "#95d5ee"}]
-            [:#login-form {:width "300px"
-                           :min-height "100px"
-                           :margin-top "50px"
-                           :margin-left "auto"
-                           :margin-right "auto"
-                           :background-color "red"}])]
+            [:body {:background-image "url('/dark-honeycomb.png')"
+                    :display "flex"
+                    :flex-direction "column"
+                    :justify-content "center"
+                    :align-items "center"}]
+            ["@font-face"
+             {:font-family "MadokaRunes"
+              :src "url('/MadokaRunes-2.0.ttf')"}]
+            [:#login-form
+             {:padding       "10px"
+              :border-radius "10px"}
+             [:input
+              {:width         "300px"
+               :height        "50px"
+               :line-height   "50px"
+               :text-indent   "10px"
+               :outline       "none"
+               :border-radius "5px"
+               :border "2px solid grey"
+               :color "#555"
+               :font-size "16px"}]])]
       [:title "FloNote Login"]]
      [:body
-      [:div#login-form]]]))
+      [:div#login-form
+       [:form {:method "POST" :action "/login"}
+        [:input {:id "password" :name "password" :type "password"}]]]]]))
 
 (defn editor-html [init]
   (html5
