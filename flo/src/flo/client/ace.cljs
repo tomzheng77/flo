@@ -119,17 +119,9 @@
     pointer-events: auto;
   }")
 
-(defn get-pos
-  ([$el] (get-pos $el 0))
-  ([$el n-parents]
-   (if (>= 0 n-parents)
-    (let [this-pos (js->clj (.position $el))]
-      {:x (or (get this-pos "left") 0)
-       :y (or (get this-pos "top") 0)})
-    (let [parent-pos (get-pos (.parent $el) (dec n-parents))
-          this-pos (get-pos $el)]
-      {:x (+ (:x parent-pos) (:x this-pos))
-       :y (+ (:y parent-pos) (:y this-pos))}))))
+(defn get-pos [$el]
+  (let [rect (.getBoundingClientRect (aget $el 0))]
+    {:x (.-left rect) :y (.-top rect)}))
 
 (defn on-after-render [err renderer]
   (let [$scroller ($ (.-container renderer))
@@ -143,10 +135,10 @@
         (let [$cl ($ cl)
               types (into #{} (map #(subs % 4) (str/split (.-className cl) #"\s+")))
               text (.text $cl)
-              pos (get-pos $cl 4)
+              pos (get-pos $cl)
               $added ($ (str
                 "<div class='ace_clickable_link' style='left: "
-                (+ (:x pos) 4)
+                (:x pos)
                 "px; top: "
                 (:y pos)
                 "px'>" text "</div>"))]
