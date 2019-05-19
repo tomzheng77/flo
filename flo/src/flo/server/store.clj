@@ -13,8 +13,9 @@
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [datomic.api :as d]
             [flo.server.codec :refer [base64-encode hash-password]])
-  (:import (java.time LocalDateTime ZoneId)
-           (java.util Date)))
+  (:import (java.time LocalDateTime ZoneId LocalDate LocalTime)
+           (java.util Date)
+           (java.time.format DateTimeFormatter)))
 
 (def schema [{:db/ident       :user/email
               :db/unique      :db.unique/identity
@@ -68,11 +69,41 @@
     [?tx1 :db/txInstant ?new-time]
     [?tx2 :db/txInstant ?upd-time]])
 
+(def date-regex (re-pattern #"[0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4}"))
+(def date-range-regex (re-pattern #"[0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4} to [0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4}"))
+
+(defn parse-date [in]
+  (let [date-format-1 (DateTimeFormatter/ofPattern "yyyy-MM-dd")
+        date-format-2 (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss")
+        date-format-3 (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm")
+        date-format-4 (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss")
+        date-format-5 (DateTimeFormatter/ofPattern "d MMM yyyy")]
+    (cond
+      (re-matches #"[0-9]{4}-[0-9]{2}-[0-9]{2}" in)
+      (LocalDate/parse in date-format-1)
+      (re-matches #"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}" in)
+      (LocalDateTime/parse in date-format-2)
+      (re-matches #"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}" in)
+      (LocalDateTime/parse in date-format-3)
+      (re-matches #"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}" in)
+      (LocalDateTime/parse in date-format-4)
+      (re-matches date-regex in)
+      (let [[a b c] (str/split in #" ")
+            upper (str (str/upper-case (subs b 0 1)) (subs b 1))]
+        (LocalDate/parse (str a " " upper " " c) date-format-5)))))
+
 ; converts to java.util.Date
 (defn to-util-date [ldt]
   (cond
     (instance? Long ldt) (new Date ldt)
     (instance? Integer ldt) (new Date ldt)
+    (string? ldt)
+    (cond
+      (re-matches #"[0-9]+" ldt) (Long/parseLong ldt)
+      true (to-util-date (parse-date ldt)))
+
+    (instance? LocalDate ldt) (to-util-date (LocalDateTime/of ldt (LocalTime/now)))
+    (instance? LocalTime ldt) (to-util-date (LocalDateTime/of (LocalDate/now) ldt))
     (instance? LocalDateTime ldt)
     (Date/from (.toInstant (.atZone ldt (ZoneId/systemDefault))))
     (instance? Date ldt) ldt))

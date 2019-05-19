@@ -23,7 +23,7 @@
      [:body
       [:div#login-form]]]))
 
-(defn editor-html [title init]
+(defn editor-html [init]
   (html5
     [:html {:lang "en"}
      [:head
@@ -37,7 +37,7 @@
             [:html :body :#app :#app-inner {:margin 0 :height "100%"}]
             [:#editor :#editor-read-only
              {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}])]
-      [:title title]]
+      [:title "FloNote"]]
      [:body
       [:pre#init {:style "display: none"} (base64-encode (pr-str init))]
       [:div#app]

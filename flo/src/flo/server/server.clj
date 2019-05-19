@@ -130,17 +130,26 @@
      :headers {"Content-Type" "text/html"}
      :body    (login-html)})
   (GET "/" [] {:status 302 :headers {"Location" "/editor"} :body ""})
-  (GET "/editor" request
-    (let [name (get (:query-params request) "id" "default")
-          notes (get-all-notes)
+  (GET "/history" request
+    (let [time (get (:query-params request) "t" "2019-05-06T12:00:00")
+          notes (get-all-notes time)
           session {:uid (.toString (UUID/randomUUID))}
           field (anti-forgery-field)]
       {:status  200
        :headers {"Content-Type" "text/html"}
        :session session
-       :body    (editor-html name
-                  {:active-note-name name
-                   :notes notes
+       :body    (editor-html
+                  {:notes notes
+                   :anti-forgery-field field})}))
+  (GET "/editor" []
+    (let [notes (get-all-notes)
+          session {:uid (.toString (UUID/randomUUID))}
+          field (anti-forgery-field)]
+      {:status  200
+       :headers {"Content-Type" "text/html"}
+       :session session
+       :body    (editor-html
+                  {:notes notes
                    :anti-forgery-field field})}))
            (route/not-found "Not Found"))
 
