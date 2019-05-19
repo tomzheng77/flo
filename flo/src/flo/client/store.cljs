@@ -187,7 +187,8 @@
       [:chsk/recv [:flo/history [note]]]
       {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
       [:chsk/recv [:flo/refresh [note]]]
-      {:db (-> db
+      {:refresh-editor (if (= (:name note) (:active-note-name db)) (:content note))
+       :db (-> db
                (assoc-in [:notes (:name note) :time-updated] (:time-updated note))
                (assoc-in [:notes (:name note) :content] (:content note)))}
       :else {:db db})))
