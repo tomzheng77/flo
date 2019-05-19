@@ -247,12 +247,25 @@
 (rf/reg-fx :focus-editor
   (fn [_] (.focus @ace-editor)))
 
-; (js/console.log (.diffChars diff "this is" "is a\n test"))
+; https://stackoverflow.com/questions/18050128/applydeltas-in-ace-editor
+; :action :insert
+; :action :remove
+(defn changes->deltas [changes]
+  (loop [remain changes row 0 col 0]
+    (let [item (first remain)
+          lines (str/split (:value item) #"\n")
+          is-add (true? (:added item))
+          removed (true? (:removed item))]
+      (js/console.log lines))))
+
+(.on @ace-editor "change" (fn [e] (js/console.log e)))
+
 (rf/reg-fx :refresh-editor
   (fn [content]
     (println "update")
-    (let [changes (.diffChars diff (ace/get-text @ace-editor) content)]
+    (let [changes (js->clj (.diffChars diff (ace/get-text @ace-editor) content) :keywordize-keys true)]
       (js/console.log changes)
+      (js/console.log (changes->deltas changes))
       (ace/set-text @ace-editor content))))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
