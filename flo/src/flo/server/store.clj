@@ -68,14 +68,29 @@
     [?tx1 :db/txInstant ?new-time]
     [?tx2 :db/txInstant ?upd-time]])
 
-(defn get-all-notes []
-  (let [db (d/db (get-conn))]
-    (for [[name time-created time-updated content-raw] (d/q (all-notes-q) db)]
-      (let [content (if content-raw (nippy/thaw content-raw))]
-        {:name name
-         :time-created (if time-created (.getTime time-created))
-         :time-updated (if time-updated (.getTime time-updated))
-         :content content}))))
+; converts to java.util.Date
+(defn to-util-date [ldt]
+  (cond
+    (instance? Long ldt) (new Date ldt)
+    (instance? Integer ldt) (new Date ldt)
+    (instance? LocalDateTime ldt)
+    (Date/from (.toInstant (.atZone ldt (ZoneId/systemDefault))))
+    (instance? Date ldt) ldt))
+
+(defn get-all-notes
+  ([] (get-all-notes (d/db (get-conn)) 0))
+  ([at]
+   (let [date (to-util-date at)]
+     (assert (not (nil? date)))
+     (let [db (d/as-of (d/db (get-conn)) date)]
+       (get-all-notes db 0))))
+  ([db _]
+   (for [[name time-created time-updated content-raw] (d/q (all-notes-q) db)]
+     (let [content (if content-raw (nippy/thaw content-raw))]
+       {:name name
+        :time-created (if time-created (.getTime time-created))
+        :time-updated (if time-updated (.getTime time-updated))
+        :content content}))))
 
 (defn get-note
   ([name] (get-note name (d/db (get-conn))))
@@ -86,15 +101,6 @@
         :time-created (if time-created (.getTime time-created))
         :time-updated (if time-updated (.getTime time-updated))
         :content content}))))
-
-; converts to java.util.Date
-(defn to-util-date [ldt]
-  (cond
-    (instance? Long ldt) (new Date ldt)
-    (instance? Integer ldt) (new Date ldt)
-    (instance? LocalDateTime ldt)
-    (Date/from (.toInstant (.atZone ldt (ZoneId/systemDefault))))
-    (instance? Date ldt) ldt))
 
 (defn get-note-at [name at]
   (let [date (to-util-date at)]
