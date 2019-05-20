@@ -30,3 +30,20 @@ function stringFromUTF8Array(data)
 
     return str;
 }
+
+// only accepts \n
+function splitLines(string) {
+    var array = [];
+    var buf = "";
+    for (var i = 0; i < string.length; i++) {
+        var char = string[i];
+        if (char !== '\n') {
+            buf += char;
+        } else {
+            array.push(buf);
+            buf = "";
+        }
+    }
+    array.push(buf);
+    return array;
+}
