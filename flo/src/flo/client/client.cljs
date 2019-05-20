@@ -286,7 +286,6 @@
 
 (rf/reg-fx :refresh-editor
   (fn [content]
-    (println "update")
     (let [changes (js->clj (.diffChars diff (ace/get-text @ace-editor) content) :keywordize-keys true)
           deltas (changes->deltas changes)]
       (ace/apply-deltas @ace-editor deltas))))
