@@ -154,7 +154,6 @@
                      :anti-forgery-field field
                      :read-only true})})))
   (GET "/editor" request
-    (println (:session request))
     (if-not (:login (:session request))
       {:status 302 :headers {"Location" "/login"} :body ""}
       (let [notes (get-all-notes)
