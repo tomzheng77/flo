@@ -2643,7 +2643,7 @@ var MarkdownHighlightRules = function() {
             token : "constant.language.escape",
             regex : /\\[\\`*_{}\[\]()#+\-.!]/
         }, { // code span `
-            token : "support.function",
+            token : "support.function.inline", // ---------- [CUSTOM] ---------- (inline)
             regex : "(`+)(.*?[^`])(\\1)"
         }, { // reference
             token : ["text", "constant", "text", "url", "string", "text"],

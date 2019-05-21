@@ -136,6 +136,21 @@ color: #f442d1\
 .ace-monokai .ace_markup.ace_list {\
 color: #777;\
 font-weight: bold;\
+}\
+.ace-monokai .ace_support.ace_function {\
+opacity: 0.8;\
+}\
+.ace-monokai .ace_support.ace_function.ace_inline {\
+opacity: 1;\
+}\
+.ace-monokai .ace_keyword,\
+.ace-monokai .ace_constant,\
+.ace-monokai .ace_storage,\
+.ace-monokai .ace_paren,\
+.ace-monokai .ace_punctuation,\
+.ace-monokai .ace_identifier\
+{\
+opacity: 0.8;\
 }";
 
 var dom = require("../lib/dom");
