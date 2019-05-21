@@ -142,6 +142,8 @@ opacity: 0.8;\
 }\
 .ace-monokai .ace_support.ace_function.ace_inline {\
 opacity: 1;\
+color: #CC7832;\
+color: #FF983C;\
 }\
 .ace-monokai .ace_keyword,\
 .ace-monokai .ace_constant,\
