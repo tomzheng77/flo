@@ -72,7 +72,7 @@
   ([this tag opts]
    (if (and tag (not-empty tag))
      (let [settings (clj->js (set/union {:caseSensitive true :regExp true :backwards false} opts))
-           regex (str "\\[" tag "\\]")]
+           regex (str "\\[\\$?" tag "\\]")]
        (.find this regex settings)))))
 
 ; indents all the selected ranges in the editor

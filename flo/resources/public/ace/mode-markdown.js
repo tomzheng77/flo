@@ -2672,13 +2672,21 @@ var MarkdownHighlightRules = function() {
                       "|"+
                       "(?:mailto:)?[-.\\w]+\\@[-a-z0-9]+(?:\\.[-a-z0-9]+)*\\.[a-z]+"+
                     ")(>)"
-        }, { // ---------- [CUSTOM] ----------
+        }, { // ---------- [CUSTOM] ---------- [TAG-SYNTAX]
             token: "tag.declaration.clickable",
             regex: "\\[[A-Z0-9]+\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "tag.definition.clickable",
             regex: "\\[[A-Z0-9]+=\\]",
+            caseInsensitive: false
+        }, { // ---------- [CUSTOM] ----------
+            token: "tag.declaration.clickable.global",
+            regex: "\\[\\$[A-Z0-9]+\\]",
+            caseInsensitive: false
+        }, { // ---------- [CUSTOM] ----------
+            token: "tag.definition.clickable.global",
+            regex: "\\[\\$[A-Z0-9]+=\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "tag.reference.clickable",

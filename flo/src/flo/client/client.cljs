@@ -327,18 +327,24 @@
   (or (first (filter #(and (>= index (:start %)) (< index (:end %))) search-results))
       (first (filter #(and (>= index (:start %)) (<= index (:end %))) search-results))))
 
+; [TAG-SYNTAX]
 (defn tag-declaration-at [line col]
-  (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+\]") col))]
+  (let [token (:substr (first-at (find-all line #"\[\$?[A-Z0-9]+\]") col))]
     (if token (subs token 1 (dec (count token))))))
 
+; [TAG-SYNTAX]
 (defn tag-definition-at [line col]
-  (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+=\]") col))]
+  (let [token (:substr (first-at (find-all line #"\[\$?[A-Z0-9]+=\]") col))]
     (if token (subs token 1 (dec (count token))))))
 
 (defn tag-reference-at [line col]
   (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+@[A-Z0-9]*\]") col))]
     (if token (subs token 1 (dec (count token))))))
 
+(defn remove-global [str]
+  (if (str/starts-with? str "$") (subs str 1) str))
+
+; [TAG-SYNTAX]
 (defn toggle-navigation [editor]
   (let [cursor (js->clj (.getCursor (.getSelection editor)))
         row (get cursor "row")
@@ -348,15 +354,16 @@
         definition (tag-definition-at line col)
         reference (tag-reference-at line col)]
     (cond
-      declaration (rf/dispatch [:set-search (str declaration "=")])
-      definition (rf/dispatch [:set-search (subs definition 0 (dec (count definition)))])
+      declaration (rf/dispatch [:set-search (remove-global (str declaration "="))])
+      definition (rf/dispatch [:set-search (remove-global (subs definition 0 (dec (count definition))))])
       reference (rf/dispatch [:navigate-direct (current-time-millis) reference])
       true (rf/dispatch [:toggle-navigation]))))
 
+; [TAG-SYNTAX]
 (defn next-tag [editor direction]
   (if (= :up direction)
-    (ace/navigate editor "[A-Z0-9]+(@[A-Z0-9]*|=)?" {:backwards true})
-    (ace/navigate editor "[A-Z0-9]+(@[A-Z0-9]*|=)?")))
+    (ace/navigate editor "\\$?[A-Z0-9]+(@[A-Z0-9]*|=)?" {:backwards true})
+    (ace/navigate editor "\\$?[A-Z0-9]+(@[A-Z0-9]*|=)?")))
 
 (defn toggle-nav-command [editor]
   {:name "toggle-navigation"

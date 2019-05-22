@@ -287,12 +287,16 @@
   (fn [coeffects _]
     (assoc coeffects :time (js.Date.))))
 
+(defn remove-global [str]
+  (if (str/starts-with? str "$") (subs str 1) str))
+
+; [TAG-SYNTAX]
 (rf/reg-event-fx :click-link
   [(rf/inject-cofx :time)]
   (fn [{:keys [time]} [_ types text]]
     (cond
-      (types "declaration") {:dispatch [:set-search (str (subs text 1 (dec (count text))) "=")]}
-      (types "definition") {:dispatch [:set-search (subs text 1 (dec (dec (count text))))]}
+      (types "declaration") {:dispatch [:set-search (remove-global (str (subs text 1 (dec (count text))) "="))]}
+      (types "definition") {:dispatch [:set-search (remove-global (subs text 1 (dec (dec (count text)))))]}
       (types "reference") {:dispatch [:navigate-direct time (subs text 1 (dec (count text)))]}
       (types "link") {:open-window text})))
 
