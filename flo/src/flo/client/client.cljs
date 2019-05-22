@@ -355,8 +355,8 @@
 
 (defn next-tag [editor direction]
   (if (= :up direction)
-    (ace/navigate editor "[A-Z]+(@[A-Z]*|=)?" {:backwards true})
-    (ace/navigate editor "[A-Z]+(@[A-Z]*|=)?")))
+    (ace/navigate editor "[A-Z0-9]+(@[A-Z0-9]*|=)?" {:backwards true})
+    (ace/navigate editor "[A-Z0-9]+(@[A-Z0-9]*|=)?")))
 
 (defn toggle-nav-command [editor]
   {:name "toggle-navigation"
