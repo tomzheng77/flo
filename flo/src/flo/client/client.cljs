@@ -232,6 +232,7 @@
                  :padding-right 20
                  :padding-top 20}}
    (doall (for [global @(rf/subscribe [:globals])]
+     ^{:key (:key global)}
      [:div {:style {:display "flex"
                     :flex-direction "row"
                     :align-items "center"
@@ -386,7 +387,7 @@
     (cond
       declaration (rf/dispatch [:set-search (remove-global (str declaration "="))])
       definition (rf/dispatch [:set-search (remove-global (subs definition 0 (dec (count definition))))])
-      reference (rf/dispatch [:navigate-direct (current-time-millis) reference])
+      reference (rf/dispatch [:navigate-direct reference])
       true (rf/dispatch [:toggle-navigation]))))
 
 ; [TAG-SYNTAX]
@@ -468,7 +469,7 @@
     (when (and (#{"Enter"} code))
       (rf/dispatch [:navigate-enter (current-time-millis)]))
     (when (and (#{"Tab"} code))
-      (rf/dispatch [:navigate-direct (current-time-millis)])))
+      (rf/dispatch [:navigate-direct])))
   (if (= "ShiftLeft" code)
     (rf/dispatch [:shift-press (current-time-millis)])
     (rf/dispatch [:shift-press nil]))

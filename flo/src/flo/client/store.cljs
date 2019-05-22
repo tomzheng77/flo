@@ -162,11 +162,14 @@
          (map (fn [[_ note]] (into [] (map #(assoc % :note note) (:globals note)))))
          (flatten)
          (sort-by (fn [global] [(:name (:note global)) (:substr global)]))
+         (map #(assoc % :key [(:name (:note %)) (:start %)]))
          (into []))))
 
 (rf/reg-event-fx :click-global
-  (fn [db [_ global]]
-    (println global)))
+  (fn [{:keys [db]} [_ global]]
+    (let [search (subs (:substr global) 2 (dec (count (:substr global))))
+          nav (str (:name (:note global)) "@" search)]
+      {:db db :dispatch [:navigate-direct nav]})))
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
@@ -318,7 +321,7 @@
     (cond
       (types "declaration") {:dispatch [:set-search (remove-global (str (subs text 1 (dec (count text))) "="))]}
       (types "definition") {:dispatch [:set-search (remove-global (subs text 1 (dec (dec (count text)))))]}
-      (types "reference") {:dispatch [:navigate-direct time (subs text 1 (dec (count text)))]}
+      (types "reference") {:dispatch [:navigate-direct (subs text 1 (dec (count text)))]}
       (types "link") {:open-window text})))
 
 (rf/reg-fx :open-window
@@ -328,7 +331,8 @@
 ; navigates to the first result of the :navigation query
 ; regardless of :navigation-index
 (rf/reg-event-fx :navigate-direct
-  (fn [{:keys [db]} [_ time navigation]]
+  [(rf/inject-cofx :time)]
+  (fn [{:keys [db time]} [_ navigation]]
     (let [navs (navigation-list (update db :navigation #(or navigation %)))
           note (first navs)
           search (:search (parse-navigation-query (or navigation (:navigation db))))]
