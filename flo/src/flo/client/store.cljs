@@ -18,7 +18,7 @@
 
 ; determines a tag for the note
 (defn find-globals [content]
-  (find-all content #"\[\$[A-Z0-9]+=?\]"))
+  (into [] (find-all content #"\[\$[A-Z0-9]+=?\]")))
 
 (defn clamp [min max x]
   (if (< x min)
@@ -154,6 +154,14 @@
 (rf/reg-sub :navigation-index (fn [db v] (:navigation-index db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
+
+(rf/reg-sub :globals
+  (fn [db _]
+    (->> (:notes db)
+         (map (fn [[_ note]] (into [] (map #(assoc % :note note) (:globals note)))))
+         (flatten)
+         (sort-by (fn [global] [(:name (:note global)) (:substr global)]))
+         (into []))))
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))

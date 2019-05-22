@@ -214,12 +214,39 @@
    [:input {:id "file-input" :type "file" :style {:display "none"} :multiple true
             :on-change #(upload-image) :name "files"}]])
 
-
 (defn file-form []
   (r/create-class
     {:reagent-render file-form-render
      :component-did-mount (fn [_])}))
 
+(defn global-sidebar []
+  [:div {:style {:position "absolute"
+                 :right 0
+                 :top 0
+                 :bottom 0
+                 :min-width 100
+                 :pointer-events "none"
+                 :display "flex"
+                 :flex-direction "column"
+                 :align-items "flex-end"
+                 :padding-right 20
+                 :padding-top 20}}
+   (println @(rf/subscribe [:globals]))
+   (doall (for [global @(rf/subscribe [:globals])]
+     [:div {:style {:display "flex"
+                    :flex-direction "row"
+                    :align-items "center"
+                    :margin-bottom 10}}
+      [:div {:style {:color "white"
+                     :margin-right 5}} (:name (:note global))]
+      [:div {:style {:color "#3DA1D2"
+                     :font-weight "bold"
+                     :font-family "Go-Mono"
+                     :cursor "pointer"
+                     :pointer-events "auto"
+                     :padding 3
+                     :border-radius 3
+                     :border "1px solid gray"}} (:substr global)]]))])
 
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
@@ -230,6 +257,7 @@
    ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "none" "flex") :flex-direction "column"}} [:div#editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    (if @(rf/subscribe [:search]) [search-bar])
+   [global-sidebar]
    [history-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
