@@ -17,6 +17,7 @@
     (if search (subs search 2 (dec (dec (count search)))))))
 
 ; determines a tag for the note
+; [TAG-SYNTAX]
 (defn find-globals [content]
   (into [] (find-all content #"\[\$[A-Z0-9]+=?\]")))
 
