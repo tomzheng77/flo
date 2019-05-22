@@ -2682,11 +2682,11 @@ var MarkdownHighlightRules = function() {
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "tag.declaration.clickable.global",
-            regex: "\\[\\$[A-Z0-9]+\\]",
+            regex: "\\[![A-Z0-9]+\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "tag.definition.clickable.global",
-            regex: "\\[\\$[A-Z0-9]+=\\]",
+            regex: "\\[![A-Z0-9]+=\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "tag.reference.clickable",
