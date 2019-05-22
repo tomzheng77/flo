@@ -8,12 +8,17 @@
             [re-frame.db :as db]
             [clojure.string :as str]
             [cljs.core.match :refer-macros [match]]
+            [flo.client.functions :refer [find-all]]
             [clojure.set :as set]))
 
 ; determines a tag for the note
 (defn find-ntag [content]
   (let [search (re-find #"\[&[A-Z0-9]+=\]" content)]
     (if search (subs search 2 (dec (dec (count search)))))))
+
+; determines a tag for the note
+(defn find-globals [content]
+  (find-all content #"\[\$?[A-Z0-9]+=?\]"))
 
 (defn clamp [min max x]
   (if (< x min)
@@ -63,7 +68,9 @@
    :time-updated time
    :content ""
    :history (avl/sorted-map)
-   :selection {:row 0 :column 0}})
+   :selection {:row 0 :column 0}
+   :ntag nil
+   :globals []})
 
 (defn parse-navigation-query [query]
   (if-not query
@@ -122,6 +129,7 @@
                                (map #(assoc % :type :note))
                                (map #(assoc % :selection {:row 0 :column 0}))
                                (map #(assoc % :ntag (find-ntag (:content %))))
+                               (map #(assoc % :globals (find-globals (:content %))))
                                (map (fn [n] [(:name n) n]))
                                (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
                                (into {})
