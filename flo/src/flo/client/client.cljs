@@ -235,14 +235,16 @@
      [:div {:style {:display "flex"
                     :flex-direction "row"
                     :align-items "center"
-                    :margin-bottom 10}}
+                    :margin-bottom 10
+                    :user-select "none"
+                    :cursor "pointer"
+                    :pointer-events "auto"}
+            :on-click #(rf/dispatch [:click-global global])}
       [:div {:style {:color "white"
                      :margin-right 5}} (:name (:note global))]
       [:div {:style {:color "#3DA1D2"
                      :font-weight "bold"
                      :font-family "Go-Mono"
-                     :cursor "pointer"
-                     :pointer-events "auto"
                      :padding 3
                      :border-radius 3
                      :border "1px solid gray"}} (:substr global)]]))])
