@@ -7,7 +7,8 @@
             [re-frame.core :as rf]
             [re-frame.db :as db]
             [clojure.string :as str]
-            [cljs.core.match :refer-macros [match]]))
+            [cljs.core.match :refer-macros [match]]
+            [clojure.set :as set]))
 
 ; determines a tag for the note
 (defn find-ntag [content]
@@ -187,7 +188,8 @@
 ; whenever a message has been received from sente
 (rf/reg-event-fx
   :chsk-event
-  (fn [{:keys [db]} [_ event]]
+  [(rf/inject-cofx :time)]
+  (fn [{:keys [db time]} [_ event]]
     (match event
       [:chsk/recv [:flo/history note]]
       {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
@@ -195,9 +197,8 @@
       (if (:read-only db)
         {:db db}
         {:refresh-editor (if (= (:name note) (:active-note-name db)) (:content note))
-         :db (-> db
-                 (assoc-in [:notes (:name note) :time-updated] (:time-updated note))
-                 (assoc-in [:notes (:name note) :content] (:content note)))})
+         :db (let [existing-note (or (get-in db [:notes (:name note)]) (new-note (:name note) time))]
+               (-> db (assoc-in [:notes (:name note)] (set/union existing-note note))))})
       :else {:db db})))
 
 ; x-position of the history button
