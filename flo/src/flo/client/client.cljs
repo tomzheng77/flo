@@ -231,7 +231,6 @@
                  :align-items "flex-end"
                  :padding-right 20
                  :padding-top 20}}
-   (println @(rf/subscribe [:globals]))
    (doall (for [global @(rf/subscribe [:globals])]
      [:div {:style {:display "flex"
                     :flex-direction "row"
