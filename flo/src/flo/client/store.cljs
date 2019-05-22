@@ -164,6 +164,10 @@
          (sort-by (fn [global] [(:name (:note global)) (:substr global)]))
          (into []))))
 
+(rf/reg-event-fx :click-global
+  (fn [db [_ global]]
+    (println global)))
+
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
 (rf/reg-event-db :set-history-limit
