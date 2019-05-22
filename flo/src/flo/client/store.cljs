@@ -338,7 +338,7 @@
           search (:search (parse-navigation-query (or navigation (:navigation db))))]
       (if-not note
         {:db (assoc db :search search)}
-        {:db (assoc db :search search) :dispatch [:open-note note time false]}))))
+        {:db (assoc db :search search) :dispatch [:open-note note false]}))))
 
 ; either navigates to a result of the :navigation query based on :navigation-index
 ; or navigates based on name only
@@ -347,13 +347,13 @@
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
         ; must have already previewed, can copy from read-only editor
-        {:db db :dispatch [:open-note (nth navs (:navigation-index db)) time true]}
+        {:db db :dispatch [:open-note (nth navs (:navigation-index db)) true]}
 
         ; otherwise navigate to name
         (let [{:keys [name]} (parse-navigation-query (:navigation db))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
-            {:db db :dispatch [:open-note name time false]}))))))
+            {:db db :dispatch [:open-note name false]}))))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
@@ -364,16 +364,17 @@
 ; otherwise, if the copy-from-ro flag is not set to true
 ; then the editor state will be explicitly set
 (rf/reg-event-fx :open-note
-  (fn [{:keys [db]} [_ indicator time copy-from-ro]]
+  [(rf/inject-cofx :time)]
+  (fn [{:keys [db time]} [_ indicator copy-from-ro]]
     (cond
       (string? indicator)
       (let [name indicator
             existing-note (get (:notes db) name)]
         (if existing-note
-          {:db db :dispatch [:open-note existing-note time false]}
+          {:db db :dispatch [:open-note existing-note false]}
           (let [a-new-note (new-note name time)]
             {:db       (assoc-in db [:notes name] a-new-note)
-             :dispatch [:open-note a-new-note time false]})))
+             :dispatch [:open-note a-new-note false]})))
 
       (and (map? indicator) (= :note (:type indicator)))
       (let [note indicator
