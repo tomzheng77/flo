@@ -145,8 +145,7 @@
   (let [hover? (r/atom false)
         press? (r/atom false)]
     (fn []
-      [:div {:style {:float "left"
-                     :width "24px"
+      [:div {:style {:width "24px"
                      :height "24px"
                      :font-size "11px"
                      :line-height "24px"
@@ -171,7 +170,9 @@
                  :background-color "#9e4446"
                  :flex-grow        "0"
                  :flex-shrink      "0"
-                 :overflow         "hidden"}}
+                 :overflow         "hidden"
+                 :display          "flex"
+                 :align-items      "center"}}
    [history-limit "H" (* 1000 60 60)]
    [history-limit "D" (* 1000 60 60 24)]
    [history-limit "W" (* 1000 60 60 24 7)]
