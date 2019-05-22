@@ -18,7 +18,7 @@
 
 ; determines a tag for the note
 (defn find-globals [content]
-  (find-all content #"\[\$?[A-Z0-9]+=?\]"))
+  (find-all content #"\[\$[A-Z0-9]+=?\]"))
 
 (defn clamp [min max x]
   (if (< x min)
@@ -380,6 +380,7 @@
       {:db db}
       {:db (-> db
                (assoc-in [:notes name :ntag] (find-ntag content))
+               (assoc-in [:notes name :globals] (find-globals content))
                (assoc-in [:notes name :content] content)
                (assoc-in [:notes name :time-updated] time))
        :chsk-send
