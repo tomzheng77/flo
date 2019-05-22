@@ -196,9 +196,9 @@
       [:chsk/recv [:flo/refresh note]]
       (if (:read-only db)
         {:db db}
-        {:refresh-editor (if (= (:name note) (:active-note-name db)) (:content note))
-         :db (let [existing-note (or (get-in db [:notes (:name note)]) (new-note (:name note) time))]
-               (-> db (assoc-in [:notes (:name note)] (set/union existing-note note))))})
+        (conj {:db (let [existing-note (or (get-in db [:notes (:name note)]) (new-note (:name note) time))]
+                     (-> db (assoc-in [:notes (:name note)] (set/union existing-note note))))}
+              (when (= (:name note) (:active-note-name db)) [:refresh-editor (:content note)])))
       :else {:db db})))
 
 ; x-position of the history button
