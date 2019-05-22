@@ -78,7 +78,11 @@
     {:name nil :search nil}
     (let [[name search] (str/split query #"@" 2)]
       {:name name
-       :search (if (not-empty search) (str (str/upper-case search) "="))})))
+       :search
+       (if (not-empty search)
+         (if (str/starts-with? search "!")
+           (str/upper-case search)
+           (str (str/upper-case search) "=")))})))
 
 (def name-length-limit 100)
 (rf/reg-event-fx
@@ -167,7 +171,7 @@
 
 (rf/reg-event-fx :click-global
   (fn [{:keys [db]} [_ global]]
-    (let [search (subs (:substr global) 2 (dec (count (:substr global))))
+    (let [search (subs (:substr global) 1 (dec (count (:substr global))))
           nav (str (:name (:note global)) "@" search)]
       {:db db :dispatch [:navigate-direct nav]})))
 
