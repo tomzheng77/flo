@@ -66,6 +66,7 @@
         (.addRange (.getSelection this) (.clone range) false))
       (set! (.-autoChangeSelection this) false))))
 
+; [TAG-SYNTAX]
 (defn navigate
   "navigates to the next occurrence of the <search> tag"
   ([this tag] (navigate this tag {}))
