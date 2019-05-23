@@ -161,7 +161,7 @@ color: #FF983C;\
 .ace-monokai .ace_paren,\
 .ace-monokai .ace_punctuation,\
 .ace-monokai .ace_string,\
-.ace-monokai .ace_identifier\
+.ace-monokai .ace_identifier,\
 .ace-monokai .ace_comment.ace_doc\
 {\
 opacity: 0.8;\
