@@ -168,6 +168,14 @@ color: #FF983C;\
 opacity: 0.8;\
 }\
 .ace-monokai .ace_comment {\
+}\
+.ace-monokai .ace_timestamp {\
+color: #48f442;\
+font-weight: bold;\
+}\
+.ace-monokai .ace_ritsu {\
+color: #48f442;\
+font-weight: bold;\
 }";
 
 var dom = require("../lib/dom");

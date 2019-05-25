@@ -2702,6 +2702,12 @@ var MarkdownHighlightRules = function() {
         }, { // ---------- [CUSTOM] ----------
             token: "image", // [*614c18b7-1aa5-4dc2-b611-e7a31818c6a1], [-614c18b7-1aa5-4dc2-b611-e7a31818c6a1]
             regex: "\\[[-\\*][^\\]]+\\]"
+        }, {
+            token: "timestamp",
+            regex: "([0-9]{4}-[0-9]{2}-[0-9]{2},? |[0-9]{2}-[0-9]{2},? |)[0-9]{1,2}(:[0-9]{2})? (AM|PM)"
+        }, {
+            token: "ritsu",
+            regex: "<-?[0-9]+>"
         }],
         "allowBlock": [
             // ---------- [CUSTOM-RM] ----------
