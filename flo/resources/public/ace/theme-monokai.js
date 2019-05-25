@@ -137,6 +137,7 @@ color: #00AA00;\
 /*animation: blinker 1s linear infinite;*/\
 }\
 .ace-monokai .ace_emphasis {\
+opacity: 1;\
 font-weight: bold;\
 }\
 .ace-monokai .ace_ntag {\
