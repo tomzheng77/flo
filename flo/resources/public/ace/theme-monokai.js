@@ -173,8 +173,16 @@ opacity: 0.8;\
 color: #48f442;\
 font-weight: bold;\
 }\
-.ace-monokai .ace_ritsu {\
+.ace-monokai .ace_ritsu.ace_amount {\
 color: #48f442;\
+font-weight: bold;\
+}\
+.ace-monokai .ace_ritsu.ace_pass {\
+color: #48f442;\
+font-weight: bold;\
+}\
+.ace-monokai .ace_ritsu.ace_fail {\
+color: red;\
 font-weight: bold;\
 }";
 

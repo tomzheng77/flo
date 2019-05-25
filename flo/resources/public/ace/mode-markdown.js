@@ -2704,10 +2704,16 @@ var MarkdownHighlightRules = function() {
             regex: "\\[[-\\*][^\\]]+\\]"
         }, {
             token: "timestamp",
-            regex: "([0-9]{4}-[0-9]{2}-[0-9]{2},? |[0-9]{2}-[0-9]{2},? |)[0-9]{1,2}(:[0-9]{2})? (AM|PM)"
+            regex: "([0-9]{4}-[0-9]{2}-[0-9]{2},? |[0-9]{2}-[0-9]{2},? |)([0-9]{1,2}(:[0-9]{2})?( AM| PM|) ?- ?)?[0-9]{1,2}(:[0-9]{2})? (AM|PM)"
         }, {
-            token: "ritsu",
+            token: "ritsu.amount",
             regex: "<-?[0-9]+>"
+        }, {
+            token: "ritsu.pass",
+            regex: "<P>"
+        }, {
+            token: "ritsu.fail",
+            regex: "<F>"
         }],
         "allowBlock": [
             // ---------- [CUSTOM-RM] ----------
