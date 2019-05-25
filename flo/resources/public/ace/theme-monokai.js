@@ -128,7 +128,7 @@ text-shadow: 0px 0px 3px #3DA1D2;\
 }\
 .ace-monokai .ace_tag.ace_reference {\
 font-weight: bold;\
-color: #f0c400;\
+color: #dbb50f;\
 /*animation: blinker 1s linear infinite;*/\
 }\
 .ace-monokai .ace_image {\
