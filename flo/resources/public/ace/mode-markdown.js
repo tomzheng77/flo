@@ -2707,13 +2707,13 @@ var MarkdownHighlightRules = function() {
             regex: "([0-9]{4}-[0-9]{2}-[0-9]{2},? |[0-9]{2}-[0-9]{2},? |)([0-9]{1,2}(:[0-9]{2})?(:[0-9]{2})?( AM| PM|) ?- ?)?([0-9]{1,2}(:[0-9]{2})?(:[0-9]{2})? (AM|PM)|[0-9]{1,2}:[0-9]{2}(:[0-9]{2})?)"
         }, {
             token: "ritsu.amount",
-            regex: "<-?[0-9]+>"
+            regex: "<-?([0-9]+)?\\.?[0-9]+>"
         }, {
             token: "ritsu.pass",
-            regex: "<P>"
+            regex: "<P(x[0-9]+)?>"
         }, {
             token: "ritsu.fail",
-            regex: "<F>"
+            regex: "<F(x[0-9]+)?>"
         }],
         "allowBlock": [
             // ---------- [CUSTOM-RM] ----------
