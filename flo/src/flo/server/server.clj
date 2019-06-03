@@ -136,9 +136,11 @@
   (GET "/login" request
     (if (:login (:session request))
       {:status  302 :headers {"Location" "/editor"} :body ""}
-      {:status  200
-       :headers {"Content-Type" "text/html"}
-       :body    (login-html)}))
+      (if (empty? @global/password)
+        {:status 302 :headers {"Location" "/editor"} :body "" :session {:login true}}
+        {:status 200
+         :headers {"Content-Type" "text/html"}
+         :body (login-html)})))
   (GET "/" [] {:status 302 :headers {"Location" "/login"} :body ""})
   (GET "/history" request
     (if-not (:login (:session request))
