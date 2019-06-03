@@ -12,6 +12,7 @@
             [taoensso.nippy :as nippy]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [datomic.api :as d]
+            [flo.server.global :as global]
             [flo.server.codec :refer [base64-encode hash-password]])
   (:import (java.time LocalDateTime ZoneId LocalDate LocalTime)
            (java.util Date)
@@ -39,7 +40,7 @@
 ; connections are long lived and cached by d/connect
 ; hence there is no need to store the connection
 (def get-conn
-  (let [db-uri "datomic:dev://localhost:4334/flo-ace"
+  (let [db-uri (str "datomic:dev://localhost:4334/" @global/db-name)
         started (atom false)]
     (fn []
       ; when this function is called for the first time

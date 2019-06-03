@@ -23,6 +23,7 @@
             [taoensso.timbre.appenders.core :as appenders]
             [flo.server.store :refer [get-note get-note-at set-note get-all-notes]]
             [flo.server.static :refer [editor-html login-html]]
+            [flo.server.global :as global]
             [clojure.java.io :as io]
             [ring.util.anti-forgery :refer [anti-forgery-field]])
   (:import (java.util UUID Date)
@@ -129,7 +130,7 @@
     (if (:login (:session request))
       {:status  302 :headers {"Location" "/editor"} :body ""}
       (let [password (:password (:params request))]
-        (if (= "cHrF7iO2yA9O" password)
+        (if (or (empty? @global/password) (= @global/password password))
           {:status 302 :headers {"Location" "/editor"} :body "" :session {:login true}}
           {:status 302 :headers {"Location" "/login"} :body ""}))))
   (GET "/login" request
@@ -176,5 +177,12 @@
       (wrap-keyword-params)
       (wrap-params)))
 
-(defn -main [& args]
-  (ks/run-server dev-app {:port 3451}))
+; password
+; port
+; database name
+(defn -main [& [password port db-name]]
+  (let [port-int (read-string port)]
+    (reset! global/password password)
+    (reset! global/port port-int)
+    (reset! global/db-name db-name)
+    (ks/run-server dev-app {:port port-int})))
