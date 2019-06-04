@@ -13,8 +13,9 @@
                  [org.clojure/core.async  "0.4.474"]
                  [cljsjs/react "16.8.3-0"]
                  [cljsjs/react-dom "16.8.3-0"]
-                 [cljsjs/quill "1.3.6-0"]
-                 [cljsjs/jquery "3.2.1-0"]
+                 [cljsjs/moment "2.24.0-0"]
+                 [reagent "0.8.1"]
+                 [re-frame "0.10.6"]
                  [clj-commons/cljss "1.6.4"]
                  [sablono "0.8.5"]
                  [ring "1.7.1"]
@@ -32,7 +33,13 @@
                  [com.fzakaria/slf4j-timbre "0.3.12"]
                  [org.slf4j/log4j-over-slf4j "1.7.14"]
                  [org.slf4j/jul-to-slf4j "1.7.14"]
-                 [org.slf4j/jcl-over-slf4j "1.7.14"]]
+                 [org.slf4j/jcl-over-slf4j "1.7.14"]
+                 [com.google.guava/guava "27.1-jre"]
+                 [org.clojure/data.avl "0.0.18"]
+                 [commons-codec/commons-codec "1.12"]
+
+                 ; requires datomic/bin/maven-install
+                 [com.datomic/datomic-pro "0.9.5786"]]
 
   :plugins [[lein-figwheel "0.5.19-SNAPSHOT"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
@@ -67,7 +74,7 @@
                            ;; To console.log CLJS data-structures make sure you enable devtools in Chrome
                            ;; https://github.com/binaryage/cljs-devtools
                            :preloads [devtools.preload]
-                           :npm-deps {:quill-image-resize-module "3.0.0"}
+                           :npm-deps {:quill-image-resize-module "3.0.0" :diff "4.0.1"}
                            :install-deps true}}
                ;; This next build is a compressed minified build for
                ;; production. You can build this with:
@@ -76,9 +83,10 @@
                 :source-paths ["src"]
                 :compiler {:output-to "resources/public/js/compiled/flo.js"
                            :main flo.client.client
-                           :optimizations :advanced
+                           :optimizations :simple
                            :pretty-print false
-                           :npm-deps {:quill-image-resize-module "3.0.0"}
+                           :npm-deps {:quill-image-resize-module "3.0.0" :diff "4.0.1"}
+                           :externs ["externs.js"]
                            :install-deps true}}]}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"

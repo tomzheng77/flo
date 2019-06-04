@@ -1,2 +1,25 @@
 /* some style */
 
+@font-face {
+    font-family: 'Go-Mono';
+    src: url('fonts/Go-Mono.ttf')  format('truetype');
+}
+
+@font-face {
+    font-family: 'Go-Mono';
+    src: url('fonts/Go-Mono-Bold.ttf')  format('truetype');
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: 'Go-Mono';
+    src: url('fonts/Go-Mono-Italic.ttf')  format('truetype');
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Go-Mono';
+    src: url('fonts/Go-Mono-Bold-Italic.ttf')  format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}

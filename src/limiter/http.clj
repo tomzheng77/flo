@@ -28,7 +28,9 @@
 (defn unwrap [connection]
   (let [response @connection]
     (if (:body response)
-      (c/decrypt (:body response))
+      (let [decrypted (c/decrypt (:body response))]
+        (try (read-string decrypted)
+             (catch Exception _ decrypted)))
       response)))
 
 (defn send-server

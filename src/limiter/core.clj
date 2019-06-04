@@ -2,7 +2,8 @@
   (:gen-class)
   (:require [limiter.proxy :as proxy]
             [limiter.warden :refer [lock-screen disable-login block-folder resign clear-all-restrictions
-                                    remove-wheel add-firewall-rules enable-login lock-home unlock-screen send-notify]]
+                                    remove-wheel add-firewall-rules enable-login lock-home unlock-screen send-notify
+                                    user-755]]
             [limiter.limiter :as limiter :refer [limiter-at drop-before]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
@@ -12,9 +13,12 @@
             [java-time-literals.core]
             [taoensso.encore :as enc]
             [clojure.java.io :as io]
-            [clojure.core.async :refer [go-loop <! chan >!!]])
+            [clojure.core.async :refer [go-loop <! chan >!!]]
+            [clojure.core.match :refer [match]])
   (:import (java.time LocalDateTime)
-           (java.util Timer TimerTask)))
+           (java.util Timer TimerTask)
+           (java.nio.file Files)
+           (java.nio.file.attribute FileAttribute)))
 
 (defn ns-filter [f] (-> f enc/compile-ns-filter enc/memoize_))
 (defn log-by-ns-pattern
@@ -49,13 +53,16 @@
   (spit c/primary-edn (limiter/stringify limiters)))
 
 (defn activate-limiter
-  [limiter]
+  [limiter previous]
   (if (:is-last limiter)
     (do (clear-all-restrictions)
         (reset! proxy/block-host #{}))
     (do (remove-wheel)
         (lock-home)
         (reset! proxy/block-host (into #{} (:block-host limiter)))
+        ; restart the proxy if block-host has changed
+        (when (not= (:block-host limiter) (:block-host previous))
+          (proxy/start-server))
         (when (not-empty (:block-host limiter)) (add-firewall-rules))
         (if (:block-login limiter)
           (do (disable-login)
@@ -110,15 +117,39 @@
         (swap! notified #(conj % in-1-minute))))
     (locking prev-limiter
       (when (not (= @prev-limiter limiter))
-        (reset! prev-limiter limiter)
-        (activate-limiter limiter)))
+        (activate-limiter limiter @prev-limiter)
+        (reset! prev-limiter limiter)))
     (swap! limiters #(drop-before % now))))
 
 (defn handle-request
   [edn]
-  (when (= :restart-proxy (:type edn))
-    (future (proxy/start-server)))
-  (when (= :limiter (:type edn))
+  (match (:type edn)
+    :new-project
+    (let [name (:name edn)]
+      (assert (string? name))
+      (let [dir (io/file c/user-projects name)]
+        (assert (not (.exists dir)))
+        (.mkdirs dir)
+        (user-755 dir)))
+
+    :new-program
+    (let [path (:path edn)
+          name (:name edn)]
+      (assert (string? path))
+      (assert (string? name))
+      (let [link (io/file c/user-programs name)
+            program (io/file path)]
+        (assert (not (.exists link)))
+        (assert (.exists program))
+        (Files/createSymbolicLink
+          (.toPath link)
+          (.toPath program)
+          (make-array FileAttribute 0))))
+
+    :restart-proxy
+    (future (proxy/start-server))
+
+    :limiter
     (let [start (:start edn)
           end (:end edn)
           now (LocalDateTime/now)]
@@ -126,9 +157,10 @@
       (assert (limiter/date-time? end))
       (assert (.isBefore start end))
       (assert (limiter/valid-limits? edn))
-      (swap! limiters #(-> %
-        (limiter/add-limiter start end edn)
-        (limiter/drop-before now))))))
+      (swap! limiters
+             #(-> % (limiter/add-limiter start end edn)
+                    (limiter/drop-before now))))))
+
 
 (defmacro try-or-resign
   [& body]
