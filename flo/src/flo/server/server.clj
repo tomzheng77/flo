@@ -34,7 +34,6 @@
   {:level      :debug
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
-(defn chsk-send! [& args])
 (defn send-note-contents [uid name timestamp & [content]]
   (let [note (assoc (get-note name) :time timestamp)]
     (if content
@@ -46,7 +45,6 @@
 (defonce run-iteration-id (atom (UUID/randomUUID)))
 (reset! run-iteration-id (UUID/randomUUID))
 
-(def connected-uids (atom #{}))
 (defn on-chsk-receive [{:keys [event uid]}]
   (match event
     [:flo/seek [name timestamp]]
