@@ -22,7 +22,7 @@
 
 (rf/reg-fx :chsk-send
   (fn [event]
-    (when-not (:open @chsk-state)
+    (when-not (:open? @chsk-state)
       (js/alert (str "failed to send message: " (pr-str event))))
     (when (:open? @chsk-state)
       (chsk-send! event))))
