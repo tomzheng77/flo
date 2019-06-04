@@ -203,37 +203,6 @@
     {:reagent-render file-form-render
      :component-did-mount (fn [_])}))
 
-(defn global-sidebar []
-  [:div {:style {:position "absolute"
-                 :right 0
-                 :top 0
-                 :bottom 0
-                 :min-width 100
-                 :pointer-events "none"
-                 :display "flex"
-                 :flex-direction "column"
-                 :align-items "flex-end"
-                 :padding-right 20
-                 :padding-top 20}}
-   (doall (for [global @(rf/subscribe [:globals])]
-     ^{:key (:key global)}
-     [:div {:style {:display "flex"
-                    :flex-direction "row"
-                    :align-items "center"
-                    :margin-bottom 10
-                    :user-select "none"
-                    :cursor "pointer"
-                    :pointer-events "auto"}
-            :on-click #(rf/dispatch [:click-global global])}
-      [:div {:style {:color "white"
-                     :margin-right 5}} (:name (:note global))]
-      [:div {:style {:color "#3DA1D2"
-                     :font-weight "bold"
-                     :font-family "Go-Mono"
-                     :padding 3
-                     :border-radius 3
-                     :border "1px solid gray"}} (:substr global)]]))])
-
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
@@ -242,7 +211,6 @@
    ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "none" "flex") :flex-direction "column"}} [:div#editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    (if @(rf/subscribe [:search]) [search-bar])
-   [global-sidebar]
    [history-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
@@ -355,9 +323,6 @@
   (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+@[A-Z0-9]*\]") col))]
     (if token (subs token 1 (dec (count token))))))
 
-(defn remove-global [str]
-  (if (str/starts-with? str "$") (subs str 1) str))
-
 ; [TAG-SYNTAX]
 (defn toggle-navigation [editor]
   (let [cursor (js->clj (.getCursor (.getSelection editor)))
@@ -368,8 +333,8 @@
         definition (tag-definition-at line col)
         reference (tag-reference-at line col)]
     (cond
-      declaration (rf/dispatch [:set-search (remove-global (str declaration "="))])
-      definition (rf/dispatch [:set-search (remove-global (subs definition 0 (dec (count definition))))])
+      declaration (rf/dispatch [:set-search (str declaration "=")])
+      definition (rf/dispatch [:set-search (subs definition 0 (dec (count definition)))])
       reference (rf/dispatch [:navigate-direct reference])
       true (rf/dispatch [:toggle-navigation]))))
 

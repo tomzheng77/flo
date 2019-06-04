@@ -16,11 +16,6 @@
   (let [search (re-find #"\[&[A-Z0-9]+=\]" content)]
     (if search (subs search 2 (dec (dec (count search)))))))
 
-; determines a tag for the note
-; [TAG-SYNTAX]
-(defn find-globals [content]
-  (into [] (find-all content #"\[![A-Z0-9]+=?\]")))
-
 (defn clamp [min max x]
   (if (< x min)
     min
@@ -70,8 +65,7 @@
    :content ""
    :history (avl/sorted-map)
    :selection {:row 0 :column 0}
-   :ntag nil
-   :globals []})
+   :ntag nil})
 
 (defn parse-navigation-query [query]
   (if-not query
@@ -134,7 +128,6 @@
                                (map #(assoc % :type :note))
                                (map #(assoc % :selection {:row 0 :column 0}))
                                (map #(assoc % :ntag (find-ntag (:content %))))
-                               (map #(assoc % :globals (find-globals (:content %))))
                                (map (fn [n] [(:name n) n]))
                                (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
                                (into {})
@@ -159,21 +152,6 @@
 (rf/reg-sub :navigation-index (fn [db v] (:navigation-index db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
-
-(rf/reg-sub :globals
-  (fn [db _]
-    (->> (:notes db)
-         (map (fn [[_ note]] (into [] (map #(assoc % :note note) (:globals note)))))
-         (flatten)
-         (sort-by (fn [global] [(:name (:note global)) (:substr global)]))
-         (map #(assoc % :key [(:name (:note %)) (:start %)]))
-         (into []))))
-
-(rf/reg-event-fx :click-global
-  (fn [{:keys [db]} [_ global]]
-    (let [search (subs (:substr global) 1 (dec (count (:substr global))))
-          nav (str (:name (:note global)) "@" search)]
-      {:db db :dispatch [:navigate-direct nav]})))
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
@@ -315,16 +293,13 @@
   (fn [coeffects _]
     (assoc coeffects :time (+ (.getTime (js.Date.)) (js/Math.random)))))
 
-(defn remove-global [str]
-  (if (str/starts-with? str "$") (subs str 1) str))
-
 ; [TAG-SYNTAX]
 (rf/reg-event-fx :click-link
   [(rf/inject-cofx :time)]
   (fn [{:keys [time]} [_ types text]]
     (cond
-      (types "declaration") {:dispatch [:set-search (remove-global (str (subs text 1 (dec (count text))) "="))]}
-      (types "definition") {:dispatch [:set-search (remove-global (subs text 1 (dec (dec (count text)))))]}
+      (types "declaration") {:dispatch [:set-search (str (subs text 1 (dec (count text))) "=")]}
+      (types "definition") {:dispatch [:set-search (subs text 1 (dec (dec (count text))))]}
       (types "reference") {:dispatch [:navigate-direct (subs text 1 (dec (count text)))]}
       (types "link") {:open-window text})))
 
@@ -403,7 +378,6 @@
       {:db db}
       {:db (-> db
                (assoc-in [:notes name :ntag] (find-ntag content))
-               (assoc-in [:notes name :globals] (find-globals content))
                (assoc-in [:notes name :content] content)
                (assoc-in [:notes name :time-updated] time))
        :chsk-send

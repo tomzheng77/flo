@@ -2681,14 +2681,6 @@ var MarkdownHighlightRules = function() {
             regex: "\\[[A-Z0-9]+=\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
-            token: "tag.declaration.clickable.global",
-            regex: "\\[![A-Z0-9]+\\]",
-            caseInsensitive: false
-        }, { // ---------- [CUSTOM] ----------
-            token: "tag.definition.clickable.global",
-            regex: "\\[![A-Z0-9]+=\\]",
-            caseInsensitive: false
-        }, { // ---------- [CUSTOM] ----------
             token: "tag.reference.clickable",
             regex: "\\[[A-Z0-9]+@[A-Z0-9]*\\]",
             caseInsensitive: false
