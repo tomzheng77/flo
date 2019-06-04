@@ -125,10 +125,7 @@
                         :end {:row end-row :column end-col}
                         :action "remove" :lines lines}))
               true
-              (recur (next remain)
-                     end-row
-                     end-col
-                     deltas))))))
+              (recur (next remain) end-row end-col deltas))))))
 
 (rf/reg-fx :refresh-editor
   (fn [content]
