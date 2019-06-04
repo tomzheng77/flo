@@ -103,9 +103,7 @@
       (let [head (first remain)
             lines (js->clj (js/splitLines (str/replace (:value head) #"\r\n" "\n")))
             end-row (+ row (dec (count lines)))
-            end-col (if (>= 1 (count lines))
-                      (+ col (count (first lines)))
-                      (count (last lines)))
+            end-col (if (>= 1 (count lines)) (+ col (count (first lines))) (count (last lines)))
             is-add (true? (:added head))
             is-remove (true? (:removed head))]
         (cond is-add
