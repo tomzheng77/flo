@@ -431,7 +431,7 @@
 
 (add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
-    (let [cmp (if (= :bkwd direction) >= <=)]
+    (let [cmp <=]
       (when timestamp
         (let [[latest-timestamp _] (avl/nearest history <= (current-time-millis))
               [_ note] (avl/nearest history cmp timestamp)]
