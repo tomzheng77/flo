@@ -125,22 +125,6 @@
        ^{:key [index (:name note)]}
        [navigation-row note index])]]])
 
-(defn image-upload []
-  [:div#image-upload-outer
-   {:on-click #(rf/dispatch [:toggle-image-upload])
-    :style {:position "absolute"
-            :top      0
-            :bottom   0
-            :left     0
-            :right    0
-            :z-index  10}}
-   [:div {:style {:max-width 600
-                  :min-height 300
-                  :margin-top 100
-                  :margin-left "auto"
-                  :margin-right "auto"
-                  :background-color "red"}}]])
-
 (defn history-limit [label limit-ms]
   (let [hover? (r/atom false)
         press? (r/atom false)]
@@ -255,7 +239,6 @@
   [:div#app-inner
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
-   (if @(rf/subscribe [:image-upload]) ^{:key "upl"} [image-upload])
    ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "none" "flex") :flex-direction "column"}} [:div#editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
    (if @(rf/subscribe [:search]) [search-bar])
