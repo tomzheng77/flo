@@ -26,7 +26,9 @@
     instance))
 
 (defn set-text [this text]
-  (.setValue (.-session this) text))
+  (set! (.-autoChange this) true)
+  (.setValue (.-session this) text)
+  (set! (.-autoChange this) false))
 
 (defn get-text [this]
   (.getValue this))
@@ -88,8 +90,10 @@
         "    "))))
 
 (defn apply-deltas [this deltas]
+  (set! (.-autoChange this) true)
   (let [doc (.getDocument (.getSession this))]
-    (.applyDeltas doc (clj->js deltas))))
+    (.applyDeltas doc (clj->js deltas)))
+  (set! (.-autoChange this) false))
 
 (defn show-clickables [this]
   (let [$clickable-layer (.-clickableLayer this)]
