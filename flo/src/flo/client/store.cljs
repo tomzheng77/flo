@@ -313,7 +313,7 @@
 
 (rf/reg-cofx :time
   (fn [coeffects _]
-    (assoc coeffects :time (js.Date.))))
+    (assoc coeffects :time (+ (.getTime (js.Date.)) (js/Math.random)))))
 
 (defn remove-global [str]
   (if (str/starts-with? str "$") (subs str 1) str))
@@ -397,7 +397,8 @@
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-tick
-  (fn [{:keys [db]} [_ name content time]]
+  [(rf/inject-cofx :time)]
+  (fn [{:keys [db time]} [_ name content]]
     (if (or (empty? name) (= content (get-in db [:notes name :content])))
       {:db db}
       {:db (-> db

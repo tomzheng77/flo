@@ -325,7 +325,7 @@
 (rf/reg-fx :reset-editor-from-ro
   (fn [name]
     (when @ace-editor-note-name
-      (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor) (current-time-millis)]))
+      (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor)]))
     (reset! ace-editor-note-name name)
     (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
@@ -337,7 +337,7 @@
 (rf/reg-fx :reset-editor
   (fn [[name text search selection]]
     (when @ace-editor-note-name
-      (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor) (current-time-millis)]))
+      (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor)]))
     (reset! ace-editor-note-name name)
     (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (or text ""))
@@ -519,5 +519,5 @@
 (set! (.-onhashchange js/window) #(rf/dispatch [:hash-change (.-newURL %)]))
 (rf/dispatch-sync [:hash-change js/window.location.href])
 
-(js/setInterval #(rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor) (current-time-millis)]) 1000)
+(js/setInterval #(rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor)]) 1000)
 (defn on-js-reload [])
