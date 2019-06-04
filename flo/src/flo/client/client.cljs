@@ -84,7 +84,7 @@
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)
 
-(.on @ace-editor "change" (if-not (.-autoChange @ace-editor) (rf/dispatch [:change %])))
+(.on @ace-editor "change" #(if-not (.-autoChange @ace-editor) (rf/dispatch [:change %])))
 (.on @ace-editor "changeSelection"
   #(if-not (.-autoChangeSelection @ace-editor)
      (rf/dispatch [:change-selection (ace/get-selection @ace-editor)])))
