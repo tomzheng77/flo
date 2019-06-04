@@ -7,6 +7,7 @@
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]
+    [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
@@ -311,16 +312,16 @@
 
 ; [TAG-SYNTAX]
 (defn tag-declaration-at [line col]
-  (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+\]") col))]
+  (let [token (:substr (first-at (find-all line c/declaration-regex) col))]
     (if token (subs token 1 (dec (count token))))))
 
 ; [TAG-SYNTAX]
 (defn tag-definition-at [line col]
-  (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+=\]") col))]
+  (let [token (:substr (first-at (find-all line c/definition-regex) col))]
     (if token (subs token 1 (dec (count token))))))
 
 (defn tag-reference-at [line col]
-  (let [token (:substr (first-at (find-all line #"\[[A-Z0-9]+@[A-Z0-9]*\]") col))]
+  (let [token (:substr (first-at (find-all line c/reference-regex) col))]
     (if token (subs token 1 (dec (count token))))))
 
 ; [TAG-SYNTAX]
@@ -333,16 +334,16 @@
         definition (tag-definition-at line col)
         reference (tag-reference-at line col)]
     (cond
-      declaration (rf/dispatch [:set-search (str declaration "=")])
-      definition (rf/dispatch [:set-search (subs definition 0 (dec (count definition)))])
+      declaration (rf/dispatch [:set-search (c/declaration-to-definition declaration)])
+      definition (rf/dispatch [:set-search (c/definition-to-declaration definition)])
       reference (rf/dispatch [:navigate-direct reference])
       true (rf/dispatch [:toggle-navigation]))))
 
 ; [TAG-SYNTAX]
 (defn next-tag [editor direction]
   (if (= :up direction)
-    (ace/navigate editor "[A-Z0-9]+(@[A-Z0-9]*|=)?" {:backwards true})
-    (ace/navigate editor "[A-Z0-9]+(@[A-Z0-9]*|=)?")))
+    (ace/navigate editor c/any-navigation-inner {:backwards true})
+    (ace/navigate editor c/any-navigation-inner)))
 
 (defn toggle-nav-command [editor]
   {:name "toggle-navigation"
@@ -438,7 +439,7 @@
         (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search])))))
     (when (= "Backspace" key)
       (rf/dispatch [:swap-search splice-last]))
-    (when (re-matches #"^[A-Za-z0-9]$" key)
+    (when (re-matches c/alphanumerical-regex key)
       (rf/dispatch [:swap-search #(str % (str/upper-case key))]))
     (when (= "=" key)
       (rf/dispatch [:swap-search #(str % "=")]))))

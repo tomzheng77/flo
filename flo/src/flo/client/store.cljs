@@ -9,7 +9,8 @@
             [clojure.string :as str]
             [cljs.core.match :refer-macros [match]]
             [flo.client.functions :refer [find-all]]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [flo.client.constants :as c]))
 
 ; determines a tag for the note
 (defn find-ntag [content]
@@ -83,7 +84,7 @@
 (rf/reg-event-fx
   :initialize
   (fn [_ [_ time {:keys [notes read-only]} href]]
-    (let [active-note-name (or (re-find #"(?<=#)[^#]*$" href) "default")
+    (let [active-note-name (or (re-find c/url-hash-regex href) "default")
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)]
       {:dispatch [:open-note active-note-name]
        :db
@@ -226,7 +227,7 @@
 
 (rf/reg-event-fx :hash-change
   (fn [{:keys [db]} [_ new-url]]
-    (let [note-name (re-find #"(?<=#)[^#]*$" new-url)]
+    (let [note-name (re-find c/url-hash-regex new-url)]
       (if note-name
         {:db db :dispatch [:open-note note-name]}
         {:db db}))))
@@ -305,9 +306,9 @@
   [(rf/inject-cofx :time)]
   (fn [{:keys [time]} [_ types text]]
     (cond
-      (types "declaration") {:dispatch [:set-search (str (subs text 1 (dec (count text))) "=")]}
-      (types "definition") {:dispatch [:set-search (subs text 1 (dec (dec (count text))))]}
-      (types "reference") {:dispatch [:navigate-direct (subs text 1 (dec (count text)))]}
+      (types "declaration") {:dispatch [:set-search (-> text c/remove-brackets c/declaration-to-definition)]}
+      (types "definition") {:dispatch [:set-search (-> text c/remove-brackets c/definition-to-declaration)]}
+      (types "reference") {:dispatch [:navigate-direct (-> text c/remove-brackets)]}
       (types "link") {:open-window text})))
 
 (rf/reg-fx :open-window
