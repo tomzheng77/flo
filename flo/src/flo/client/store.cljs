@@ -62,6 +62,7 @@
    :name name
    :time-created time
    :time-updated time
+   :time-changed time
    :content ""
    :history (avl/sorted-map)
    :selection {:row 0 :column 0}
@@ -191,6 +192,12 @@
                 (if (= new-history-cursor old-history-cursor) db
                   (assoc db :history-cursor new-history-cursor :history-direction new-direction)))))))))
 
+(defn exists-newer-note [db {:keys [name time]}]
+  (let [existing-note (get-in db [:notes name])]
+    (if existing-note
+      (or (> (:time-updated existing-note) time)
+          (> (:time-changed existing-note) time)))))
+
 ; whenever a message has been received from sente
 (rf/reg-event-fx
   :chsk-event
@@ -200,7 +207,7 @@
       [:chsk/recv [:flo/history note]]
       {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
       [:chsk/recv [:flo/refresh note]]
-      (if (:read-only db)
+      (if (or (:read-only db) (exists-newer-note db note))
         {:db db}
         (conj {:db (let [existing-note (or (get-in db [:notes (:name note)]) (new-note (:name note) time))]
                      (-> db (assoc-in [:notes (:name note)] (set/union existing-note note))))}
