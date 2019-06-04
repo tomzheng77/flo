@@ -407,7 +407,7 @@
                (assoc-in [:notes name :content] content)
                (assoc-in [:notes name :time-updated] time))
        :chsk-send
-       (if-not (:read-only db) [:flo/save [name content]])})))
+       (if-not (:read-only db) [:flo/save [name time content]])})))
 
 ; called whenever the selection of the active note has been changed
 (rf/reg-event-db :change-selection

@@ -35,8 +35,8 @@
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
 (defn chsk-send! [& args])
-(defn send-note-contents [uid name & [content]]
-  (let [note (get-note name)]
+(defn send-note-contents [uid name timestamp & [content]]
+  (let [note (assoc (get-note name) :time timestamp)]
     (if content
       (chsk-send! uid [:flo/refresh (assoc note :content content :time-updated (System/currentTimeMillis))])
       (chsk-send! uid [:flo/refresh note]))))
@@ -51,14 +51,12 @@
   (match event
     [:flo/seek [name timestamp]]
     (do (swap! seek-location #(assoc % uid [name timestamp])))
-    [:flo/save [name content]]
+    [:flo/save [name timestamp content]]
     (do (debug "saving" name)
         (set-note name content)
         (doseq [other-uid (:any @connected-uids)]
           (when (not= uid other-uid)
-            (send-note-contents other-uid name content))))
-    [:flo/load [name]]
-    (send-note-contents uid name)
+            (send-note-contents other-uid name timestamp content))))
     :else nil))
 
 (let [{:keys [ch-recv send-fn connected-uids
