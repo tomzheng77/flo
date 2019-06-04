@@ -325,9 +325,9 @@
 
 ; [TAG-SYNTAX]
 (defn toggle-navigation [editor]
-  (let [cursor (js->clj (.getCursor (.getSelection editor)))
-        row (get cursor "row")
-        col (get cursor "column")
+  (let [cursor (ace/get-cursor editor)
+        row (:row cursor)
+        col (:column cursor)
         line (.getLine (.-session editor) row)
         declaration (tag-declaration-at line col)
         definition (tag-definition-at line col)
