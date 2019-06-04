@@ -82,8 +82,7 @@
             (doseq [[uid [name timestamp]] @seek-location]
               (let [note (get-note-at name timestamp)]
                 (when note (chsk-send! uid [:flo/history note]))))
-            (reset! seek-location {})))
-        (Thread/sleep 50))))
+            (reset! seek-location {}))))))
 
 (def upload-dir "upload")
 (.mkdirs (io/file upload-dir))
