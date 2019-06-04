@@ -1,6 +1,8 @@
 (ns flo.client.view
-  (:require [re-frame.core :as rf]
-            [reagent.core :as r]))
+  (:require
+    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
+    [re-frame.core :as rf]
+    [reagent.core :as r]))
 
 (defn navigation-row [note index]
   (let [focus? (r/atom false)]
