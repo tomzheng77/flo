@@ -132,6 +132,10 @@
   (let [rect (.getBoundingClientRect (aget $el 0))]
     {:x (.-left rect) :y (.-top rect)}))
 
+(defn focus-if-not-search [this]
+  (when (nil? (.-searchBox this))
+    (.focus this)))
+
 (defn on-after-render [err renderer]
   (let [$scroller ($ (.-container renderer))
         $content ($ (.-content renderer))
