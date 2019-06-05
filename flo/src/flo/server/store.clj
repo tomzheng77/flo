@@ -39,7 +39,7 @@
 
 ; connections are long lived and cached by d/connect
 ; hence there is no need to store the connection
-(defn started (atom #{}))
+(def started (atom #{}))
 (defn get-conn []
   (let [db-name @global/db-name
         db-uri (str "datomic:dev://localhost:4334/" db-name)]
