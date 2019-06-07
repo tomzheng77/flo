@@ -83,14 +83,14 @@
 
 (let [init-id @run-iteration-id]
   (go (while (= init-id @run-iteration-id)
-    (go (let [_ (<! seek-signal)]
+    (let [_ (<! seek-signal)]
       (reset! seek-signal-on false)
       (locking seek-location
         (when (not-empty @seek-location)
           (doseq [[uid [name timestamp]] @seek-location]
             (let [note (get-note-at name timestamp)]
               (when note (chsk-send! uid [:flo/history note]))))
-          (reset! seek-location {}))))))))
+          (reset! seek-location {})))))))
 
 (def upload-dir "upload")
 (.mkdirs (io/file upload-dir))
