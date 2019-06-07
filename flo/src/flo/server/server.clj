@@ -43,7 +43,7 @@
 
 ; map of client-id => timestamp
 (def seek-location (atom {}))
-(def seek-signal (chan 1024))
+(def seek-signal (chan))
 (def seek-signal-on (atom false))
 
 (defonce run-iteration-id (atom (UUID/randomUUID)))
