@@ -239,11 +239,10 @@
 
 (add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
-    (let [cmp <=]
-      (when timestamp
-        (let [[_ note] (avl/nearest history cmp timestamp)]
-          (ace/set-text @ace-editor-ro (or note ""))
-          (ace/navigate @ace-editor-ro @(rf/subscribe [:search])))))))
+    (when timestamp
+      (let [[_ note] (avl/nearest history <= timestamp)]
+        (ace/set-text @ace-editor-ro (or note ""))
+        (ace/navigate @ace-editor-ro @(rf/subscribe [:search]))))))
 
 (add-watches-db :disable-edit [[:search] [:history-cursor]]
   (fn [_ _ _ [search drag-timestamp]]
