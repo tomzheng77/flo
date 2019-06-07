@@ -43,6 +43,9 @@
 
 ; map of client-id => timestamp
 (def seek-location (atom {}))
+(def seek-signal (chan 1024))
+(def seek-signal-on (atom false))
+
 (defonce run-iteration-id (atom (UUID/randomUUID)))
 (reset! run-iteration-id (UUID/randomUUID))
 
@@ -50,7 +53,10 @@
 (defn on-chsk-receive [{:keys [event uid]}]
   (match event
     [:flo/seek [name timestamp]]
-    (do (swap! seek-location #(assoc % uid [name timestamp])))
+    (do (swap! seek-location #(assoc % uid [name timestamp]))
+        (when-not @seek-signal-on
+          (reset! seek-signal-on true)
+          (>!! seek-signal true)))
     [:flo/save [name timestamp content]]
     (do (debug "saving" name)
         (set-note name content)
@@ -77,12 +83,14 @@
 
 (let [init-id @run-iteration-id]
   (go (while (= init-id @run-iteration-id)
-        (locking seek-location
-          (when (not-empty @seek-location)
-            (doseq [[uid [name timestamp]] @seek-location]
-              (let [note (get-note-at name timestamp)]
-                (when note (chsk-send! uid [:flo/history note]))))
-            (reset! seek-location {}))))))
+        (go [signal (<! seek-signal)]
+          (reset! seek-signal-on false)
+          (locking seek-location
+            (when (not-empty @seek-location)
+              (doseq [[uid [name timestamp]] @seek-location]
+                (let [note (get-note-at name timestamp)]
+                  (when note (chsk-send! uid [:flo/history note]))))
+              (reset! seek-location {})))))))
 
 (def upload-dir "upload")
 (.mkdirs (io/file upload-dir))
