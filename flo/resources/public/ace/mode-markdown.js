@@ -2648,9 +2648,9 @@ var MarkdownHighlightRules = function() {
         }, { // reference
             token : ["text", "constant", "text", "url", "string", "text"],
             regex : "^([ ]{0,3}\\[)([^\\]]+)(\\]:\\s*)([^ ]+)(\\s*(?:[\"][^\"]+[\"])?(\\s*))$"
-        }, { // link by reference
-            token : ["text", "string", "text", "constant", "text"],
-            regex : "(\\[)(" + escaped("]") + ")(\\]\\s*\\[)("+ escaped("]") + ")(\\])"
+        // }, { // link by reference // ---------- [CUSTOM] ---------- (disabled)
+        //     token : ["text", "string", "text", "constant", "text"],
+        //     regex : "(\\[)(" + escaped("]") + ")(\\]\\s*\\[)("+ escaped("]") + ")(\\])"
         }, { // link by url
             token : ["text", "string", "text", "markup.underline.link.clickable", "string", "text"], // ---------- [CUSTOM] ---------- (clickable)
             regex : "(\\!?\\[)(" +                                        // [
