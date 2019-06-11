@@ -74,7 +74,7 @@
   ([this tag] (navigate this tag {}))
   ([this tag opts]
    (if (and tag (not-empty tag))
-     (let [settings (clj->js (set/union {:caseSensitive true :regExp true :backwards false} opts))
+     (let [settings (clj->js (set/union {:caseSensitive true :regExp true :backwards false :skipCurrent true} opts))
            regex (str "\\[" tag "\\]")]
        (.find this regex settings)))))
 
