@@ -394,7 +394,7 @@
 (rf/reg-event-fx :change
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]}]
-    (assoc-in db [:notes (:active-note-name db) :time-changed] time)))
+    {:db (assoc-in db [:notes (:active-note-name db) :time-changed] time)}))
 
 ; called whenever the selection of the active note has been changed
 (rf/reg-event-db :change-selection
