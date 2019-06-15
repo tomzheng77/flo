@@ -63,15 +63,16 @@ cursor: text;\
             mres = url.match(/\[-[^\]]+\]/);
             if (mres) mtype = "image-bottom";
         }
-        if (!mtype) {
-            mres = url.match(/(?:http:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([^<]+)/);
-            if (mres) mtype = "youtube";
-        }
+        // disabled youtube embed
+        // if (!mtype) {
+        //     mres = url.match(/(?:http:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([^<]+)/);
+        //     if (mres) mtype = "youtube";
+        // }
         if (!mtype) {
             mres = url.match(/.*\.(jpg|gif|png|jpeg|ico|svg|bmp)$/);
             if (mres) mtype = "image";
         }
-        return mtype;
+        return [mtype, mres];
     }
 
     function countBlankLines(lines) {
@@ -95,7 +96,7 @@ cursor: text;\
         var text = $cell.text();
         var preview_id = "preview_" + line_index + "_" + cell_index + "_" + stringHashAbs(text);
 
-        var preview_type = typeOf(text);
+        var [preview_type, groups] = typeOf(text);
         if (!preview_type) return null;
 
         var lines;
@@ -134,7 +135,7 @@ cursor: text;\
         var content = "...";
         switch (preview_type) {
             case "youtube":
-                content = '<iframe src="http://www.youtube.com/embed/'+mres[1]+
+                content = '<iframe src="http://www.youtube.com/embed/'+groups[1]+
                     '?modestbranding=1&rel=0&wmode=transparent&theme=light&color=white"\
                      frameborder="0" allowfullscreen></iframe>';
                 width_px = Math.max(120, Math.min(640, Math.ceil(parseFloat(height_px)*16.0/9.0))) + "px";
