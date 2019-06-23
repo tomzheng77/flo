@@ -111,8 +111,14 @@
 
 (defroutes app-routes
   (route/resources "/" {:root "public"})
-  (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
-  (POST "/chsk" req (ring-ajax-post req))
+  (GET "/chsk" req
+    (if-not (:login (:session request))
+      {:status 302 :headers {"Location" "/login"} :body ""}
+      (ring-ajax-get-or-ws-handshake req)))
+  (POST "/chsk" req
+    (if-not (:login (:session request))
+      {:status 302 :headers {"Location" "/login"} :body ""}
+      (ring-ajax-post req)))
   (GET "/file" req
     (let [id (get (:query-params req) "id")
           file (io/file upload-dir id)
