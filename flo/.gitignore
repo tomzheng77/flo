@@ -18,3 +18,5 @@ pom.xml
 /tmp
 /node_modules
 /store
+*.log
+/upload
