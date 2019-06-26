@@ -2621,7 +2621,7 @@ var MarkdownHighlightRules = function() {
         // ---------- [CUSTOM,LISTS] ----------
         token : function(value) {
             let codePoint = value.trim().codePointAt(0);
-            return ["markup.list." + codePoint, "list." + codePoint];
+            return ["markup.list." + codePoint, "body.list." + codePoint];
         },
         regex : markupListRegex
     }, {
