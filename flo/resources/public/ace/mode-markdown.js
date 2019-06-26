@@ -2600,31 +2600,18 @@ var MarkdownHighlightRules = function() {
             return this.token;
         }
     }];
-    // [ORIGINAL]
-    // var markupListRegex = "^\\s{0,3}(?:[*+-]|\\d+\\.)\\s+";
-    // [CUSTOM]
-    var markupListRegex = "^\\s{0,300}(?:[*+\\-\\$#@&]|\\d+\\.)\\s+";
+
+    // ---------- [CUSTOM] ----------
+    var markupListRegex = "^\\s{0,300}(?:[*+\\-\\$#@&%]|\\d+\\.)\\s+";
     this.$rules["start"].unshift({
         token : "empty_line",
         regex : '^$',
         next: "allowBlock"
-    }, { // h1
-        token: "markup.heading.1",
-        regex: "^=+(?=\\s*$)"
-    }, { // h2
-        token: "markup.heading.2",
-        regex: "^\\-+(?=\\s*$)"
-    }, {
-        token : function(value) {
-            return "markup.heading." + value.length;
-        },
-        regex : /^#{1,6}(?=\s|$)/,
-        next : "header"
     },
     codeBlockStartRule,
     { // block quote
-        token : "string.blockquote",
-        regex : "^\\s*>\\s*(?:[*+-]|\\d+\\.)?\\s+",
+        token : "string.blockquote", // ---------- [CUSTOM] ----------
+        regex : "^\\s*>\\s*(?:[*+\\-\\$#@&%]|\\d+\\.)?\\s+",
         next  : "blockquote"
     }, { // HR * - _
         token : "constant",
@@ -2648,19 +2635,9 @@ var MarkdownHighlightRules = function() {
         }, { // reference
             token : ["text", "constant", "text", "url", "string", "text"],
             regex : "^([ ]{0,3}\\[)([^\\]]+)(\\]:\\s*)([^ ]+)(\\s*(?:[\"][^\"]+[\"])?(\\s*))$"
-        // }, { // link by reference // ---------- [CUSTOM] ---------- (disabled)
-        //     token : ["text", "string", "text", "constant", "text"],
-        //     regex : "(\\[)(" + escaped("]") + ")(\\]\\s*\\[)("+ escaped("]") + ")(\\])"
         }, { // link by url // ---------- [CUSTOM] ----------
             token : ["tag.declaration.clickable", "tag.declaration.highlight"],
             regex : "(\\[[A-Z0-9]+\\])" + "(\\([^\\)]+\\))"
-        // ---------- [CUSTOM] ---------- (disabled)
-        // }, { // strong ** __
-        //     token : "string.strong",
-        //     regex : "([*]{2}|[_]{2}(?=\\S))(.*?\\S[*_]*)(\\1)"
-        // }, { // emphasis * _
-        //     token : "string.emphasis",
-        //     regex : "([*]|[_](?=\\S))(.*?\\S[*_]*)(\\1)"
         }, { //
             token : ["text", "url", "text"],
             regex : "(<)("+
@@ -2716,15 +2693,6 @@ var MarkdownHighlightRules = function() {
             {token: "empty", regex: "", next: "start"}
         ],
 
-        "header" : [{
-            regex: "$",
-            next : "start"
-        }, {
-            include: "basic"
-        }, {
-            defaultToken : "heading"
-        } ],
-
         "listblock-start" : [{
             token : "support.variable",
             regex : /(?:\[[ x]\])?/,
@@ -2752,8 +2720,8 @@ var MarkdownHighlightRules = function() {
             regex : "^\\s*$",
             next  : "start"
         }, { // block quote
-            token : "string.blockquote",
-            regex : "^\\s*>\\s*(?:[*+-]|\\d+\\.)?\\s+",
+            token : "string.blockquote", // ---------- [CUSTOM] ----------
+            regex : "^\\s*>\\s*(?:[*+\\-\\$#@&%]|\\d+\\.)?\\s+",
             next  : "blockquote"
         }, {
             include : "basic", noEscape: true
