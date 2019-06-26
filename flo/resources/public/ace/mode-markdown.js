@@ -2731,7 +2731,7 @@ var FoldMode = exports.FoldMode = function() {};
 oop.inherits(FoldMode, BaseFoldMode);
 
 (function() {
-    this.foldingStartMarker = /^(?:[=-]+\s*$|#{1,6} |`{3})/;
+    this.foldingStartMarker = /^(?:[=-]+\s*$|`{3})/;
 
     this.getFoldWidget = function(session, foldStyle, row) {
         var line = session.getLine(row);
