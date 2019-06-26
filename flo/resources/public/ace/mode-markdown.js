@@ -2602,7 +2602,32 @@ var MarkdownHighlightRules = function() {
     }];
 
     // ---------- [CUSTOM,LISTS] ----------
-    var markupListRegex = "^(\\s{0,300}(?:[*+\\-$#@&%]|\\d+\\.)\\s+)(.+)$";
+    let markupListRegex = "^\\s{0,300}(?:[*+\\-%]|\\d+\\.)\\s+";
+    let markupListRegexA = "^\\s{0,300}(?:[$])\\s+";
+    let markupListRegexB = "^\\s{0,300}(?:[#])\\s+";
+    let markupListRegexC = "^\\s{0,300}(?:[@])\\s+";
+    let markupListRegexD = "^\\s{0,300}(?:[&])\\s+";
+
+    function makeListblock(suffix) {
+        return [{
+            token: "empty_line",
+            regex: "^$",
+            next: "start"
+        },
+        { token: "markup.list", regex: markupListRegex, next: "listblock" },
+        { token: "markup.list", regex: markupListRegexA, next: "listblock-a" },
+        { token: "markup.list", regex: markupListRegexB, next: "listblock-b" },
+        { token: "markup.list", regex: markupListRegexC, next: "listblock-c" },
+        { token: "markup.list", regex: markupListRegexD, next: "listblock-d" },
+        {
+            include: "basic", noEscape: true
+        },
+        codeBlockStartRule,
+        {
+            defaultToken: suffix? "list." + suffix : "list"
+        }]
+    }
+
     this.$rules["start"].unshift({
         token : "empty_line",
         regex : '^$',
@@ -2617,14 +2642,16 @@ var MarkdownHighlightRules = function() {
         token : "constant",
         regex : "^ {0,2}(?:(?: ?\\* ?){3,}|(?: ?\\- ?){3,}|(?: ?\\_ ?){3,})\\s*$",
         next: "allowBlock"
-    }, { // list
-        // ---------- [CUSTOM,LISTS] ----------
-        token : function(value) {
-            let codePoint = value.trim().codePointAt(0);
-            return ["markup.list." + codePoint, "body.list." + codePoint];
-        },
-        regex : markupListRegex
-    }, {
+    },
+
+    // ---------- [CUSTOM,LISTS] ----------
+    { token: "markup.list", regex: markupListRegex, next: "listblock"},
+    { token: "markup.list", regex: markupListRegexA, next: "listblock-a"},
+    { token: "markup.list", regex: markupListRegexB, next: "listblock-b"},
+    { token: "markup.list", regex: markupListRegexC, next: "listblock-c"},
+    { token: "markup.list", regex: markupListRegexD, next: "listblock-d"},
+
+    {
         include : "basic"
     });
 
@@ -2689,12 +2716,22 @@ var MarkdownHighlightRules = function() {
             token: "ritsu.fail",
             regex: "<F(x[0-9]+)?>"
         }],
+
         "allowBlock": [
             // ---------- [CUSTOM-RM] ----------
             // {token : "support.function", regex : "^ {4}.+", next : "allowBlock"},
             {token: "empty_line", regex: '^$', next: "allowBlock"},
             {token: "empty", regex: "", next: "start"}
         ],
+
+        // ---------- [CUSTOM] ----------
+        // the "listblock" is a continuous section spanning multiple lines
+        // only escape once reached an empty block
+        "listblock": makeListblock(),
+        "listblock-a": makeListblock("a"),
+        "listblock-b": makeListblock("b"),
+        "listblock-c": makeListblock("c"),
+        "listblock-d": makeListblock("d"),
 
         "blockquote" : [ { // Blockquotes only escape on blank lines.
             token : "empty_line",

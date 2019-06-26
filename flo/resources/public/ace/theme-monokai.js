@@ -190,10 +190,10 @@ font-weight: bold;\
 color: red;\
 font-weight: bold;\
 }\
-.ace-monokai .ace_list.ace_body.ace_36 { color: #CC7832; }\
-.ace-monokai .ace_list.ace_body.ace_35 { color: #AB51BA; }\
-.ace-monokai .ace_list.ace_body.ace_64 { color: #0F9795; }\
-.ace-monokai .ace_list.ace_body.ace_38 { color: #C93B48; }";
+.ace-monokai .ace_list.ace_a { color: #CC7832; }\
+.ace-monokai .ace_list.ace_b { color: #AB51BA; }\
+.ace-monokai .ace_list.ace_c { color: #0F9795; }\
+.ace-monokai .ace_list.ace_d { color: #C93B48; }";
 
 var dom = require("../lib/dom");
 dom.importCssString(exports.cssText, exports.cssClass);
