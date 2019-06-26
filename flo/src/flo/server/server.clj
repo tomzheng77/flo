@@ -111,16 +111,16 @@
 
 (defroutes app-routes
   (route/resources "/" {:root "public"})
-  (GET "/chsk" req
-    (if-not (:login (:session req))
+  (GET "/chsk" request
+    (if-not (:login (:session request))
       {:status 302 :headers {"Location" "/login"} :body ""}
-      (ring-ajax-get-or-ws-handshake req)))
-  (POST "/chsk" req
-    (if-not (:login (:session req))
+      (ring-ajax-get-or-ws-handshake request)))
+  (POST "/chsk" request
+    (if-not (:login (:session request))
       {:status 302 :headers {"Location" "/login"} :body ""}
-      (ring-ajax-post req)))
-  (GET "/file" req
-    (let [id (get (:query-params req) "id")
+      (ring-ajax-post request)))
+  (GET "/file" request
+    (let [id (get (:query-params request) "id")
           file (io/file upload-dir id)
           edn (try (read-string (slurp (io/file upload-dir (str id ".edn")))) (catch Exception _ {}))
           content-type (or (:content-type edn) "text/plain")]
