@@ -2601,8 +2601,8 @@ var MarkdownHighlightRules = function() {
         }
     }];
 
-    // ---------- [CUSTOM] ----------
-    var markupListRegex = "^\\s{0,300}(?:[*+\\-\\$#@&%]|\\d+\\.)\\s+";
+    // ---------- [CUSTOM,LISTS] ----------
+    var markupListRegex = "^\\s{0,300}(?:[*+\\-$#@&%]|\\d+\\.)\\s+";
     this.$rules["start"].unshift({
         token : "empty_line",
         regex : '^$',
@@ -2610,8 +2610,8 @@ var MarkdownHighlightRules = function() {
     },
     codeBlockStartRule,
     { // block quote
-        token : "string.blockquote", // ---------- [CUSTOM] ----------
-        regex : "^\\s*>\\s*(?:[*+\\-\\$#@&%]|\\d+\\.)?\\s+",
+        token : "string.blockquote", // ---------- [CUSTOM,LISTS] ----------
+        regex : "^\\s*>\\s*(?:[*+\\-$#@&%]|\\d+\\.)?\\s+",
         next  : "blockquote"
     }, { // HR * - _
         token : "constant",
@@ -4716,9 +4716,10 @@ oop.inherits(Mode, TextMode);
     this.type = "text";
     this.blockComment = {start: "<!--", end: "-->"};
 
+    // ---------- [CUSTOM,LISTS] ----------
     this.getNextLineIndent = function(state, line, tab) {
         if (state == "listblock") {
-            var match = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line);
+            var match = /^(\s*)(?:([*+\-$#@&%])|(\d+)\.)(\s+)/.exec(line);
             if (!match)
                 return "";
             var marker = match[2];
