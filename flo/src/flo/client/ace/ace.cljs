@@ -1,8 +1,7 @@
-(ns flo.client.ace
+(ns flo.client.ace.ace
   (:require [clojure.set :as set]
             [clojure.string :as str]
-            [re-frame.core :as rf]
-            [flo.client.ace-clickables]))
+            [re-frame.core :as rf]))
 
 (defn $ [& args] (apply js/$ args))
 
@@ -105,3 +104,7 @@
   (let [$clickable-layer (.-clickableLayer this)]
     (if $clickable-layer
       (.hide $clickable-layer))))
+
+(defn focus-if-not-search [this]
+  (when (nil? (.-searchBox this))
+    (.focus this)))

@@ -1,7 +1,10 @@
-(ns flo.client.ace-clickables
-  (:require [clojure.set :as set]
+(ns flo.client.ace.ace-clickables
+  (:require [flo.client.ace.ace :as ace]
+            [clojure.set :as set]
             [clojure.string :as str]
             [re-frame.core :as rf]))
+
+(defn $ [& args] (apply js/$ args))
 
 (def clickable-css
   "
@@ -29,10 +32,6 @@
 (defn get-pos [$el]
   (let [rect (.getBoundingClientRect (aget $el 0))]
     {:x (.-left rect) :y (.-top rect)}))
-
-(defn focus-if-not-search [this]
-  (when (nil? (.-searchBox this))
-    (.focus this)))
 
 (defn on-after-render [err renderer]
   (let [$scroller ($ (.-container renderer))
@@ -63,7 +62,7 @@
   (let [$clickable-layer ($ "<div class='ace_layer ace_clickables'></div>")]
     (set! (.-clickableLayer this) $clickable-layer)
     (.appendTo $clickable-layer ($ (.-container this)))
-    (hide-clickables this)))
+    (ace/hide-clickables this)))
 
 (defn disable-clickables [this]
   (js/console.log "Clickables: Disabled")
@@ -87,7 +86,7 @@
       "editor"
       (clj->js
         {:enableClickables
-         {:set (fn [val] (this-as this (if val (enable-clickables this) (disable-clickables this))))
+         {:set   (fn [val] (this-as this (if val (enable-clickables this) (disable-clickables this))))
           :value false}}))))
 
 (js/window.require
