@@ -150,11 +150,8 @@
               text (.text $cl)
               pos (get-pos $cl)
               $added ($ (str
-                "<div class='ace_clickable_link' style='left: "
-                (:x pos)
-                "px; top: "
-                (:y pos)
-                "px'>" text "</div>"))]
+                "<div class='ace_clickable_link' style='left: " (:x pos)
+                "px; top: " (:y pos) "px'>" text "</div>"))]
           (.appendTo $added $clickables)
           (.click $added
             (fn [event]

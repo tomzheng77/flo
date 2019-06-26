@@ -2690,6 +2690,12 @@ var MarkdownHighlightRules = function() {
             regex: "\\[&[A-Z0-9]+=\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
+            token: function(text) {
+                return "color.literal." + text.substring(1)
+            },
+            regex: "#[0-9A-F]{6}",
+            caseInsensitive: true
+        }, { // ---------- [CUSTOM] ----------
             token: "underline.link.clickable", // URL -> http://example.com
             regex: "[^\\s]*\\:\\/\\/[^\\s]+"
         }, { // ---------- [CUSTOM] ----------
