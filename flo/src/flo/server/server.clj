@@ -112,11 +112,11 @@
 (defroutes app-routes
   (route/resources "/" {:root "public"})
   (GET "/chsk" req
-    (if-not (:login (:session request))
+    (if-not (:login (:session req))
       {:status 302 :headers {"Location" "/login"} :body ""}
       (ring-ajax-get-or-ws-handshake req)))
   (POST "/chsk" req
-    (if-not (:login (:session request))
+    (if-not (:login (:session req))
       {:status 302 :headers {"Location" "/login"} :body ""}
       (ring-ajax-post req)))
   (GET "/file" req
