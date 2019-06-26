@@ -20,7 +20,8 @@
                 :enableLinking true
                 :tabSize 4
                 :useSoftTabs true
-                :enableClickables true}))
+                :enableClickables true
+                :enableColors true}))
     (.setTheme instance "ace/theme/monokai")
     (.setMode (.-session instance) "ace/mode/markdown")
     instance))

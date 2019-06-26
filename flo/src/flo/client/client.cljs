@@ -5,6 +5,7 @@
   (:require
     [flo.client.ace.ace :as ace]
     [flo.client.ace.ace-clickables]
+    [flo.client.ace.ace-colors]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]
