@@ -2603,7 +2603,7 @@ var MarkdownHighlightRules = function() {
     // [ORIGINAL]
     // var markupListRegex = "^\\s{0,3}(?:[*+-]|\\d+\\.)\\s+";
     // [CUSTOM]
-    var markupListRegex = "^\\s{0,300}(?:[*+-]|\\d+\\.)\\s+";
+    var markupListRegex = "^\\s{0,300}(?:[*+\\-\\$#@&]|\\d+\\.)\\s+";
     this.$rules["start"].unshift({
         token : "empty_line",
         regex : '^$',
@@ -2659,12 +2659,13 @@ var MarkdownHighlightRules = function() {
                     '((?:[^\\)\\s\\\\]|\\\\.|\\s(?=[^"]))*)' +        // href or image
                     '(\\s*"' +  escaped('"') + '"\\s*)?' +            // "title"
                     "(\\))"                                           // )
-        }, { // strong ** __
-            token : "string.strong",
-            regex : "([*]{2}|[_]{2}(?=\\S))(.*?\\S[*_]*)(\\1)"
-        }, { // emphasis * _
-            token : "string.emphasis",
-            regex : "([*]|[_](?=\\S))(.*?\\S[*_]*)(\\1)"
+        // ---------- [CUSTOM] ----------
+        // }, { // strong ** __
+        //     token : "string.strong",
+        //     regex : "([*]{2}|[_]{2}(?=\\S))(.*?\\S[*_]*)(\\1)"
+        // }, { // emphasis * _
+        //     token : "string.emphasis",
+        //     regex : "([*]|[_](?=\\S))(.*?\\S[*_]*)(\\1)"
         }, { //
             token : ["text", "url", "text"],
             regex : "(<)("+
