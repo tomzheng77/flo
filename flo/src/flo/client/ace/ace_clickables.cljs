@@ -29,11 +29,11 @@
     pointer-events: auto;
   }")
 
-(defn get-pos [$el]
+(defn element-position [$el]
   (let [rect (.getBoundingClientRect (aget $el 0))]
     {:x (.-left rect) :y (.-top rect)}))
 
-(defn on-after-render [err renderer]
+(defn on-after-render [_ renderer]
   (let [$scroller ($ (.-container renderer))
         $content ($ (.-content renderer))
         $clickables (.find $scroller ".ace_clickables")
@@ -45,7 +45,7 @@
         (let [$cl ($ cl)
               types (into #{} (map #(subs % 4) (str/split (.-className cl) #"\s+")))
               text (.text $cl)
-              pos (get-pos $cl)
+              pos (element-position $cl)
               $added ($ (str
                           "<div class='ace_clickable_link' style='left: " (:x pos)
                           "px; top: " (:y pos) "px'>" text "</div>"))]
@@ -78,7 +78,7 @@
 (js/define
   "ace/ext/clickables"
   (clj->js ["ace/editor"])
-  (fn [require exports module]
+  (fn [require]
     (.importCssString (require "../lib/dom") clickable-css "ace_clickables")
     (.defineOptions
       (require "../config")
