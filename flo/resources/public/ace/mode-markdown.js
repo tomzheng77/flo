@@ -2618,6 +2618,7 @@ var MarkdownHighlightRules = function() {
         regex : "^ {0,2}(?:(?: ?\\* ?){3,}|(?: ?\\- ?){3,}|(?: ?\\_ ?){3,})\\s*$",
         next: "allowBlock"
     }, { // list
+        // ---------- [CUSTOM,LISTS] ----------
         token : function(value) {
             return "markup.list";
         },
