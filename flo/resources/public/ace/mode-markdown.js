@@ -2651,15 +2651,10 @@ var MarkdownHighlightRules = function() {
         // }, { // link by reference // ---------- [CUSTOM] ---------- (disabled)
         //     token : ["text", "string", "text", "constant", "text"],
         //     regex : "(\\[)(" + escaped("]") + ")(\\]\\s*\\[)("+ escaped("]") + ")(\\])"
-        }, { // link by url
-            token : ["text", "string", "text", "markup.underline.link.clickable", "string", "text"], // ---------- [CUSTOM] ---------- (clickable)
-            regex : "(\\!?\\[)(" +                                        // [
-                    escaped("]") +                                    // link text or alt text
-                    ")(\\]\\()"+                                      // ](
-                    '((?:[^\\)\\s\\\\]|\\\\.|\\s(?=[^"]))*)' +        // href or image
-                    '(\\s*"' +  escaped('"') + '"\\s*)?' +            // "title"
-                    "(\\))"                                           // )
-        // ---------- [CUSTOM] ----------
+        }, { // link by url // ---------- [CUSTOM] ----------
+            token : ["tag.declaration.clickable", "tag.declaration"],
+            regex : "(\\[[A-Z0-9]+\\])" + "(\\([^\\)]+\\))"
+        // ---------- [CUSTOM] ---------- (disabled)
         // }, { // strong ** __
         //     token : "string.strong",
         //     regex : "([*]{2}|[_]{2}(?=\\S))(.*?\\S[*_]*)(\\1)"
