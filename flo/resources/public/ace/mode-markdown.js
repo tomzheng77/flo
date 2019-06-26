@@ -2720,8 +2720,8 @@ var MarkdownHighlightRules = function() {
             regex : "^\\s*$",
             next  : "start"
         }, { // block quote
-            token : "string.blockquote", // ---------- [CUSTOM] ----------
-            regex : "^\\s*>\\s*(?:[*+\\-\\$#@&%]|\\d+\\.)?\\s+",
+            token : "string.blockquote", // ---------- [CUSTOM,LISTS] ----------
+            regex : "^\\s*>\\s*(?:[*+\\-$#@&%]|\\d+\\.)?\\s+",
             next  : "blockquote"
         }, {
             include : "basic", noEscape: true
