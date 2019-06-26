@@ -111,6 +111,11 @@ font-weight: bold;\
 color: #3DA1D2;\
 /*animation: blinker 1s linear infinite;*/\
 }\
+.ace-monokai .ace_tag.ace_declaration.ace_highlight {\
+font-weight: normal;\
+color: #00ccff;\
+/*animation: blinker 1s linear infinite;*/\
+}\
 .ace-monokai .ace_tag.ace_definition {\
 font-weight: bold;\
 color: #3DA1D2;\

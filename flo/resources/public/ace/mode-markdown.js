@@ -2652,7 +2652,7 @@ var MarkdownHighlightRules = function() {
         //     token : ["text", "string", "text", "constant", "text"],
         //     regex : "(\\[)(" + escaped("]") + ")(\\]\\s*\\[)("+ escaped("]") + ")(\\])"
         }, { // link by url // ---------- [CUSTOM] ----------
-            token : ["tag.declaration.clickable", "tag.declaration"],
+            token : ["tag.declaration.clickable", "tag.declaration.highlight"],
             regex : "(\\[[A-Z0-9]+\\])" + "(\\([^\\)]+\\))"
         // ---------- [CUSTOM] ---------- (disabled)
         // }, { // strong ** __
