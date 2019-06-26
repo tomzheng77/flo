@@ -2602,7 +2602,7 @@ var MarkdownHighlightRules = function() {
     }];
 
     // ---------- [CUSTOM,LISTS] ----------
-    var markupListRegex = "^\\s{0,300}(?:[*+\\-$#@&%]|\\d+\\.)\\s+";
+    var markupListRegex = "^(\\s{0,300}(?:[*+\\-$#@&%]|\\d+\\.)\\s+)(.+)$";
     this.$rules["start"].unshift({
         token : "empty_line",
         regex : '^$',
@@ -2620,10 +2620,10 @@ var MarkdownHighlightRules = function() {
     }, { // list
         // ---------- [CUSTOM,LISTS] ----------
         token : function(value) {
-            return "markup.list";
+            let codePoint = value.trim().codePointAt(0);
+            return ["markup.list." + codePoint, "list"];
         },
-        regex : markupListRegex,
-        next  : "listblock-start"
+        regex : markupListRegex
     }, {
         include : "basic"
     });
@@ -2695,28 +2695,6 @@ var MarkdownHighlightRules = function() {
             {token: "empty_line", regex: '^$', next: "allowBlock"},
             {token: "empty", regex: "", next: "start"}
         ],
-
-        "listblock-start" : [{
-            token : "support.variable",
-            regex : /(?:\[[ x]\])?/,
-            next  : "listblock"
-        }],
-
-        "listblock" : [ { // Lists only escape on completely blank lines.
-            token : "empty_line",
-            regex : "^$",
-            next  : "start"
-        }, { // list
-            token : "markup.list",
-            regex : markupListRegex,
-            next  : "listblock-start"
-        }, {
-            include : "basic", noEscape: true
-        },
-        codeBlockStartRule,
-        {
-            defaultToken : "list" // do not use markup.list to allow string leading `*` differently
-        } ],
 
         "blockquote" : [ { // Blockquotes only escape on blank lines.
             token : "empty_line",
@@ -5513,17 +5491,15 @@ oop.inherits(Mode, TextMode);
 
     // ---------- [CUSTOM,LISTS] ----------
     this.getNextLineIndent = function(state, line, tab) {
-        if (state == "listblock") {
-            var match = /^(\s*)(?:([*+\-$#@&%])|(\d+)\.)(\s+)/.exec(line);
-            if (!match)
-                return "";
-            var marker = match[2];
-            if (!marker)
-                marker = parseInt(match[3], 10) + 1 + ".";
-            return match[1] + marker + match[4];
-        } else {
+        let match = /^(\s*)(?:([*+\-$#@&%])|(\d+)\.)(\s+)(.*)$/.exec(line);
+        if (!match)
             return this.$getIndent(line);
-        }
+        if (!match[5])
+            return this.$getIndent(line);
+        let marker = match[2];
+        if (!marker)
+            marker = parseInt(match[3], 10) + 1 + ".";
+        return match[1] + marker + match[4];
     };
     this.$id = "ace/mode/markdown";
 }).call(Mode.prototype);
