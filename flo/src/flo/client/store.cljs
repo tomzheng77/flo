@@ -412,3 +412,17 @@
 ; whether the read-only editor should be shown
 (rf/reg-sub :read-only-visible
   #(or (:history-cursor %1) (:navigation-index %1)))
+
+(rf/reg-event-fx :open-history
+  (fn [{:keys [db]}]
+    (let [time (:history-cursor db)]
+      (if-not time
+        {:db db}
+        (let [time-string (.format (js/moment time) "YYYY-MM-DDThh:mm:ss")
+              note-name (:active-note-name db)
+              path (str "/history?t=" time-string "#" note-name)]
+          {:db db :open-window path})))))
+
+(rf/reg-fx :open-window
+  (fn [path]
+    (.open js/window path "_blank")))
