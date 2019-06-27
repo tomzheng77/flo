@@ -323,7 +323,11 @@
 (set! (.-ontouchend js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-onresize js/window) #(rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 (set! (.-onhashchange js/window) #(rf/dispatch [:hash-change (.-newURL %)]))
-(rf/dispatch-sync [:hash-change js/window.location.href])
+(set! (.-onblur js/window)
+  (fn []
+    (ace/hide-clickables @ace-editor)
+    (ace/hide-clickables @ace-editor-ro)))
 
+(rf/dispatch-sync [:hash-change js/window.location.href])
 (js/setInterval #(rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor)]) 1000)
 (defn on-js-reload [])
