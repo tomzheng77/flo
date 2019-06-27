@@ -4,7 +4,7 @@
     [re-frame.core :as rf]
     [reagent.core :as r]))
 
-(defn navigation-row [note index]
+(defn navigation-row [note]
   (let [focus? (r/atom false)]
     (fn []
       [:div {:style {:width "auto" :height 24
@@ -13,7 +13,7 @@
                      :padding-right 7
                      :line-height "24px"
                      :user-select "none"
-                     :background-color (if (or @focus? (= index @(rf/subscribe [:navigation-index]))) "#c7cbd1")
+                     :background-color (if (or @focus? (:focus note)) "#c7cbd1")
                      :cursor "pointer"
                      :display "flex"
                      :flex-direction "row"}
@@ -61,9 +61,9 @@
               :on-change #(rf/dispatch [:navigation-input (-> % .-target .-value)])}]]
     [:div {:style {:height 4}}]
     [:div {:style {:max-height 504 :overflow-y "scroll"}}
-     (for [[index note] (map-indexed vector @(rf/subscribe [:navigation-list]))]
-       ^{:key [index (:name note)]}
-       [navigation-row note index])]]])
+     (for [note @(rf/subscribe [:navigation-list])]
+       ^{:key [(:name note) (:focus note)]}
+       [navigation-row note])]]])
 
 
 (defn history-limit [label limit-ms]

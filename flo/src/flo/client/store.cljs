@@ -345,7 +345,9 @@
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
   (fn [db _]
-    (navigation-list db)))
+    (let [at (:navigation-index db)]
+      (for [[index note] (map-indexed vector (navigation-list db))]
+        (assoc note :focus (= index at))))))
 
 ; copy from the read-only editor whenever possible
 ; otherwise, if the copy-from-ro flag is not set to true
