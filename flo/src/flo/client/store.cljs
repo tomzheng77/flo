@@ -418,7 +418,7 @@
     (let [time (:history-cursor db)]
       (if-not time
         {:db db}
-        (let [time-string (.format (js/moment time) "YYYY-MM-DDThh:mm:ss")
+        (let [time-string (.format (js/moment time) "YYYY-MM-DDTHH:mm:ss")
               note-name (:active-note-name db)
               path (str "/history?t=" time-string "#" note-name)]
           {:db db :open-window path})))))
