@@ -31,7 +31,7 @@
            (org.httpkit BytesInputStream)))
 
 (timbre/merge-config!
-  {:level      :debug
+  {:level      :info
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
 (defn chsk-send! [& args])
