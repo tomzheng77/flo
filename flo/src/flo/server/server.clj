@@ -139,18 +139,23 @@
        :body (pr-str (vec response))}))
   (POST "/login" request
     (if (:login (:session request))
-      {:status  302 :headers {"Location" "/editor"} :body ""}
-      (let [password (:password (:params request))]
+      {:status  302 :headers {"Location" "/editor"} :session (:session request) :body ""}
+      (let [password (:password (:params request))
+            session (:session request)]
         (if (or (empty? @global/password) (= @global/password password))
-          {:status 302 :headers {"Location" "/editor"} :body "" :session {:login true}}
-          {:status 302 :headers {"Location" "/login"} :body ""}))))
+          {:status 302 :headers {"Location" "/editor"} :body "" :session (assoc session :login true)}
+          {:status 302 :headers {"Location" "/login"} :body "" :session session}))))
   (GET "/login" request
     (if (:login (:session request))
       {:status  302 :headers {"Location" "/editor"} :body ""}
       (if (empty? @global/password)
-        {:status 302 :headers {"Location" "/editor"} :body "" :session {:login true}}
+        {:status 302
+         :headers {"Location" "/editor"}
+         :session (assoc (:session request) :login true)
+         :body ""}
         {:status 200
          :headers {"Content-Type" "text/html"}
+         :session (:session request)
          :body (login-html)})))
   (GET "/" [] {:status 302 :headers {"Location" "/login"} :body ""})
   (GET "/history" request
