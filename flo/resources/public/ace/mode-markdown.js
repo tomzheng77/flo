@@ -2714,7 +2714,7 @@ var MarkdownHighlightRules = function() {
             regex: "<P(x[0-9]+)?>"
         }, {
             token: "ritsu.fail",
-            regex: "<F(x[0-9]+)?>"
+            regex: "<F((x[0-9]+)|-[0-9]*\\.?[0-9]+)?>"
         }],
 
         "allowBlock": [
