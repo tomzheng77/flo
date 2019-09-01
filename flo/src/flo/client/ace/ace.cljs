@@ -21,7 +21,8 @@
                 :tabSize 4
                 :useSoftTabs true
                 :enableClickables true
-                :enableColors true}))
+                :enableColors true
+                :scrollPastEnd 1}))
     (.setTheme instance "ace/theme/monokai")
     (.setMode (.-session instance) "ace/mode/markdown")
     instance))
