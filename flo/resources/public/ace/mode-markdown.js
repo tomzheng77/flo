@@ -2607,6 +2607,7 @@ var MarkdownHighlightRules = function() {
     let markupListRegexB = "^\\s{0,300}(?:[#])\\s+";
     let markupListRegexC = "^\\s{0,300}(?:[@])\\s+";
     let markupListRegexD = "^\\s{0,300}(?:[&])\\s+";
+    let markupListRegexE = "^\\s{0,300}(?:[>])\\s+";
 
     function makeListblock(suffix) {
         return [{
@@ -2619,6 +2620,7 @@ var MarkdownHighlightRules = function() {
         { token: "markup.list", regex: markupListRegexB, next: "listblock-b" },
         { token: "markup.list", regex: markupListRegexC, next: "listblock-c" },
         { token: "markup.list", regex: markupListRegexD, next: "listblock-d" },
+        { token: "markup.list", regex: markupListRegexE, next: "listblock-e" },
         {
             include: "basic", noEscape: true
         },
@@ -2650,6 +2652,7 @@ var MarkdownHighlightRules = function() {
     { token: "markup.list", regex: markupListRegexB, next: "listblock-b"},
     { token: "markup.list", regex: markupListRegexC, next: "listblock-c"},
     { token: "markup.list", regex: markupListRegexD, next: "listblock-d"},
+    { token: "markup.list", regex: markupListRegexE, next: "listblock-e"},
 
     {
         include : "basic"
@@ -2732,6 +2735,7 @@ var MarkdownHighlightRules = function() {
         "listblock-b": makeListblock("b"),
         "listblock-c": makeListblock("c"),
         "listblock-d": makeListblock("d"),
+        "listblock-e": makeListblock("e"),
 
         "blockquote" : [ { // Blockquotes only escape on blank lines.
             token : "empty_line",
