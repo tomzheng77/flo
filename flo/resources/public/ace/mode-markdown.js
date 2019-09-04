@@ -2638,7 +2638,7 @@ var MarkdownHighlightRules = function() {
     codeBlockStartRule,
     { // block quote
         token : "string.blockquote", // ---------- [CUSTOM,LISTS] ----------
-        regex : "^\\s*>\\s*(?:[*+\\-$#@&%]|\\d+\\.)?\\s+",
+        regex : "^\\s*>\\s*(?:[*+\\-$#@&%>]|\\d+\\.)?\\s+",
         next  : "blockquote"
     }, { // HR * - _
         token : "constant",
@@ -2743,7 +2743,7 @@ var MarkdownHighlightRules = function() {
             next  : "start"
         }, { // block quote
             token : "string.blockquote", // ---------- [CUSTOM,LISTS] ----------
-            regex : "^\\s*>\\s*(?:[*+\\-$#@&%]|\\d+\\.)?\\s+",
+            regex : "^\\s*>\\s*(?:[*+\\-$#@&%>]|\\d+\\.)?\\s+",
             next  : "blockquote"
         }, {
             include : "basic", noEscape: true
@@ -5532,7 +5532,7 @@ oop.inherits(Mode, TextMode);
 
     // ---------- [CUSTOM,LISTS] ----------
     this.getNextLineIndent = function(state, line, tab) {
-        let match = /^(\s*)(?:([*+\-$#@&%])|(\d+)\.)(\s+)(.*)$/.exec(line);
+        let match = /^(\s*)(?:([*+\-$#@&%>])|(\d+)\.)(\s+)(.*)$/.exec(line);
         if (!match)
             return this.$getIndent(line);
         if (!match[5])
