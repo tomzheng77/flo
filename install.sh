@@ -1,5 +1,7 @@
 #!/bin/sh
 
+lein clean
+lein cljsbuild once min
 lein uberjar
-cp target/limiter.jar /home/tomzheng/limiter/limiter.jar
+cp target/flo.jar /home/tomzheng/flo/flo.jar
 

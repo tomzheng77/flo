@@ -25,7 +25,8 @@
             [flo.server.static :refer [editor-html login-html]]
             [flo.server.global :as global]
             [clojure.java.io :as io]
-            [ring.util.anti-forgery :refer [anti-forgery-field]])
+            [ring.util.anti-forgery :refer [anti-forgery-field]]
+            [clojure.string :as str])
   (:import (java.util UUID Date)
            (java.io FileInputStream ByteArrayOutputStream)
            (org.httpkit BytesInputStream)))
@@ -92,10 +93,6 @@
               (when note (chsk-send! uid [:flo/history note]))))
           (reset! seek-location {})))))))
 
-(def upload-dir "upload")
-(.mkdirs (io/file upload-dir))
-
-
 ; stores a file of the format
 ;{:filename "1.in",
 ;   :content-type "application/octet-stream",
@@ -103,8 +100,8 @@
 ;   #object[java.io.File 0x29c0647a "/tmp/ring-multipart-8829745542880348189.tmp"],
 ;   :size 57}}
 (defn store-file [{:keys [filename content-type tempfile size]} uuid]
-  (let [out-file (io/file upload-dir (.toString uuid))
-        edn-file (io/file upload-dir (str (.toString uuid) ".edn"))]
+  (let [out-file (io/file @global/upload-dir (.toString uuid))
+        edn-file (io/file @global/upload-dir (str (.toString uuid) ".edn"))]
     (io/copy tempfile out-file)
     (spit edn-file (pr-str {:name filename :content-type content-type :size size}))))
 
@@ -121,8 +118,8 @@
       (ring-ajax-post request)))
   (GET "/file" request
     (let [id (get (:query-params request) "id")
-          file (io/file upload-dir id)
-          edn (try (read-string (slurp (io/file upload-dir (str id ".edn")))) (catch Exception _ {}))
+          file (io/file @global/upload-dir id)
+          edn (try (read-string (slurp (io/file @global/upload-dir (str id ".edn")))) (catch Exception _ {}))
           content-type (or (:content-type edn) "text/plain")]
       (if (and (.exists file) (.isFile file) (.canRead file))
         {:status 200 :headers {"Content-Type" content-type} :body (new FileInputStream file)}
@@ -194,13 +191,28 @@
       (wrap-reload)
       (wrap-keyword-params)
       (wrap-params)))
+;
+(defn named-params [params]
+  (loop [remain (seq params) acc {}]
+    (if (< (count remain) 2)
+      acc
+      (let [head (first remain) next (nth remain 1)]
+        (if (not (str/starts-with? head "--"))
+          (recur (rest remain) acc)
+          (recur (rest (rest remain)) (assoc acc (subs head 2) next)))))))
 
 ; password
 ; port
 ; database name
-(defn -main [& [password port db-name]]
-  (let [port-int (read-string port)]
+(defn -main [& params]
+  (let [named (named-params params)
+        password (or (get named "password") "")
+        port (read-string (or (get named "port") "3451"))
+        db (or (get named "db") "flo-ace")
+        upload-dir (or (get named "upload-dir") "upload")]
     (reset! global/password password)
-    (reset! global/port port-int)
-    (reset! global/db-name db-name)
-    (ks/run-server dev-app {:port port-int})))
+    (reset! global/port port)
+    (reset! global/db-name db)
+    (reset! global/upload-dir upload-dir)
+    (.mkdirs (io/file @global/upload-dir))
+    (ks/run-server dev-app {:port port})))
