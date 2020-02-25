@@ -93,6 +93,7 @@
 
 (rf/reg-fx :set-hash (fn [hash] (set! (.. js/window -location -hash) hash)))
 (rf/reg-fx :set-title (fn [title] (set! (.-title js/document) title)))
+(rf/reg-fx :insert-text (fn [text] (ace/insert-at-cursor @ace-editor text)))
 (rf/reg-fx :focus-editor
   (fn [_] (.focus @ace-editor)))
 
@@ -282,6 +283,9 @@
   (when (= "Escape" code)
     (rf/dispatch [:set-search nil])
     (rf/dispatch [:navigation-input nil]))
+  (when (and ctrl-key (= "q" key))
+    (.preventDefault original)
+    (rf/dispatch [:insert-time]))
   (when (and ctrl-key (= "j" key))
     (.preventDefault original)
     (rf/dispatch [:open-history]))
