@@ -137,7 +137,7 @@
 
 (defn iterate-transactions []
   (let [txs (d/tx-range (d/log (get-conn)) nil nil)]
-    (head txs)))
+    (count txs)))
 
 (defn h2-settings [file]
   {:classname   "org.h2.Driver"
@@ -146,22 +146,37 @@
    :user        "h2-user"
    :password    ""})
 
-(defn h2-write-test []
+(defn h2-import-test []
   (let [settings (h2-settings "h2database")]
     (j/db-do-commands settings
-      [(j/create-table-ddl :history
-         [:name "varchar(3200)"]
-         [:text "varchar(3200)"]
-         [:time "varchar(3200)"])
-       (j/create-table-ddl :notes
-         [:name "varchar(3200)"]
-         [:text "varchar(3200)"]
-         [:init-time "varchar(3200)"]
-         [:last-time "varchar(3200)"])])
-    (j/insert-multi! settings :notes
-      [{:name "note-01" :text "text-01" :init-time "A" :last-time "B"}
-       {:name "note-02" :text "text-02" :init-time "C" :last-time "D"}])))
+      [(j/create-table-ddl :notes
+         [[:id :int "PRIMARY KEY" "AUTO_INCREMENT" "NOT NULL"]
+          [:name :varchar "NOT NULL" "UNIQUE"]
+          [:text :varchar "NOT NULL"]
+          [:init_time "timestamp(3)" "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"]
+          [:last_time "timestamp(3)" "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"]]
+         {:conditional? true})
+       (j/create-table-ddl :history
+         [[:id :int "PRIMARY KEY" "AUTO_INCREMENT" "NOT NULL"]
+          [:note_id :int "NOT NULL"]
+          [:text :varchar "NOT NULL"]
+          [:time "timestamp(3)" "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"]
+          ["FOREIGN KEY(note_id) REFERENCES notes(id)"]]
+         {:conditional? true})])
+    (j/execute! settings ["CREATE INDEX notes_name ON notes(name)"])
+    (j/execute! settings ["CREATE INDEX notes_init_time ON notes(init_time)"])
+    (j/execute! settings ["CREATE INDEX notes_last_time ON notes(last_time)"])
+    (j/execute! settings ["CREATE INDEX history_time ON history(time)"])
+    (println "tables created")
+    (let [notes (get-all-notes)]
+      (println "found" (count notes) "notes")
+      (j/insert-multi! settings :notes
+        (for [{:keys [name time-created time-updated content]} notes]
+          {:name name
+           :init_time (to-util-date time-created)
+           :last_time (to-util-date time-updated)
+           :text (or content "")})))))
 
 (defn h2-read-test []
   (let [settings (h2-settings "h2database")]
-    (j/query mysql-db ["select * from notes"])))
+    (j/query settings ["SELECT * FROM NOTES"])))
