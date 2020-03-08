@@ -39,15 +39,15 @@
 
 ; connections are long lived and cached by d/connect
 ; hence there is no need to store the connection
-(def started (atom #{}))
+(def started-dbs (atom #{})) ; set of names of databases that have been started
 (defn get-conn []
   (let [db-name @global/db-name
         db-uri (str "datomic:dev://localhost:4334/" db-name)]
     ; when this function is called for the first time
     ; check if the database has been created
-    (locking started
-      (when (not (@started db-name))
-        (swap! started #(conj % db-name))
+    (locking started-dbs
+      (when (not (@started-dbs db-name))
+        (swap! started-dbs #(conj % db-name))
         (when (d/create-database db-uri)
           ; the database has just been created
           ; initialize the schema
