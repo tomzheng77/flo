@@ -135,5 +135,5 @@
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
 
 (defn iterate-transactions []
-  (let [txs (d/tx-range (d/log (get-conn)))]
+  (let [txs (d/tx-range (d/log (get-conn) nil nil))]
     (head txs)))
