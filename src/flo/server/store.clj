@@ -12,6 +12,7 @@
             [taoensso.nippy :as nippy]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [datomic.api :as d]
+            [clojure.java.jdbc :as j]
             [flo.server.global :as global]
             [flo.server.codec :refer [base64-encode hash-password]])
   (:import (java.time LocalDateTime ZoneId LocalDate LocalTime)
@@ -135,5 +136,32 @@
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
 
 (defn iterate-transactions []
-  (let [txs (d/tx-range (d/log (get-conn) nil nil))]
+  (let [txs (d/tx-range (d/log (get-conn)) nil nil)]
     (head txs)))
+
+(defn h2-settings [file]
+  {:classname   "org.h2.Driver"
+   :subprotocol "h2:file"
+   :subname     file
+   :user        "h2-user"
+   :password    ""})
+
+(defn h2-write-test []
+  (let [settings (h2-settings "h2database")]
+    (j/db-do-commands settings
+      [(j/create-table-ddl :history
+         [:name "varchar(3200)"]
+         [:text "varchar(3200)"]
+         [:time "varchar(3200)"])
+       (j/create-table-ddl :notes
+         [:name "varchar(3200)"]
+         [:text "varchar(3200)"]
+         [:init-time "varchar(3200)"]
+         [:last-time "varchar(3200)"])])
+    (j/insert-multi! settings :notes
+      [{:name "note-01" :text "text-01" :init-time "A" :last-time "B"}
+       {:name "note-02" :text "text-02" :init-time "C" :last-time "D"}])))
+
+(defn h2-read-test []
+  (let [settings (h2-settings "h2database")]
+    (j/query mysql-db ["select * from notes"])))
