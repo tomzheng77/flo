@@ -105,7 +105,6 @@
     (io/copy tempfile out-file)
     (spit edn-file (pr-str {:name filename :content-type content-type :size size}))))
 
-
 (defroutes app-routes
   (route/resources "/" {:root "public"})
   (GET "/chsk" request
@@ -191,7 +190,8 @@
       (wrap-reload)
       (wrap-keyword-params)
       (wrap-params)))
-;
+
+; converts a parameter array into a map of named parameters
 (defn named-params [params]
   (loop [remain (seq params) acc {}]
     (if (< (count remain) 2)
