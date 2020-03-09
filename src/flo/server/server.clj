@@ -31,7 +31,7 @@
            (java.io FileInputStream ByteArrayOutputStream)
            (org.httpkit BytesInputStream)))
 
-(timbre/merge-config!
+(timbre/set-config!
   {:level      :info
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
@@ -104,7 +104,6 @@
         edn-file (io/file @global/upload-dir (str (.toString uuid) ".edn"))]
     (io/copy tempfile out-file)
     (spit edn-file (pr-str {:name filename :content-type content-type :size size}))))
-
 
 (defroutes app-routes
   (route/resources "/" {:root "public"})
@@ -191,7 +190,8 @@
       (wrap-reload)
       (wrap-keyword-params)
       (wrap-params)))
-;
+
+; converts a parameter array into a map of named parameters
 (defn named-params [params]
   (loop [remain (seq params) acc {}]
     (if (< (count remain) 2)

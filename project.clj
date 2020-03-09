@@ -37,6 +37,7 @@
                  [com.google.guava/guava "27.1-jre"]
                  [org.clojure/data.avl "0.0.18"]
                  [commons-codec/commons-codec "1.12"]
+                 [org.clojure/java.jdbc "0.7.11"]
 
                  ; requires datomic/bin/maven-install
                  [com.datomic/datomic-pro "0.9.5786"]]
@@ -128,19 +129,24 @@
              :server-logfile false
              }
 
+	:repl-options {
+	             ;; If nREPL takes too long to load it may timeout,
+	             ;; increase this to wait longer before timing out.
+	             ;; Defaults to 30000 (30 seconds)
+	             :timeout 120000 }
 
   ;; Setting up nREPL for Figwheel and ClojureScript dev
   ;; Please see:
   ;; https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl
   :profiles {:uberjar {:aot :all}
-             :dev {:dependencies [[binaryage/devtools "0.9.10"]
+             :dev {:dependencies [[binaryage/devtools "1.0.0"]
                                   [figwheel-sidecar "0.5.19-SNAPSHOT"]
-                                  [cider/piggieback "0.4.0"]]
+                                  [cider/piggieback "0.4.2"]]
                    ;; need to add dev source path here to get user.clj loaded
                    :source-paths ["src" "dev"]
                    ;; for CIDER
                    ;; :plugins [[cider/cider-nrepl "0.12.0"]]
-                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
+                   ; :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    ;; need to add the compliled assets to the :clean-targets
                    :clean-targets ^{:protect false} ["resources/public/js/compiled"
                                                      :target-path]}})

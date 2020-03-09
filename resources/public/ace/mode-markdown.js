@@ -2626,7 +2626,7 @@ var MarkdownHighlightRules = function() {
         },
         codeBlockStartRule,
         {
-            defaultToken: suffix? "list." + suffix : "list"
+            defaultToken: suffix ? "list." + suffix : "list"
         }]
     }
 

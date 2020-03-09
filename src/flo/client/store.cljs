@@ -422,6 +422,13 @@
           path (str "/history?t=" time-string "#" note-name)]
       {:db db :open-window path})))
 
+(rf/reg-event-fx :insert-time
+  [(rf/inject-cofx :time)]
+  (fn [{:keys [db time]}]
+    (let [timestamp (or (:history-cursor db) time)
+          time-string (.format (js/moment time) "YYYY-MM-DD HH:mm:ss")]
+      {:db db :insert-text time-string})))
+
 (rf/reg-fx :open-window
   (fn [path]
     (.open js/window path "_blank")))
