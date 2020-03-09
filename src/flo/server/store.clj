@@ -12,7 +12,6 @@
             [taoensso.nippy :as nippy]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [datomic.api :as d]
-            [clojure.java.jdbc :as j]
             [flo.server.global :as global]
             [flo.server.codec :refer [base64-encode hash-password]])
   (:import (java.time LocalDateTime ZoneId LocalDate LocalTime)
@@ -134,77 +133,3 @@
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
-
-(defn iterate-transactions []
-  (let [txs (d/tx-range (d/log (get-conn)) nil nil)]
-    (count txs)))
-
-(defn h2-settings [file]
-  {:classname   "org.h2.Driver"
-   :subprotocol "h2:file"
-   :subname     file
-   :user        "h2-user"
-   :password    ""})
-
-(defn note-history-q [name]
-  `[:find ?upd-time ?content
-    :where
-    [?e :note/name ~name]
-    [?e :note/content ?content ?tx2]
-    [?tx2 :db/txInstant ?upd-time]])
-
-(defn show-history []
-  (let [hdb (d/history (d/db (get-conn)))]
-    (println hdb)
-    (d/q (note-history-q "ritsu") hdb)))
-
-(defn h2-import-test []
-  (let [settings (h2-settings "h2database")]
-    (j/db-do-commands settings
-      [(j/create-table-ddl :notes
-         [[:id :int "PRIMARY KEY" "AUTO_INCREMENT" "NOT NULL"]
-          [:name :varchar "NOT NULL" "UNIQUE"]
-          [:text :varchar "NOT NULL"]
-          [:init_time "timestamp(3)" "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"]
-          [:last_time "timestamp(3)" "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"]]
-         {:conditional? false})
-       (j/create-table-ddl :history
-         [[:id :int "PRIMARY KEY" "AUTO_INCREMENT" "NOT NULL"]
-          [:note_id :int "NOT NULL"]
-          [:text :varchar "NOT NULL"]
-          [:time "timestamp(3)" "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"]
-          ["FOREIGN KEY(note_id) REFERENCES notes(id)"]]
-         {:conditional? false})])
-    (j/execute! settings ["CREATE INDEX notes_name ON notes(name)"])
-    (j/execute! settings ["CREATE INDEX notes_init_time ON notes(init_time)"])
-    (j/execute! settings ["CREATE INDEX notes_last_time ON notes(last_time)"])
-    (j/execute! settings ["CREATE INDEX history_time ON history(time)"])
-    (println "tables created")
-    (println "importing all latest notes")
-    (let [notes (get-all-notes)]
-      (println "found" (count notes) "notes")
-      (j/insert-multi! settings :notes
-        (for [{:keys [name time-created time-updated content]} notes]
-          {:name name
-           :init_time (to-util-date time-created)
-           :last_time (to-util-date time-updated)
-           :text (or content "")}))
-      (println "inserted" (count notes) "latest notes")
-      (let [hdb (d/history (d/db (get-conn)))]
-        (doseq [{:keys [name]} notes]
-          (println "importing history for" name)
-          (let [all-history (d/q (note-history-q name) hdb)
-                groups (partition 3000 3000 [] all-history)
-                note-id (:id (first (j/query settings ["SELECT id FROM NOTES WHERE NAME = ?" name])))]
-            (println "id =" note-id)
-            (doseq [group groups]
-              (j/insert-multi! settings :history
-                (for [[inst raw-content] group]
-                  {:note_id note-id
-                   :text (or (if raw-content (nippy/thaw raw-content)) "")
-                   :time inst}))
-              (println "inserted group of size" (count group)))))))))
-
-(defn h2-read-test []
-  (let [settings (h2-settings "h2database")]
-    (j/query settings ["SELECT * FROM NOTES"])))

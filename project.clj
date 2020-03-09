@@ -37,9 +37,8 @@
                  [com.google.guava/guava "27.1-jre"]
                  [org.clojure/data.avl "0.0.18"]
                  [commons-codec/commons-codec "1.12"]
-                 [org.clojure/java.jdbc "0.7.11"]
 
-                 ; requires datomic/bin/maven-install
+                 ; requires /flo/datomic/bin/maven-install
                  [com.datomic/datomic-pro "0.9.5786"]]
 
   :plugins [[lein-figwheel "0.5.19-SNAPSHOT"]

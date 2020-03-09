@@ -206,10 +206,10 @@
 ; database name
 (defn -main [& params]
   (let [named (named-params params)
-        password (or (get named "password") "")
-        port (read-string (or (get named "port") "3451"))
-        db (or (get named "db") "flo-ace")
-        upload-dir (or (get named "upload-dir") "upload")]
+        password (or (get named "password") (str @global/password))
+        port (read-string (or (get named "port") (str @global/port)))
+        db (or (get named "db") (str @global/db))
+        upload-dir (or (get named "upload-dir") (str @global/upload-dir))]
     (reset! global/password password)
     (reset! global/port port)
     (reset! global/db-name db)
