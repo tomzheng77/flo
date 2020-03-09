@@ -208,7 +208,7 @@
   (let [named (named-params params)
         password (or (get named "password") (str @global/password))
         port (read-string (or (get named "port") (str @global/port)))
-        db (or (get named "db") (str @global/db))
+        db (or (get named "db") (str @global/db-name))
         upload-dir (or (get named "upload-dir") (str @global/upload-dir))]
     (reset! global/password password)
     (reset! global/port port)
