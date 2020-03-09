@@ -194,13 +194,13 @@
         (doseq [{:keys [name]} notes]
           (println "importing history for" name)
           (let [all-history (d/q (note-history-q name) hdb)
-                groups (partition 3000 all-history)
+                groups (partition 3000 3000 [] all-history)
                 note-id (:id (first (j/query settings ["SELECT id FROM NOTES WHERE NAME = ?" name])))]
-            (println "id = " note-id)
+            (println "id =" note-id)
             (doseq [group groups]
               (j/insert-multi! settings :history
                 (for [[inst raw-content] group]
-                  {:note-id note-id
+                  {:note_id note-id
                    :text (or (if raw-content (nippy/thaw raw-content)) "")
                    :time inst}))
               (println "inserted group of size" (count group)))))))))

@@ -31,7 +31,7 @@
            (java.io FileInputStream ByteArrayOutputStream)
            (org.httpkit BytesInputStream)))
 
-(timbre/merge-config!
+(timbre/set-config!
   {:level      :info
    :appenders  {:spit (appenders/spit-appender {:fname "flo.log"})}})
 
