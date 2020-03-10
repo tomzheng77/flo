@@ -136,6 +136,7 @@
                  :overflow         "hidden"
                  :display          "flex"
                  :align-items      "center"}}
+   [history-limit "5m" (* 1000 60 5)]
    [history-limit "H" (* 1000 60 60)]
    [history-limit "D" (* 1000 60 60 24)]
    [history-limit "W" (* 1000 60 60 24 7)]
@@ -143,6 +144,7 @@
    [history-limit "Y" (* 1000 60 60 24 365)]
    [history-limit "A" (* 1000 60 60 24 10000)]
    [status-display]
+   ; todo: add realtime switch
    [history-button]])
 
 

@@ -9,6 +9,18 @@
 ; widths: widths of each column, each can be string or integer
 ; data: 2D array
 
+; native support for multiple file types
+; excel
+; diagrams
+; code
+; rich text
+; make no assumption of what type is associated with each name
+; should I save type as a separate column? no
+; content = string: plain old text format
+; content = map: newer format
+;   type: text/sheet
+;   version: int
+
 (defn new-instance [element-id]
   (js/jexcel
     (js/document.getElementById element-id)
@@ -29,7 +41,10 @@
    :widths (js->clj (.getWidth this))
    :data (js->clj (.getData this))})
 
-(defn load [this saved]
-  (.setData this (clj->js (:data saved)))
+(defn load [this content]
+  (assert (map? content))
+  (assert (= (:type content) "sheet"))
+  (assert (= (:version content) 1))
+  (.setData this (clj->js (:data content)))
   (doseq [[i w] (map-indexed vector (:widths))]
     (.setWidth this (clj->js w))))

@@ -103,45 +103,9 @@
 (rf/reg-fx :focus-editor
   (fn [_] (.focus @ace-editor)))
 
-; https://stackoverflow.com/questions/18050128/applydeltas-in-ace-editor
-; :action :insert
-; :action :remove
-(defn changes->deltas [changes]
-  (loop [remain changes row 0 col 0 deltas []]
-    (if (empty? remain)
-      deltas
-      (let [head (first remain)
-            lines (js->clj (js/splitLines (str/replace (:value head) #"\r\n" "\n")))
-            end-row (+ row (dec (count lines)))
-            end-col (if (>= 1 (count lines)) (+ col (count (first lines))) (count (last lines)))
-            is-add (true? (:added head))
-            is-remove (true? (:removed head))]
-        (cond is-add
-              (recur (next remain)
-                     end-row
-                     end-col
-                     (conj deltas
-                       {:start {:row row :column col}
-                        :end {:row end-row :column end-col}
-                        :action "insert" :lines lines}))
-              is-remove
-              (recur (next remain)
-                     end-row
-                     end-col
-                     (conj deltas
-                       {:start {:row row :column col}
-                        :end {:row end-row :column end-col}
-                        :action "remove" :lines lines}))
-              true
-              (recur (next remain) end-row end-col deltas))))))
-
 (rf/reg-fx :refresh-editor
   (fn [content]
-    (ace/set-text @ace-editor content)
-    ; (let [changes (js->clj (.diffChars diff (ace/get-text @ace-editor) content) :keywordize-keys true)
-    ;       deltas (changes->deltas changes)]
-    ;   (ace/apply-deltas @ace-editor deltas))
-    ))
+    (ace/set-text @ace-editor content)))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :reset-editor-from-ro
