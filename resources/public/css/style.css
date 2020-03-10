@@ -23,3 +23,13 @@
     font-weight: bold;
     font-style: italic;
 }
+
+#container-jexcel-editor {
+    font-family: 'Go-Mono', 'Microsoft YaHei';
+    font-size: 13.3333px;
+    background-color: #F00;
+}
+
+#container-jexcel-editor input {
+    font-family: 'Go-Mono', 'Microsoft YaHei' !important;
+}

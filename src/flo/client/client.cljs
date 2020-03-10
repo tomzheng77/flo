@@ -3,6 +3,7 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require
+    [flo.client.jexcel.jexcel :as jexcel]
     [flo.client.ace.ace :as ace]
     [flo.client.ace.ace-clickables]
     [flo.client.ace.ace-colors]
@@ -46,6 +47,8 @@
 (def ace-editor-note-name (r/atom nil))
 (def ace-editor (r/atom nil))
 (def ace-editor-ro (r/atom nil))
+(def jexcel-editor (r/atom nil))
+(def jexcel-editor-ro (r/atom nil))
 
 (defn file-uploaded [response]
   ; add [*b82b6c5e-6d44-11e9-a923-1681be663d3e]
@@ -74,14 +77,17 @@
   [:div#app-inner
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
-   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "none" "flex") :flex-direction "column"}} [:div#editor]]
-   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "flex" "none") :flex-direction "column"}} [:div#editor-read-only]]
+   [:div#container-jexcel-editor]
+   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
+   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-ro]]
    (if @(rf/subscribe [:search]) [search-bar])
    [history-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
-(reset! ace-editor (ace/new-instance "editor"))
-(reset! ace-editor-ro (ace/new-instance "editor-read-only"))
+(reset! jexcel-editor (jexcel/new-instance "container-jexcel-editor"))
+(set! (.-jexcel_editor js/window) @jexcel-editor)
+(reset! ace-editor (ace/new-instance "container-ace-editor"))
+(reset! ace-editor-ro (ace/new-instance "container-ace-editor-ro"))
 (ace/set-text @ace-editor (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
 (ace/set-read-only @ace-editor-ro true)

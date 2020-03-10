@@ -46,6 +46,8 @@
       [:meta {:charset "UTF-8"}]
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
       [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
+      [:link {:href "jexcel/jexcel.css" :rel "stylesheet"}]
+      [:link {:href "jsuites/jsuites.css" :rel "stylesheet"}]
       [:link {:href "css/style.css" :rel "stylesheet"}]
       [:style
        (css [:#app-inner
@@ -65,6 +67,8 @@
       [:script {:src "ace/ext-linking.js" :type "text/javascript"}]
       [:script {:src "ace/ext-language_tools.js" :type "text/javascript"}]
       [:script {:src "ace/ext-split.js" :type "text/javascript"}]
+      [:script {:src "jexcel/jexcel.js" :type "text/javascript"}]
+      [:script {:src "jsuites/jsuites.js" :type "text/javascript"}]
       [:script {:src "js/string.js" :type "text/javascript"}]
       [:script {:src "js/ace-ext-fs_previews.js" :type "text/javascript"}]
       [:script {:src "js/jquery-2.2.4.min.js" :type "text/javascript"}]
