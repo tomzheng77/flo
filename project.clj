@@ -9,16 +9,17 @@
   :min-lein-version "2.7.1"
 
   :dependencies [[org.clojure/clojure "1.10.0"]
-                 [org.clojure/clojurescript "1.10.520"]
-                 [org.clojure/core.async  "0.4.474"]
+                 [org.clojure/clojurescript "1.10.597"]
+                 [org.clojure/core.async "1.0.567"]
                  [cljsjs/react "16.8.3-0"]
                  [cljsjs/react-dom "16.8.3-0"]
                  [cljsjs/moment "2.24.0-0"]
-                 [reagent "0.8.1"]
-                 [re-frame "0.10.6"]
+                 [reagent "0.10.0"]
+                 [re-frame "0.12.0"]
                  [clj-commons/cljss "1.6.4"]
                  [sablono "0.8.5"]
-                 [ring "1.7.1"]
+                 [joda-time/joda-time "2.10.5"]
+                 [ring "1.8.0"]
                  [ring/ring-defaults "0.3.2"]
                  [http-kit "2.3.0"]
                  [compojure "1.6.1"]
@@ -41,7 +42,7 @@
                  ; requires /flo/datomic/bin/maven-install
                  [com.datomic/datomic-pro "0.9.5786"]]
 
-  :plugins [[lein-figwheel "0.5.19-SNAPSHOT"]
+  :plugins [[lein-figwheel "0.5.19"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
 
   :uberjar-name "flo.jar"
@@ -139,13 +140,12 @@
   ;; https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl
   :profiles {:uberjar {:aot :all}
              :dev {:dependencies [[binaryage/devtools "1.0.0"]
-                                  [figwheel-sidecar "0.5.19-SNAPSHOT"]
+                                  [figwheel-sidecar "0.5.19"]
                                   [cider/piggieback "0.4.2"]]
                    ;; need to add dev source path here to get user.clj loaded
                    :source-paths ["src" "dev"]
                    ;; for CIDER
                    ;; :plugins [[cider/cider-nrepl "0.12.0"]]
-                   ; :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
+                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    ;; need to add the compliled assets to the :clean-targets
-                   :clean-targets ^{:protect false} ["resources/public/js/compiled"
-                                                     :target-path]}})
+                   :clean-targets ^{:protect false} ["resources/public/js/compiled" :target-path]}})

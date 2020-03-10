@@ -61,6 +61,7 @@
     [:flo/save [name timestamp content]]
     (do (debug "saving" name)
         (set-note name content)
+        (chsk-send! uid [:flo/saved [name (System/currentTimeMillis)]])
         (doseq [other-uid (:any @connected-uids)]
           (when (not= uid other-uid)
             (send-note-contents other-uid name timestamp content))))

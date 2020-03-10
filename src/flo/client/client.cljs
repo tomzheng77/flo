@@ -131,15 +131,17 @@
 
 (rf/reg-fx :refresh-editor
   (fn [content]
-    (let [changes (js->clj (.diffChars diff (ace/get-text @ace-editor) content) :keywordize-keys true)
-          deltas (changes->deltas changes)]
-      (ace/apply-deltas @ace-editor deltas))))
+    (ace/set-text @ace-editor content)
+    ; (let [changes (js->clj (.diffChars diff (ace/get-text @ace-editor) content) :keywordize-keys true)
+    ;       deltas (changes->deltas changes)]
+    ;   (ace/apply-deltas @ace-editor deltas))
+    ))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :reset-editor-from-ro
   (fn [name]
     (when @ace-editor-note-name
-      (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor)]))
+      (rf/dispatch [:editor-save @ace-editor-note-name (ace/get-text @ace-editor)]))
     (reset! ace-editor-note-name name)
     (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
@@ -151,7 +153,7 @@
 (rf/reg-fx :reset-editor
   (fn [[name text search selection]]
     (when @ace-editor-note-name
-      (rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor)]))
+      (rf/dispatch [:editor-save @ace-editor-note-name (ace/get-text @ace-editor)]))
     (reset! ace-editor-note-name name)
     (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (or text ""))
@@ -292,6 +294,9 @@
   (when (and ctrl-key (= "p" key))
     (.preventDefault original)
     (toggle-navigation @ace-editor))
+  (when (and ctrl-key (= "s" key))
+    (.preventDefault original)
+    (rf/dispatch [:editor-save @ace-editor-note-name (ace/get-text @ace-editor)]))
   (when (and ctrl-key (= "i" key))
     (.preventDefault original)
     (.click (js/document.getElementById "file-input")))
@@ -336,5 +341,5 @@
     (ace/hide-clickables @ace-editor-ro)))
 
 (rf/dispatch-sync [:hash-change js/window.location.href])
-(js/setInterval #(rf/dispatch [:editor-tick @ace-editor-note-name (ace/get-text @ace-editor)]) 1000)
+(js/setInterval #(rf/dispatch [:editor-save @ace-editor-note-name (ace/get-text @ace-editor)]) 1000)
 (defn on-js-reload [])

@@ -104,6 +104,7 @@
 
         ; amount of history to allow scroll back, in milliseconds
         :history-limit    (* 1000 60 60 24)
+        :status-text      "Welcome to FloNote"
 
         ; global navigation query
         ; consists of a name and location part
@@ -154,6 +155,7 @@
 (rf/reg-sub :navigation-index (fn [db v] (:navigation-index db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
+(rf/reg-sub :status-text (fn [db v] (:status-text db)))
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
@@ -205,6 +207,8 @@
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ event]]
     (match event
+      [:chsk/recv [:flo/saved [name timestamp]]]
+      {:db (assoc db :status-text (str "saved " name " at " (.format (js/moment timestamp) "YYYY-MM-DD HH:mm:ss.SSS")))}
       [:chsk/recv [:flo/history note]]
       {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
       [:chsk/recv [:flo/refresh note]]
@@ -381,7 +385,7 @@
           (assoc fx :reset-editor-from-ro (:name note)))))))
 
 ; called with the editor's contents every second
-(rf/reg-event-fx :editor-tick
+(rf/reg-event-fx :editor-save
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ name content]]
     (if (or (empty? name) (= content (get-in db [:notes name :content])))

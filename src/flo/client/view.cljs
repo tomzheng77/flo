@@ -119,6 +119,15 @@
      (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
 
 
+(defn status-display []
+  [:div {:style {:height           "24px"
+                 :text-indent      "10px"
+                 :font-size        "11px"
+                 :line-height      "24px"
+                 :color            "rgba(255, 255, 255, 0.5)"
+                 :font-family      "Monospace"}}
+   @(rf/subscribe [:status-text])])
+
 (defn history-bar []
   [:div {:style {:height           "24px"
                  :background-color "#9e4446"
@@ -133,6 +142,7 @@
    [history-limit "M" (* 1000 60 60 24 30)]
    [history-limit "Y" (* 1000 60 60 24 365)]
    [history-limit "A" (* 1000 60 60 24 10000)]
+   [status-display]
    [history-button]])
 
 
