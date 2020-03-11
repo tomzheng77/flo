@@ -78,9 +78,7 @@
 
 (defn save-opened-note []
   (let [{:keys [name content]} (client-ace/get-name-and-content)]
-    (console-log (clj->js {:name name :content content}))
     (when name
-      (console-log "saving opened note" name)
       (rf/dispatch [:editor-save name content]))))
 
 (rf/reg-fx :set-hash (fn [hash] (set! (.. js/window -location -hash) hash)))

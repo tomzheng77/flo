@@ -41,3 +41,35 @@
 #container-ace-editor-ro {
     height: 100%;
 }
+
+#container-excel {
+    font-family: 'Go-Mono', 'Microsoft YaHei', Monospace;
+}
+
+#container-excel table {
+    transform: rotateX(0deg);
+    table-layout: fixed;
+    border-spacing: 0;
+    width: 100%;
+}
+
+#container-excel tr td {
+    background-color: #272822;
+    border-right: 1px solid rgba(255,255,255,0.5);
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    color: white;
+    margin: 0;
+    padding: 3px;
+    overflow: hidden;
+}
+
+#container-excel tr td textarea {
+    background: transparent;
+    border: none;
+    overflow: hidden;
+    resize: none;
+    border: 0 none;
+    outline: none;
+    color: white;
+    line-height: 30px;
+}
