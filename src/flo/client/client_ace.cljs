@@ -37,24 +37,6 @@
   [^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-preview]]])
 
-(defn first-at [search-results index]
-  (or (first (filter #(and (>= index (:start %)) (< index (:end %))) search-results))
-      (first (filter #(and (>= index (:start %)) (<= index (:end %))) search-results))))
-
-; [TAG-SYNTAX]
-(defn tag-declaration-at [line col]
-  (let [token (:substr (first-at (find-all line c/declaration-regex) col))]
-    (if token (subs token 1 (dec (count token))))))
-
-; [TAG-SYNTAX]
-(defn tag-definition-at [line col]
-  (let [token (:substr (first-at (find-all line c/definition-regex) col))]
-    (if token (subs token 1 (dec (count token))))))
-
-(defn tag-reference-at [line col]
-  (let [token (:substr (first-at (find-all line c/reference-regex) col))]
-    (if token (subs token 1 (dec (count token))))))
-
 ; [TAG-SYNTAX]
 (defn next-tag [editor direction]
   (if (= :up direction)
