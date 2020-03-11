@@ -105,8 +105,6 @@
   (reset! anti-forgery-field (:anti-forgery-field init))
   (reset! ace-editor (ace/new-instance "container-ace-editor"))
   (reset! ace-editor-ro (ace/new-instance "container-ace-editor-ro"))
-  (ace/set-text @ace-editor (or @(rf/subscribe [:initial-content]) ""))
-  (ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
   (ace/set-read-only @ace-editor-ro true)
   (.on @ace-editor "change" #(if-not (.-autoChange @ace-editor) (rf/dispatch [:change %])))
   (.on @ace-editor "changeSelection"
@@ -164,15 +162,15 @@
     (ace/navigate @ace-editor-ro search)))
 
 (defn set-editable [can-edit?]
-  (if can-edit?
-    (ace/set-read-only @ace-editor true)
-    (ace/set-read-only @ace-editor false)))
+  (console-log "set editable" can-edit?)
+  (ace/set-read-only @ace-editor (not can-edit?)))
 
 (defn open-note ([note] (open-note note nil))
-  ([{:keys [name text selection]} search]
+  ([{:keys [name content selection]} search]
+   (console-log (str "open note " name))
    (reset! ace-editor-note-name name)
    (set! (.-autoChangeSelection @ace-editor) true)
-   (ace/set-text @ace-editor (or text ""))
+   (ace/set-text @ace-editor (or content ""))
    (js/setTimeout
      #(do (ace/set-selection @ace-editor selection)
           (ace/navigate @ace-editor search)
@@ -180,8 +178,8 @@
           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
 (defn open-preview
-  [{:keys [text selection]} search]
-  (ace/set-text @ace-editor-ro (or text ""))
+  [{:keys [content selection]} search]
+  (ace/set-text @ace-editor-ro (or content ""))
   (js/setTimeout
     #(do (ace/set-selection @ace-editor-ro selection)
          (ace/navigate @ace-editor-ro search)) 0))
@@ -198,3 +196,6 @@
 (defn accept-external-change [{:keys [name content]}]
   (if (= name @ace-editor-note-name)
     (ace/set-text @ace-editor content)))
+
+(defn insert-image [image-id]
+  (ace/insert-at-cursor @ace-editor (str "[*" image-id "]\n")))

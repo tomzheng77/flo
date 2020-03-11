@@ -34,6 +34,8 @@
               (js/stringFromUTF8Array)
               (read-string)))
 
+(console-log (clj->js init))
+
 (when-not js/document.initialized
   (set! (.-initialized js/document) true)
   (let [href js/window.location.href]
@@ -44,7 +46,7 @@
   ; add [*b82b6c5e-6d44-11e9-a923-1681be663d3e]
   ; editor.session.insert(editor.getCursorPosition(), text)
   (doseq [{:keys [id]} response]
-    (ace/insert-at-cursor @ace-editor (str "[*" id "]\n"))))
+    (client-ace/insert-image id)))
 
 (defn upload-image []
   (.ajaxSubmit (js/$ "#file-form")
@@ -77,7 +79,9 @@
 
 (defn save-opened-note []
   (let [{:keys [name content]} (client-ace/get-name-and-content)]
+    (console-log (clj->js {:name name :content content}))
     (when name
+      (console-log "saving opened note" name)
       (rf/dispatch [:editor-save name content]))))
 
 (rf/reg-fx :set-hash (fn [hash] (set! (.. js/window -location -hash) hash)))
