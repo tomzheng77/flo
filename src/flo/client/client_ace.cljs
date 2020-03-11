@@ -138,7 +138,7 @@
 (defn focus []
   (.focus @ace-editor))
 
-(defn show-history [content search]
+(defn :open-history [content search]
   (ace/set-text @ace-editor-ro content)
   (when search
     (ace/navigate @ace-editor-ro search)))

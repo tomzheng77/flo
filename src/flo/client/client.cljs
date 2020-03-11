@@ -107,12 +107,12 @@
   (fn [[note search]]
     (client-ace/preview-note note search)))
 
-(add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
+(add-watches-db ::open-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
     (when timestamp
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
-          (client-ace/show-history content @(rf/subscribe [:search])))))))
+          (client-ace/:open-history content @(rf/subscribe [:search])))))))
 
 (add-watches-db :disable-edit [[:search] [:history-cursor]]
   (fn [_ _ _ [search drag-timestamp]]
