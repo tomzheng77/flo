@@ -69,8 +69,7 @@
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
    [:div#container-jexcel-editor]
-   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
-   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @(rf/subscribe [:read-only-visible]) "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-ro]]
+   [client-ace/editor-views]
    (if @(rf/subscribe [:search]) [search-bar])
    [history-bar]])
 
@@ -107,12 +106,12 @@
   (fn [[note search]]
     (client-ace/preview-note note search)))
 
-(add-watches-db ::open-history [[:history-cursor] active-history [:history-direction]]
+(add-watches-db :open-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
     (when timestamp
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
-          (client-ace/:open-history content @(rf/subscribe [:search])))))))
+          (client-ace/open-history content @(rf/subscribe [:search])))))))
 
 (add-watches-db :disable-edit [[:search] [:history-cursor]]
   (fn [_ _ _ [search drag-timestamp]]
@@ -147,7 +146,7 @@
       (rf/dispatch [:navigation-input nil]))
     (when (and ctrl-key (= "j" key))
       (.preventDefault original)
-      (rf/dispatch [:open-history]))
+      (rf/dispatch [:open-history-page]))
     (when @(rf/subscribe [:search])
       (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
         (.preventDefault original)

@@ -417,7 +417,7 @@
 (rf/reg-sub :read-only-visible
   #(or (:history-cursor %1) (:navigation-index %1)))
 
-(rf/reg-event-fx :open-history
+(rf/reg-event-fx :open-history-page
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]}]
     (let [timestamp (or (:history-cursor db) time)

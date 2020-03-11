@@ -28,10 +28,14 @@
     [diff :as diff]))
 
 (def anti-forgery-field (r/atom nil))
-(def in-read-only-mode (r/atom nil))
+(def show-preview-editor (r/atom nil))
 (def ace-editor-note-name (r/atom nil))
 (def ace-editor (r/atom nil))
-(def ace-editor-ro (r/atom nil))
+(def ace-editor-preview (r/atom nil))
+
+(defn editor-views []
+  [^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
+   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-preview]]])
 
 (defn first-at [search-results index]
   (or (first (filter #(and (>= index (:start %)) (< index (:end %))) search-results))
@@ -90,31 +94,31 @@
 (defn initialize [init]
   (reset! anti-forgery-field (:anti-forgery-field init))
   (reset! ace-editor (ace/new-instance "container-ace-editor"))
-  (reset! ace-editor-ro (ace/new-instance "container-ace-editor-ro"))
-  (ace/set-read-only @ace-editor-ro true)
+  (reset! ace-editor-preview (ace/new-instance "container-ace-editor-preview"))
+  (ace/set-read-only @ace-editor-preview true)
   (.on @ace-editor "change" #(if-not (.-autoChange @ace-editor) (rf/dispatch [:change %])))
   (.on @ace-editor "changeSelection"
     #(if-not (.-autoChangeSelection @ace-editor)
        (rf/dispatch [:change-selection (ace/get-selection @ace-editor)])))
   (.addCommand (.-commands @ace-editor) (clj->js (toggle-nav-command @ace-editor)))
   (.addCommand (.-commands @ace-editor) (clj->js tab-command))
-  (.addCommand (.-commands @ace-editor-ro) (clj->js insert-time-command))
-  (.addCommand (.-commands @ace-editor-ro) (clj->js (toggle-nav-command @ace-editor-ro)))
+  (.addCommand (.-commands @ace-editor-preview) (clj->js insert-time-command))
+  (.addCommand (.-commands @ace-editor-preview) (clj->js (toggle-nav-command @ace-editor-preview)))
 
   (.addCommand (.-commands @ace-editor) (clj->js (ctrl-up-command @ace-editor)))
   (.addCommand (.-commands @ace-editor) (clj->js (ctrl-down-command @ace-editor)))
-  (.addCommand (.-commands @ace-editor-ro) (clj->js (ctrl-up-command @ace-editor-ro)))
-  (.addCommand (.-commands @ace-editor-ro) (clj->js (ctrl-down-command @ace-editor-ro))))
+  (.addCommand (.-commands @ace-editor-preview) (clj->js (ctrl-up-command @ace-editor-preview)))
+  (.addCommand (.-commands @ace-editor-preview) (clj->js (ctrl-down-command @ace-editor-preview))))
 
 (defn on-blur []
   (ace/hide-clickables @ace-editor)
-  (ace/hide-clickables @ace-editor-ro))
+  (ace/hide-clickables @ace-editor-preview))
 
 (defn on-press-key
   [{:keys [code key ctrl-key shift-key original]}]
   (when (= "Control" key)
     (ace/show-clickables @ace-editor)
-    (ace/show-clickables @ace-editor-ro))
+    (ace/show-clickables @ace-editor-preview))
   (when (and ctrl-key (= "p" key))
     (.preventDefault original)
     (rf/dispatch [:toggle-navigation]))
@@ -126,10 +130,10 @@
   [{:keys [code key ctrl-key shift-key original]}]
   (when (= "Control" key)
     (ace/hide-clickables @ace-editor)
-    (ace/hide-clickables @ace-editor-ro)))
+    (ace/hide-clickables @ace-editor-preview)))
 
 (defn next-search [search backwards]
-  (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e search {:backwards backwards})))
+  (doseq [e [@ace-editor @ace-editor-preview]] (ace/navigate e search {:backwards backwards})))
 
 (defn get-name-and-content []
   {:name @ace-editor-note-name
@@ -138,10 +142,11 @@
 (defn focus []
   (.focus @ace-editor))
 
-(defn :open-history [content search]
-  (ace/set-text @ace-editor-ro content)
+(defn open-history [content search]
+  (reset! show-preview-editor true)
+  (ace/set-text @ace-editor-preview content)
   (when search
-    (ace/navigate @ace-editor-ro search)))
+    (ace/navigate @ace-editor-preview search)))
 
 (defn set-editable [can-edit?]
   (console-log "set editable" can-edit?)
@@ -161,17 +166,19 @@
 
 (defn preview-note
   [{:keys [content selection]} search]
-  (ace/set-text @ace-editor-ro (or content ""))
+  (reset! show-preview-editor true)
+  (ace/set-text @ace-editor-preview (or content ""))
   (js/setTimeout
-    #(do (ace/set-selection @ace-editor-ro selection)
-         (ace/navigate @ace-editor-ro search)) 0))
+    #(do (ace/set-selection @ace-editor-preview selection)
+         (ace/navigate @ace-editor-preview search)) 0))
 
 (defn open-note-after-preview [{:keys [name]}]
   (reset! ace-editor-note-name name)
+  (reset! show-preview-editor false)
   (set! (.-autoChangeSelection @ace-editor) true)
-  (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
+  (ace/set-text @ace-editor (ace/get-text @ace-editor-preview))
   (js/setTimeout
-    #(do (ace/set-selection @ace-editor (ace/get-selection @ace-editor-ro))
+    #(do (ace/set-selection @ace-editor (ace/get-selection @ace-editor-preview))
          (.focus @ace-editor)
          (set! (.-autoChangeSelection @ace-editor) false)) 0))
 
