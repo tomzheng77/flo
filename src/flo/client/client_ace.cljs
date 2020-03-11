@@ -83,10 +83,10 @@
   (.on @ace-editor "changeSelection"
     #(if-not (.-autoChangeSelection @ace-editor)
        (rf/dispatch [:change-selection (ace/get-selection @ace-editor)])))
-  (.addCommand (.-commands @ace-editor) (clj->js (toggle-nav-command @ace-editor)))
+  ; (.addCommand (.-commands @ace-editor) (clj->js (toggle-nav-command @ace-editor)))
   (.addCommand (.-commands @ace-editor) (clj->js tab-command))
   (.addCommand (.-commands @ace-editor-preview) (clj->js insert-time-command))
-  (.addCommand (.-commands @ace-editor-preview) (clj->js (toggle-nav-command @ace-editor-preview)))
+  ; (.addCommand (.-commands @ace-editor-preview) (clj->js (toggle-nav-command @ace-editor-preview)))
 
   (.addCommand (.-commands @ace-editor) (clj->js (ctrl-up-command @ace-editor)))
   (.addCommand (.-commands @ace-editor) (clj->js (ctrl-down-command @ace-editor)))
@@ -105,6 +105,9 @@
   (when (and ctrl-key (= "p" key))
     (.preventDefault original)
     (rf/dispatch [:toggle-navigation]))
+  (when (and ctrl-key (= "q" key))
+    (.preventDefault original)
+    (ace/insert-at-cursor @ace-editor (.format (js/moment) "YYYY-MM-DD HH:mm:ss")))
   (when (and ctrl-key (= "i" key))
     (.preventDefault original)
     (.click (js/document.getElementById "file-input"))))
