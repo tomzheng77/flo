@@ -3,7 +3,6 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require
-    [flo.client.jexcel.jexcel :as jexcel]
     [flo.client.ace.ace :as ace]
     [flo.client.ace.ace-clickables]
     [flo.client.ace.ace-colors]
@@ -27,16 +26,10 @@
     [clojure.set :as set]
     [diff :as diff]))
 
-(def anti-forgery-field (r/atom nil))
 (def show-preview-editor (r/atom nil))
 (def ace-editor-note-name (r/atom nil))
 (def ace-editor (r/atom nil))
 (def ace-editor-preview (r/atom nil))
-
-(defn editor-views []
-  [:div {:style {:flex-grow 1 :display "flex" :flex-direction "column"}}
-   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
-   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-preview]]])
 
 ; [TAG-SYNTAX]
 (defn next-tag [editor direction]
@@ -74,8 +67,7 @@
    :bindKey {:mac "cmd-q" :win "ctrl-q"}
    :readOnly false})
 
-(defn initialize [init]
-  (reset! anti-forgery-field (:anti-forgery-field init))
+(defn initialize []
   (reset! ace-editor (ace/new-instance "container-ace-editor"))
   (reset! ace-editor-preview (ace/new-instance "container-ace-editor-preview"))
   (ace/set-read-only @ace-editor-preview true)
@@ -92,6 +84,16 @@
   (.addCommand (.-commands @ace-editor) (clj->js (ctrl-down-command @ace-editor)))
   (.addCommand (.-commands @ace-editor-preview) (clj->js (ctrl-up-command @ace-editor-preview)))
   (.addCommand (.-commands @ace-editor-preview) (clj->js (ctrl-down-command @ace-editor-preview))))
+
+(defn view-render []
+  [:div {:style {:flex-grow 1 :display "flex" :flex-direction "column"}}
+   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
+   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-preview]]])
+
+(defn view []
+  (r/create-class
+    {:reagent-render view-render
+     :component-did-mount initialize}))
 
 (defn on-blur []
   (ace/hide-clickables @ace-editor)

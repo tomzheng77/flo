@@ -4,7 +4,7 @@
     [flo.client.macros :refer [console-log]])
   (:require
     [flo.client.client-ace :as client-ace]
-    [flo.client.client-jexcel :as client-jexcel]
+    [flo.client.client-excel :as client-excel]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]
@@ -69,12 +69,12 @@
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
    [:div#container-jexcel-editor]
-   [client-ace/editor-views]
+   [client-excel/view]
+   [client-ace/view]
    (if @(rf/subscribe [:search]) [search-bar])
    [history-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
-(client-ace/initialize init)
 
 (defn save-opened-note []
   (let [{:keys [name content]} (client-ace/get-name-and-content)]
