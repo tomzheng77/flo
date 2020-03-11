@@ -83,10 +83,10 @@
   (.on @ace-editor "changeSelection"
     #(if-not (.-autoChangeSelection @ace-editor)
        (rf/dispatch [:change-selection (ace/get-selection @ace-editor)])))
-  ; (.addCommand (.-commands @ace-editor) (clj->js (toggle-nav-command @ace-editor)))
+  (.addCommand (.-commands @ace-editor) (clj->js (toggle-nav-command @ace-editor)))
   (.addCommand (.-commands @ace-editor) (clj->js tab-command))
   (.addCommand (.-commands @ace-editor-preview) (clj->js insert-time-command))
-  ; (.addCommand (.-commands @ace-editor-preview) (clj->js (toggle-nav-command @ace-editor-preview)))
+  (.addCommand (.-commands @ace-editor-preview) (clj->js (toggle-nav-command @ace-editor-preview)))
 
   (.addCommand (.-commands @ace-editor) (clj->js (ctrl-up-command @ace-editor)))
   (.addCommand (.-commands @ace-editor) (clj->js (ctrl-down-command @ace-editor)))
