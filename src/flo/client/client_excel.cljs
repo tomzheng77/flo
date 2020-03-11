@@ -85,7 +85,6 @@
 (defn width-from-value [cell-atom-v]
   (let [value (cell-atom-v :s)
         width (last (first (re-seq #"<W:([0-9]+)>" value)))]
-    (console-log width)
     (max 15 (if width (read-string width) 100))))
 
 (defn col [cell-atom]
