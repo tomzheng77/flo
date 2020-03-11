@@ -26,30 +26,81 @@
     [clojure.set :as set]
     [diff :as diff]))
 
-(def source (r/atom 
+; an atom
+; of vector of atoms (rows)
+; of vector of atoms (cols)
+; of strings (cells)
+(def source (r/atom
   (into []
-    (for [row (range 200)]
-      (into []
-        (for [col (range 15)]
-          (str row " " col)))))))
+    (for [row (range 20)]
+      (r/atom
+        (into []
+        (for [col (range 6)]
+          (r/atom {
+            :c "#FFF"
+            :bgc "#272822"
+            :s (str row "-" col)
+            :h 1
+          }))))))))
 
-(defn on-input [i j event]
+(def line-height 20)
+
+(defn on-input [i j cell-atom event]
   (let [textarea (.-currentTarget event)
-        value (.-value textarea)]
-    (console-log value)
-    (console-log (.-scrollHeight textarea))
-    ))
+        value (.-value textarea)
+        height (.-scrollHeight textarea)
+        bgc (atom (last (first (re-seq #"<B:(#[A-F0-9]{3}|#[A-F0-9]{6})>" value))))
+        c (atom (last (first (re-seq #"<C:(#[A-F0-9]{3}|#[A-F0-9]{6})>" value))))
+        r? (not (nil? (re-seq #"<R>" value)))
+        g? (not (nil? (re-seq #"<G>" value)))
+        b? (not (nil? (re-seq #"<B>" value)))]
+    (when (and (not @bgc) (not @c))
+      (cond
+        r? (do (reset! bgc "#F00") (reset! c "#FFF"))
+        g? (do (reset! bgc "#0B0") (reset! c "#FFF"))
+        b? (do (reset! bgc "#069") (reset! c "#FFF"))))
+    (when (not @bgc) (reset! bgc "#272822"))
+    (when (not @c) (reset! c "#FFF"))
+    (swap! cell-atom #(-> %
+      (assoc :s value)
+      (assoc :h (js/Math.round (/ height line-height)))
+      (assoc :bgc @bgc)
+      (assoc :c @c)))))
+
+(defn cell-view [i j cell-atom]
+  [:td {:style {
+      :height (* (@cell-atom :h) line-height)
+      :color (@cell-atom :c)
+      :background-color (@cell-atom :bgc)}}
+    [:textarea.cell {:style {
+     :width "100%"
+     :height (* (@cell-atom :h) line-height)
+     :color (@cell-atom :c)} :value (@cell-atom :s)
+     :on-change #(on-input i j cell-atom %)}]])
+
+(defn row-view [i row-atom]
+  [:tr (doall (map-indexed (fn [j cell-atom] ^{:key [i j]}
+    [cell-view i j cell-atom]) @row-atom))])
+
+(defn width-from-value [cell-atom-v]
+  (let [value (cell-atom-v :s)
+        width (last (first (re-seq #"<W:([0-9]+)>" value)))]
+    (console-log width)
+    (max 15 (if width (read-string width) 100))))
+
+(defn col [cell-atom]
+  [:col {:style {:width (width-from-value @cell-atom)}}])
+
+(defn colgroup [row-atom]
+  [:colgroup (map-indexed (fn [i cell-atom] ^{:key i} [col cell-atom]) @row-atom)])
 
 (defn view []
   [:div#container-excel "view div"
     [:table {:style {:table-layout :fixed}}
-      [:colgroup
-        (map-indexed (fn [i _] ^{:key i} [:col {:style {:width 100}}]) (range 15))]
-      (doall (map-indexed (fn [i row] ^{:key i} [:tr
-        (doall (map-indexed (fn [j cell] ^{:key [i j]}
-          [:td {:style {:height 36}}
-            [:textarea.cell {:style {:width "100%"} :default-value cell
-                             :on-change #(on-input i j %)}]]) row))]) @source))]])
+      (if (> (count @source) 0)
+        (let [first-row-atom (first @source)]
+          [colgroup first-row-atom]))
+      [:tbody (doall (map-indexed (fn [i row-atom] ^{:key i} [row-view i row-atom]) @source))]]])
 
 ; the possibility of implementing very lightweight spreadsheet
 ; using contenteditable and terminal emulator
@@ -63,6 +114,25 @@
 ; add_row(index): creates a row at or up to the specified index, shifts existing if any
 ; copy(src, dst): src can be cell/row/column/section, dst can be cell/row/column/section
 ; move(src, dst): same as copy except does not preserve the original section
+; delete(dst)
 ; sort(letter, method): sorts based on the specified column, uses the method specified (number/datetime/string)
 ; is tempting to use a simple binding with reagent
 ; should support up to 10,000 cells
+
+(defn display [new-source]
+  (let [clj-src (js->clj new-source)]
+    (reset! source
+      (into []
+        (for [row clj-src]
+          (r/atom
+            (into []
+            (for [cell row]
+              (r/atom {
+                :c "#FFF"
+                :bgc "#272822"
+                :s cell
+                :h 1
+              })))))))))
+
+(set! (.-excel js/window)
+  (clj->js {:display display}))

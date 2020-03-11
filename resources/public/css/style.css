@@ -55,8 +55,7 @@
 
 #container-excel tr td {
     background-color: #272822;
-    border-right: 1px solid rgba(255,255,255,0.5);
-    border-bottom: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.3);
     color: white;
     margin: 0;
     padding: 3px;
@@ -71,5 +70,8 @@
     border: 0 none;
     outline: none;
     color: white;
-    line-height: 30px;
+    line-height: 20px;
+    padding: 0;
+    display: block;
+    flex-direction: initial;
 }

@@ -38,6 +38,8 @@
                  [com.google.guava/guava "27.1-jre"]
                  [org.clojure/data.avl "0.0.18"]
                  [commons-codec/commons-codec "1.12"]
+                 [prismatic/dommy "1.1.0"]
+                 [hipo "0.5.2"]
 
                  ; requires /flo/datomic/bin/maven-install
                  [com.datomic/datomic-pro "0.9.5786"]]
