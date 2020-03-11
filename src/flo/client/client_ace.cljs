@@ -159,14 +159,14 @@
           (.focus @ace-editor)
           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
-(defn open-preview
+(defn preview-note
   [{:keys [content selection]} search]
   (ace/set-text @ace-editor-ro (or content ""))
   (js/setTimeout
     #(do (ace/set-selection @ace-editor-ro selection)
          (ace/navigate @ace-editor-ro search)) 0))
 
-(defn open-note-from-preview [{:keys [name]}]
+(defn open-note-after-preview [{:keys [name]}]
   (reset! ace-editor-note-name name)
   (set! (.-autoChangeSelection @ace-editor) true)
   (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))

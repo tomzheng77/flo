@@ -295,7 +295,7 @@
         new-index (if-not index 0 (clamp 0 max-index (f index)))
         note (nth navs new-index)]
     {:db (assoc db :navigation-index new-index)
-     :reset-editor-ro [note (:search db)]}))
+     :preview-note [note (:search db)]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
@@ -381,8 +381,8 @@
                      (assoc :navigation nil)
                      (assoc :navigation-index nil))}]
         (if-not copy-from-ro
-          (assoc fx :reset-editor [note (:search db)])
-          (assoc fx :reset-editor-from-ro note))))))
+          (assoc fx :open-note [note (:search db)])
+          (assoc fx :open-note-after-preview note))))))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-save

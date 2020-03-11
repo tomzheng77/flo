@@ -93,19 +93,19 @@
     (client-ace/accept-external-change note)))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
-(rf/reg-fx :reset-editor-from-ro
+(rf/reg-fx :open-note-after-preview
   (fn [note]
     (save-opened-note)
-    (client-ace/open-note-from-preview note)))
+    (client-ace/open-note-after-preview note)))
 
-(rf/reg-fx :reset-editor
+(rf/reg-fx :open-note
   (fn [[note search]]
     (save-opened-note)
     (client-ace/open-note note search)))
 
-(rf/reg-fx :reset-editor-ro
+(rf/reg-fx :preview-note
   (fn [[note search]]
-    (client-ace/open-preview note search)))
+    (client-ace/preview-note note search)))
 
 (add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
