@@ -3,10 +3,8 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require
-    [flo.client.jexcel.jexcel :as jexcel]
-    [flo.client.ace.ace :as ace]
-    [flo.client.ace.ace-clickables]
-    [flo.client.ace.ace-colors]
+    [flo.client.client-ace :as client-ace]
+    [flo.client.client-jexcel :as client-jexcel]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]
@@ -36,20 +34,12 @@
               (js/stringFromUTF8Array)
               (read-string)))
 
-(def anti-forgery-field (:anti-forgery-field init))
-(def shift-interval 100)
-
 (when-not js/document.initialized
   (set! (.-initialized js/document) true)
   (let [href js/window.location.href]
     (rf/dispatch-sync [:initialize (current-time-millis) init href])))
 
-(def ace-editor-note-name (r/atom nil))
-(def ace-editor (r/atom nil))
-(def ace-editor-ro (r/atom nil))
-(def jexcel-editor (r/atom nil))
-(def jexcel-editor-ro (r/atom nil))
-
+(def anti-forgery-field (:anti-forgery-field init))
 (defn file-uploaded [response]
   ; add [*b82b6c5e-6d44-11e9-a923-1681be663d3e]
   ; editor.session.insert(editor.getCursorPosition(), text)
@@ -59,7 +49,6 @@
 (defn upload-image []
   (.ajaxSubmit (js/$ "#file-form")
     (clj->js {:success #(file-uploaded (read-string %))})))
-
 
 (defn file-form-render []
   [:form {:id "file-form" :method "POST" :action "/file-upload" :encType "multipart/form-data"}
@@ -84,218 +73,99 @@
    [history-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
-; (reset! jexcel-editor (jexcel/new-instance "container-jexcel-editor"))
-; (set! (.-jexcel_editor js/window) @jexcel-editor)
-(reset! ace-editor (ace/new-instance "container-ace-editor"))
-(reset! ace-editor-ro (ace/new-instance "container-ace-editor-ro"))
-(ace/set-text @ace-editor (or @(rf/subscribe [:initial-content]) ""))
-(ace/set-text @ace-editor-ro (or @(rf/subscribe [:initial-content]) ""))
-(ace/set-read-only @ace-editor-ro true)
+(client-ace/initialize init)
 
-(.on @ace-editor "change" #(if-not (.-autoChange @ace-editor) (rf/dispatch [:change %])))
-(.on @ace-editor "changeSelection"
-  #(if-not (.-autoChangeSelection @ace-editor)
-     (rf/dispatch [:change-selection (ace/get-selection @ace-editor)])))
+(defn save-opened-note []
+  (let [{:keys [name content]} (client-ace/get-name-and-content)]
+    (when name
+      (rf/dispatch [:editor-save name content]))))
 
 (rf/reg-fx :set-hash (fn [hash] (set! (.. js/window -location -hash) hash)))
 (rf/reg-fx :set-title (fn [title] (set! (.-title js/document) title)))
-(rf/reg-fx :insert-text (fn [text] (ace/insert-at-cursor @ace-editor text)))
-(rf/reg-fx :focus-editor
-  (fn [_] (.focus @ace-editor)))
+(rf/reg-fx :focus-editor (fn [_] (client-ace/focus)))
 
-(rf/reg-fx :refresh-editor
-  (fn [content]
-    (ace/set-text @ace-editor content)))
+(rf/reg-fx :accept-external-change
+  (fn [note]
+    (client-ace/accept-external-change note)))
 
 ; copies all the contents of ace-editor-ro and displays them to ace-editor
 (rf/reg-fx :reset-editor-from-ro
-  (fn [name]
-    (when @ace-editor-note-name
-      (rf/dispatch [:editor-save @ace-editor-note-name (ace/get-text @ace-editor)]))
-    (reset! ace-editor-note-name name)
-    (set! (.-autoChangeSelection @ace-editor) true)
-    (ace/set-text @ace-editor (ace/get-text @ace-editor-ro))
-    (js/setTimeout
-      #(do (ace/set-selection @ace-editor (ace/get-selection @ace-editor-ro))
-           (.focus @ace-editor)
-           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
+  (fn [note]
+    (save-opened-note)
+    (client-ace/open-note-from-preview note)))
 
 (rf/reg-fx :reset-editor
-  (fn [[name text search selection]]
-    (when @ace-editor-note-name
-      (rf/dispatch [:editor-save @ace-editor-note-name (ace/get-text @ace-editor)]))
-    (reset! ace-editor-note-name name)
-    (set! (.-autoChangeSelection @ace-editor) true)
-    (ace/set-text @ace-editor (or text ""))
-    (js/setTimeout
-      #(do (ace/set-selection @ace-editor selection)
-           (ace/navigate @ace-editor search)
-           (.focus @ace-editor)
-           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
+  (fn [[note search]]
+    (save-opened-note)
+    (client-ace/open-note note search)))
 
 (rf/reg-fx :reset-editor-ro
-  (fn [[text search selection]]
-    (ace/set-text @ace-editor-ro (or text ""))
-    (js/setTimeout
-      #(do (ace/set-selection @ace-editor-ro selection)
-           (ace/navigate @ace-editor-ro search)) 0)))
-
-(defn first-at [search-results index]
-  (or (first (filter #(and (>= index (:start %)) (< index (:end %))) search-results))
-      (first (filter #(and (>= index (:start %)) (<= index (:end %))) search-results))))
-
-; [TAG-SYNTAX]
-(defn tag-declaration-at [line col]
-  (let [token (:substr (first-at (find-all line c/declaration-regex) col))]
-    (if token (subs token 1 (dec (count token))))))
-
-; [TAG-SYNTAX]
-(defn tag-definition-at [line col]
-  (let [token (:substr (first-at (find-all line c/definition-regex) col))]
-    (if token (subs token 1 (dec (count token))))))
-
-(defn tag-reference-at [line col]
-  (let [token (:substr (first-at (find-all line c/reference-regex) col))]
-    (if token (subs token 1 (dec (count token))))))
-
-; [TAG-SYNTAX]
-(defn toggle-navigation [editor]
-  (let [cursor (ace/get-cursor editor)
-        row (:row cursor)
-        col (:column cursor)
-        line (.getLine (.-session editor) row)
-        declaration (tag-declaration-at line col)
-        definition (tag-definition-at line col)
-        reference (tag-reference-at line col)]
-    (cond
-      declaration (rf/dispatch [:set-search (c/declaration-to-definition declaration)])
-      definition (rf/dispatch [:set-search (c/definition-to-declaration definition)])
-      reference (rf/dispatch [:navigate-direct reference])
-      true (rf/dispatch [:toggle-navigation]))))
-
-; [TAG-SYNTAX]
-(defn next-tag [editor direction]
-  (if (= :up direction)
-    (ace/navigate editor c/any-navigation-inner {:backwards true})
-    (ace/navigate editor c/any-navigation-inner)))
-
-(defn toggle-nav-command [editor]
-  {:name "toggle-navigation"
-   :exec #(toggle-navigation editor)
-   :bindKey {:mac "cmd-p" :win "ctrl-p"}
-   :readOnly true})
-
-(def tab-command
-  {:name "tab-command"
-   :exec #(ace/indent-selection @ace-editor)
-   :bindKey {:mac "tab" :win "tab"}
-   :readOnly false})
-
-(defn ctrl-up-command [editor]
-  {:name "up-tag"
-   :exec #(next-tag editor :up)
-   :bindKey {:mac "cmd-up" :win "ctrl-up"}
-   :readOnly true})
-
-(defn ctrl-down-command [editor]
-  {:name "down-tag"
-   :exec #(next-tag editor :down)
-   :bindKey {:mac "cmd-down" :win "ctrl-down"}
-   :readOnly true})
-
-(.addCommand (.-commands @ace-editor) (clj->js (toggle-nav-command @ace-editor)))
-(.addCommand (.-commands @ace-editor) (clj->js tab-command))
-(.addCommand (.-commands @ace-editor-ro) (clj->js (toggle-nav-command @ace-editor-ro)))
-
-(.addCommand (.-commands @ace-editor) (clj->js (ctrl-up-command @ace-editor)))
-(.addCommand (.-commands @ace-editor) (clj->js (ctrl-down-command @ace-editor)))
-(.addCommand (.-commands @ace-editor-ro) (clj->js (ctrl-up-command @ace-editor-ro)))
-(.addCommand (.-commands @ace-editor-ro) (clj->js (ctrl-down-command @ace-editor-ro)))
+  (fn [[note search]]
+    (client-ace/open-preview note search)))
 
 (add-watches-db :show-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
     (when timestamp
-      (let [[_ note] (avl/nearest history <= timestamp)]
-        (ace/set-text @ace-editor-ro (or note ""))
-        (ace/navigate @ace-editor-ro @(rf/subscribe [:search]))))))
+      (let [[_ content] (avl/nearest history <= timestamp)]
+        (when content
+          (client-ace/show-history content @(rf/subscribe [:search])))))))
 
 (add-watches-db :disable-edit [[:search] [:history-cursor]]
   (fn [_ _ _ [search drag-timestamp]]
-    (if (or search drag-timestamp)
-      (ace/set-read-only @ace-editor true)
-      (ace/set-read-only @ace-editor false))))
+    (client-ace/set-editable (not (or search drag-timestamp)))))
 
 (add-watch-db :auto-search [:search]
   (fn [_ _ _ search]
-    (ace/navigate @ace-editor search)
-    (ace/navigate @ace-editor-ro search)))
+    (client-ace/next-search search false)))
 
+(def shift-interval 100)
 (defn on-hit-shift []
   (if-not @(rf/subscribe [:search])
     (rf/dispatch [:set-search ""])
     (rf/dispatch [:set-search nil])))
 
-(defn on-press-key
-  [{:keys [code key ctrl-key shift-key original]}]
-  (when (= "Control" key)
-    (ace/show-clickables @ace-editor)
-    (ace/show-clickables @ace-editor-ro))
-  (when @(rf/subscribe [:navigation])
-    (when (and (#{"ArrowUp"} code))
-      (rf/dispatch [:navigate-up]))
-    (when (and (#{"ArrowDown"} code))
-      (rf/dispatch [:navigate-down]))
-    (when (and (#{"Enter"} code))
-      (rf/dispatch [:navigate-enter (current-time-millis)]))
-    (when (and (#{"Tab"} code))
-      (rf/dispatch [:navigate-direct])))
-  (if (= "ShiftLeft" code)
-    (rf/dispatch [:shift-press (current-time-millis)])
-    (rf/dispatch [:shift-press nil]))
-  (when (= "Escape" code)
-    (rf/dispatch [:set-search nil])
-    (rf/dispatch [:navigation-input nil]))
-  (when (and ctrl-key (= "q" key))
-    (.preventDefault original)
-    (rf/dispatch [:insert-time]))
-  (when (and ctrl-key (= "j" key))
-    (.preventDefault original)
-    (rf/dispatch [:open-history]))
-  (when (and ctrl-key (= "p" key))
-    (.preventDefault original)
-    (toggle-navigation @ace-editor))
-  (when (and ctrl-key (= "s" key))
-    (.preventDefault original)
-    (rf/dispatch [:editor-save @ace-editor-note-name (ace/get-text @ace-editor)]))
-  (when (and ctrl-key (= "i" key))
-    (.preventDefault original)
-    (.click (js/document.getElementById "file-input")))
-  (when @(rf/subscribe [:search])
-    (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
+(defn on-press-key [event]
+  (let [{:keys [code key ctrl-key shift-key original]} event]
+    (when @(rf/subscribe [:navigation])
+      (when (and (#{"ArrowUp"} code))
+        (rf/dispatch [:navigate-up]))
+      (when (and (#{"ArrowDown"} code))
+        (rf/dispatch [:navigate-down]))
+      (when (and (#{"Enter"} code))
+        (rf/dispatch [:navigate-enter (current-time-millis)]))
+      (when (and (#{"Tab"} code))
+        (rf/dispatch [:navigate-direct])))
+    (if (= "ShiftLeft" code)
+      (rf/dispatch [:shift-press (current-time-millis)])
+      (rf/dispatch [:shift-press nil]))
+    (when (= "Escape" code)
+      (rf/dispatch [:set-search nil])
+      (rf/dispatch [:navigation-input nil]))
+    (when (and ctrl-key (= "j" key))
       (.preventDefault original)
-      (if shift-key
-        (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search]) {:backwards true}))
-        (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e @(rf/subscribe [:search])))))
-    (when (= "Backspace" key)
-      (rf/dispatch [:swap-search splice-last]))
-    (when (re-matches c/alphanumerical-regex key)
-      (rf/dispatch [:swap-search #(str % (str/upper-case key))]))
-    (when (= "=" key)
-      (rf/dispatch [:swap-search #(str % "=")]))))
+      (rf/dispatch [:open-history]))
+    (when @(rf/subscribe [:search])
+      (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
+        (.preventDefault original)
+        (client-ace/next-search @(rf/subscribe [:search]) shift-key))
+      (when (= "Backspace" key)
+        (rf/dispatch [:swap-search splice-last]))
+      (when (re-matches c/alphanumerical-regex key)
+        (rf/dispatch [:swap-search #(str % (str/upper-case key))]))
+      (when (= "=" key)
+        (rf/dispatch [:swap-search #(str % "=")])))
+    (when (and ctrl-key (= "s" key))
+      (.preventDefault original)
+      (save-opened-note))
+    (client-ace/on-press-key event)))
 
-(defn on-release-key
-  [{:keys [code key ctrl-key shift-key original]}]
-  (when (= "Control" key)
-    (ace/hide-clickables @ace-editor)
-    (ace/hide-clickables @ace-editor-ro)
-    (when (not @(rf/subscribe [:navigation]))
-      (if @(rf/subscribe [:read-only-visible])
-        (ace/focus-if-not-search @ace-editor-ro)
-        (ace/focus-if-not-search @ace-editor))))
-  (when (= "ShiftLeft" code)
-    (let [delta (- (current-time-millis) (or @(rf/subscribe [:last-shift-press]) 0))]
-      (when (> shift-interval delta)
-        (on-hit-shift)))))
+(defn on-release-key [event]
+  (let [{:keys [code]} event]
+    (when (= "ShiftLeft" code)
+      (let [delta (- (current-time-millis) (or @(rf/subscribe [:last-shift-press]) 0))]
+        (when (> shift-interval delta)
+          (on-hit-shift)))))
+  (client-ace/on-release-key event))
 
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
 (set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))
@@ -305,11 +175,9 @@
 (set! (.-ontouchend js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-onresize js/window) #(rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 (set! (.-onhashchange js/window) #(rf/dispatch [:hash-change (.-newURL %)]))
-(set! (.-onblur js/window)
-  (fn []
-    (ace/hide-clickables @ace-editor)
-    (ace/hide-clickables @ace-editor-ro)))
+(set! (.-onblur js/window) #(client-ace/on-blur))
 
 (rf/dispatch-sync [:hash-change js/window.location.href])
-(js/setInterval #(rf/dispatch [:editor-save @ace-editor-note-name (ace/get-text @ace-editor)]) 1000)
+(js/setInterval (fn [] (save-opened-note)) 1000)
+
 (defn on-js-reload [])

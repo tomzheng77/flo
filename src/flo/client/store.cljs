@@ -216,7 +216,7 @@
         {:db db}
         (conj {:db (let [existing-note (or (get-in db [:notes (:name note)]) (new-note (:name note) time))]
                      (-> db (assoc-in [:notes (:name note)] (set/union existing-note note))))}
-              (when (= (:name note) (:active-note-name db)) [:refresh-editor (:content note)])))
+              (when (= (:name note) (:active-note-name db)) [:accept-external-change note])))
       :else {:db db})))
 
 ; x-position of the history button
@@ -295,7 +295,7 @@
         new-index (if-not index 0 (clamp 0 max-index (f index)))
         note (nth navs new-index)]
     {:db (assoc db :navigation-index new-index)
-     :reset-editor-ro [(:content note) (:search db) (:selection note)]}))
+     :reset-editor-ro [note (:search db)]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
@@ -381,8 +381,8 @@
                      (assoc :navigation nil)
                      (assoc :navigation-index nil))}]
         (if-not copy-from-ro
-          (assoc fx :reset-editor [(:name note) (:content note) (:search db) (:selection note)])
-          (assoc fx :reset-editor-from-ro (:name note)))))))
+          (assoc fx :reset-editor [note (:search db)])
+          (assoc fx :reset-editor-from-ro note))))))
 
 ; called with the editor's contents every second
 (rf/reg-event-fx :editor-save
@@ -425,13 +425,6 @@
           note-name (:active-note-name db)
           path (str "/history?t=" time-string "#" note-name)]
       {:db db :open-window path})))
-
-(rf/reg-event-fx :insert-time
-  [(rf/inject-cofx :time)]
-  (fn [{:keys [db time]}]
-    (let [timestamp (or (:history-cursor db) time)
-          time-string (.format (js/moment time) "YYYY-MM-DD HH:mm:ss")]
-      {:db db :insert-text time-string})))
 
 (rf/reg-fx :open-window
   (fn [path]
