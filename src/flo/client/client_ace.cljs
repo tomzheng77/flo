@@ -28,6 +28,7 @@
     [diff :as diff]))
 
 (def anti-forgery-field (r/atom nil))
+(def in-read-only-mode (r/atom nil))
 (def ace-editor-note-name (r/atom nil))
 (def ace-editor (r/atom nil))
 (def ace-editor-ro (r/atom nil))
@@ -51,21 +52,6 @@
     (if token (subs token 1 (dec (count token))))))
 
 ; [TAG-SYNTAX]
-(defn toggle-navigation [editor]
-  (let [cursor (ace/get-cursor editor)
-        row (:row cursor)
-        col (:column cursor)
-        line (.getLine (.-session editor) row)
-        declaration (tag-declaration-at line col)
-        definition (tag-definition-at line col)
-        reference (tag-reference-at line col)]
-    (cond
-      declaration (rf/dispatch [:set-search (c/declaration-to-definition declaration)])
-      definition (rf/dispatch [:set-search (c/definition-to-declaration definition)])
-      reference (rf/dispatch [:navigate-direct reference])
-      true (rf/dispatch [:toggle-navigation]))))
-
-; [TAG-SYNTAX]
 (defn next-tag [editor direction]
   (if (= :up direction)
     (ace/navigate editor c/any-navigation-inner {:backwards true})
@@ -73,7 +59,7 @@
 
 (defn toggle-nav-command [editor]
   {:name "toggle-navigation"
-   :exec #(toggle-navigation editor)
+   :exec #(rf/dispatch [:toggle-navigation])
    :bindKey {:mac "cmd-p" :win "ctrl-p"}
    :readOnly true})
 
@@ -131,7 +117,7 @@
     (ace/show-clickables @ace-editor-ro))
   (when (and ctrl-key (= "p" key))
     (.preventDefault original)
-    (toggle-navigation @ace-editor))
+    (rf/dispatch [:toggle-navigation]))
   (when (and ctrl-key (= "i" key))
     (.preventDefault original)
     (.click (js/document.getElementById "file-input"))))
@@ -140,11 +126,7 @@
   [{:keys [code key ctrl-key shift-key original]}]
   (when (= "Control" key)
     (ace/hide-clickables @ace-editor)
-    (ace/hide-clickables @ace-editor-ro)
-    (when (not @(rf/subscribe [:navigation]))
-      (if @(rf/subscribe [:read-only-visible])
-        (ace/focus-if-not-search @ace-editor-ro)
-        (ace/focus-if-not-search @ace-editor)))))
+    (ace/hide-clickables @ace-editor-ro)))
 
 (defn next-search [search backwards]
   (doseq [e [@ace-editor @ace-editor-ro]] (ace/navigate e search {:backwards backwards})))
