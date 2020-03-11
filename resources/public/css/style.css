@@ -33,3 +33,11 @@
 #container-jexcel-editor input {
     font-family: 'Go-Mono', 'Microsoft YaHei' !important;
 }
+
+#container-ace-editor {
+    height: 100%;
+}
+
+#container-ace-editor-ro {
+    height: 100%;
+}
