@@ -68,7 +68,6 @@
   [:div#app-inner
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
-   [:div#container-jexcel-editor]
    [client-excel/view]
    [client-ace/view]
    (if @(rf/subscribe [:search]) [search-bar])

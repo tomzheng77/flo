@@ -45,9 +45,8 @@
 
 (def line-height 20)
 
-(defn on-input [i j cell-atom event]
-  (let [textarea (.-currentTarget event)
-        value (.-value textarea)
+(defn on-input [i j cell-atom textarea comp]
+  (let [value (.-value textarea)
         height (.-scrollHeight textarea)
         bgc (atom (last (first (re-seq #"<B:(#[A-F0-9]{3}|#[A-F0-9]{6})>" value))))
         c (atom (last (first (re-seq #"<C:(#[A-F0-9]{3}|#[A-F0-9]{6})>" value))))
@@ -61,22 +60,44 @@
         b? (do (reset! bgc "#069") (reset! c "#FFF"))))
     (when (not @bgc) (reset! bgc "#272822"))
     (when (not @c) (reset! c "#FFF"))
-    (swap! cell-atom #(-> %
-      (assoc :s value)
-      (assoc :h (js/Math.round (/ height line-height)))
-      (assoc :bgc @bgc)
-      (assoc :c @c)))))
+    (let [old-atom-val @cell-atom
+          new-atom-val (-> old-atom-val
+          (assoc :s value)
+          (assoc :h (js/Math.round (/ height line-height)))
+          (assoc :bgc @bgc)
+          (assoc :c @c))]
+      (when (not (= new-atom-val old-atom-val))
+        (reset! cell-atom new-atom-val)
+        (console-log (clj->js new-atom-val))
+        (when comp
+          (r/force-update comp)
+          (r/flush))))))
 
 (defn cell-view [i j cell-atom]
-  [:td {:style {
-      :height (* (@cell-atom :h) line-height)
-      :color (@cell-atom :c)
-      :background-color (@cell-atom :bgc)}}
-    [:textarea.cell {:style {
-     :width "100%"
-     :height (* (@cell-atom :h) line-height)
-     :color (@cell-atom :c)} :value (@cell-atom :s)
-     :on-change #(on-input i j cell-atom %)}]])
+  (fn []
+    (r/create-class {
+      :reagent-render (fn [i j cell-atom]
+      [:td {:style {
+       :height (* (@cell-atom :h) line-height)
+       :color (@cell-atom :c)
+       :background-color (@cell-atom :bgc)}}
+       [:textarea.cell {:style {
+        :width "100%"
+        :height (* (@cell-atom :h) line-height)
+        :color (@cell-atom :c)} :value (@cell-atom :s)
+        :on-change #(on-input i j cell-atom (.-currentTarget %) nil)}]])
+
+      :component-did-mount
+      (fn [comp]
+        (let [td (r/dom-node comp)
+              textarea (aget (.-childNodes td) 0)]
+          (on-input i j cell-atom textarea comp)))
+
+      :component-did-update
+      (fn [comp]
+        (let [td (r/dom-node comp)
+              textarea (aget (.-childNodes td) 0)]
+          (on-input i j cell-atom textarea comp)))})))
 
 (defn row-view [i row-atom]
   [:tr (doall (map-indexed (fn [j cell-atom] ^{:key [i j]}
@@ -94,7 +115,7 @@
   [:colgroup (map-indexed (fn [i cell-atom] ^{:key i} [col cell-atom]) @row-atom)])
 
 (defn view []
-  [:div#container-excel "view div"
+  [:div#container-excel
     [:table {:style {:table-layout :fixed}}
       (if (> (count @source) 0)
         (let [first-row-atom (first @source)]
