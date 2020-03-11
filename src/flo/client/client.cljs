@@ -84,8 +84,8 @@
    [history-bar]])
 
 (r/render [app] (js/document.getElementById "app"))
-(reset! jexcel-editor (jexcel/new-instance "container-jexcel-editor"))
-(set! (.-jexcel_editor js/window) @jexcel-editor)
+; (reset! jexcel-editor (jexcel/new-instance "container-jexcel-editor"))
+; (set! (.-jexcel_editor js/window) @jexcel-editor)
 (reset! ace-editor (ace/new-instance "container-ace-editor"))
 (reset! ace-editor-ro (ace/new-instance "container-ace-editor-ro"))
 (ace/set-text @ace-editor (or @(rf/subscribe [:initial-content]) ""))
