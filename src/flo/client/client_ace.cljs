@@ -34,7 +34,8 @@
 (def ace-editor-preview (r/atom nil))
 
 (defn editor-views []
-  [^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
+  [:div {:style {:flex-grow 1 :display "flex" :flex-direction "column"}}
+   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-preview]]])
 
 ; [TAG-SYNTAX]
