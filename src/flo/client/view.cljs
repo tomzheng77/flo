@@ -47,6 +47,7 @@
     {:style {:width 600
              :margin-left "auto"
              :margin-right "auto"
+             :font-family "Monospace"
              :padding 4
              :background-color "#ebedef"}}
     [:div {:style {:height 30 :background-color "white"}}
@@ -116,7 +117,8 @@
                    :left             drag-btn-x}
            :on-touch-start #(on-drag-start % drag-btn-x)
            :on-mouse-down #(on-drag-start % drag-btn-x)}
-     (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
+     (.format (js/moment timestamp) "YYYY-MM-DD") [:br]
+     (.format (js/moment timestamp) "h:mm:ss a")]))
 
 
 (defn status-display []
