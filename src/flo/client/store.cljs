@@ -86,7 +86,7 @@
   (fn [_ [_ time {:keys [notes read-only]} href]]
     (let [active-note-name (or (re-find c/url-hash-regex href) "default")
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)]
-      {:dispatch [:open-note active-note-name]
+      {:dispatch [:request-open-note active-note-name]
        :db
        {:last-shift-press nil ; the time when the shift key was last pressed
         :search           nil ; the active label being searched, nil means no search
@@ -233,7 +233,7 @@
   (fn [{:keys [db]} [_ new-url]]
     (let [note-name (re-find c/url-hash-regex new-url)]
       (if note-name
-        {:db db :dispatch [:open-note note-name]}
+        {:db db :dispatch [:request-open-note note-name]}
         {:db db}))))
 
 (rf/reg-event-db :toggle-image-upload
@@ -329,7 +329,7 @@
           search (:search (parse-navigation-query (or navigation (:navigation db))))]
       (if-not note
         {:db (assoc db :search search)}
-        {:db (assoc db :search search) :dispatch [:open-note note false]}))))
+        {:db (assoc db :search search) :dispatch [:request-open-note note false]}))))
 
 ; either navigates to a result of the :navigation query based on :navigation-index
 ; or navigates based on name only
@@ -338,13 +338,13 @@
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
         ; must have already previewed, can copy from read-only editor
-        {:db db :dispatch [:open-note (nth navs (:navigation-index db)) true]}
+        {:db db :dispatch [:request-open-note (nth navs (:navigation-index db)) true]}
 
         ; otherwise navigate to name
         (let [{:keys [name]} (parse-navigation-query (:navigation db))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
-            {:db db :dispatch [:open-note name false]}))))))
+            {:db db :dispatch [:request-open-note name false]}))))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
@@ -356,7 +356,7 @@
 ; copy from the read-only editor whenever possible
 ; otherwise, if the copy-from-ro flag is not set to true
 ; then the editor state will be explicitly set
-(rf/reg-event-fx :open-note
+(rf/reg-event-fx :request-open-note
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ indicator copy-from-ro]]
     (cond
@@ -364,10 +364,10 @@
       (let [name indicator
             existing-note (get (:notes db) name)]
         (if existing-note
-          {:db db :dispatch [:open-note existing-note false]}
+          {:db db :dispatch [:request-open-note existing-note false]}
           (let [a-new-note (new-note name time)]
             {:db       (assoc-in db [:notes name] a-new-note)
-             :dispatch [:open-note a-new-note false]})))
+             :dispatch [:request-open-note a-new-note false]})))
 
       (and (map? indicator) (= :note (:type indicator)))
       (let [note indicator
