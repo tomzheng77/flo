@@ -118,6 +118,12 @@
 ; is tempting to use a simple binding with reagent
 ; should support up to 10,000 cells
 
+(def default-cell
+  {:c "#FFF"
+   :bgc "#272822"
+   :s ""
+   :h 1})
+
 (defn display [new-source]
   (let [clj-src (js->clj new-source)]
     (reset! source
@@ -133,5 +139,30 @@
                 :h 1
               })))))))))
 
+(defn add-column [column]
+  (when-not column
+    (doseq [row-atom @source]
+      (swap! row-atom
+        (fn [row]
+          (conj row (r/atom default-cell)))))))
+
+(defn add-row [index]
+  (when-not index
+    (let [width (apply max (map #(count @%) @source))]
+      (swap! source
+        #(conj % (r/atom (into [] (for [i (range width)] (r/atom default-cell)))))))))
+
+(defn copy [src dst])
+(defn move [src dst])
+(defn delete [tgt])
+(defn sort [column method])
+
 (set! (.-excel js/window)
-  (clj->js {:display display}))
+  (clj->js {
+    :display display
+    :add_column add-column
+    :add_row add-row
+    :copy copy
+    :move move
+    :delete delete
+    :sort sort}))
