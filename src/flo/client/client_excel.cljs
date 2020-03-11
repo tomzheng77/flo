@@ -45,7 +45,7 @@
 
 (def line-height 20)
 
-(defn on-input [i j cell-atom textarea comp]
+(defn on-input [i j cell-atom textarea td]
   (let [value (.-value textarea)
         height (.-scrollHeight textarea)
         bgc (atom (last (first (re-seq #"<B:(#[A-F0-9]{3}|#[A-F0-9]{6})>" value))))
@@ -68,10 +68,11 @@
           (assoc :c @c))]
       (when (not (= new-atom-val old-atom-val))
         (reset! cell-atom new-atom-val)
-        (console-log (clj->js new-atom-val))
-        (when comp
-          (r/force-update comp)
-          (r/flush))))))
+        (when td
+          (set! (.-height (.-style td)) (* (new-atom-val :h) line-height))
+          (set! (.-backgroundColor (.-style td)) (new-atom-val :bgc))
+          (set! (.-height (.-style textarea)) (* (new-atom-val :h) line-height))
+          (set! (.-color (.-style textarea)) (new-atom-val :c)))))))
 
 (defn cell-view [i j cell-atom]
   (fn []
@@ -91,13 +92,13 @@
       (fn [comp]
         (let [td (r/dom-node comp)
               textarea (aget (.-childNodes td) 0)]
-          (on-input i j cell-atom textarea comp)))
+          (on-input i j cell-atom textarea td)))
 
       :component-did-update
       (fn [comp]
         (let [td (r/dom-node comp)
               textarea (aget (.-childNodes td) 0)]
-          (on-input i j cell-atom textarea comp)))})))
+          (on-input i j cell-atom textarea td)))})))
 
 (defn row-view [i row-atom]
   [:tr (doall (map-indexed (fn [j cell-atom] ^{:key [i j]}
