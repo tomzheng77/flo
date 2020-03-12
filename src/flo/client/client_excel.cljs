@@ -32,10 +32,10 @@
 ; of strings (cells)
 (def source (r/atom
   (into []
-    (for [row (range 20)]
+    (for [row (range 150)]
       (r/atom
         (into []
-        (for [col (range 6)]
+        (for [col (range 10)]
           (r/atom {
             :c "#FFF"
             :bgc "#272822"
@@ -44,6 +44,7 @@
           }))))))))
 
 (def line-height 20)
+(def number-column-width 50)
 
 (defn on-input [i j cell-atom textarea]
   (let [div (.-parentNode textarea)
@@ -93,7 +94,7 @@
 
 
 (defn colgroup [row-atom]
-  [:colgroup [:col {:style {:width 50}}] (map-indexed (fn [i cell-atom] ^{:key i} [col cell-atom]) @row-atom)])
+  [:colgroup [:col {:style {:width number-column-width}}] (map-indexed (fn [i cell-atom] ^{:key i} [col cell-atom]) @row-atom)])
 
 
 (defn cell-view [i j cell-atom]
