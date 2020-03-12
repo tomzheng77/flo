@@ -36,12 +36,7 @@
       (r/atom
         (into []
         (for [col (range 10)]
-          (r/atom {
-            :c "#FFF"
-            :bgc "#272822"
-            :s (str row "-" col)
-            :h 1
-          }))))))))
+          (r/atom (str row "-" col)))))))))
 
 (def line-height 20)
 (def number-column-width 50)
@@ -64,16 +59,10 @@
         b? (do (reset! bgc "#069") (reset! c "#FFF"))))
     (when (not @bgc) (reset! bgc "#272822"))
     (when (not @c) (reset! c "#FFF"))
-    (let [old-atom-val @cell-atom
-          new-atom-val (-> old-atom-val
-          (assoc :s value)
-          (assoc :h (js/Math.round (/ height line-height)))
-          (assoc :bgc @bgc)
-          (assoc :c @c))]
-      (reset! cell-atom new-atom-val)
-      (set! (.-backgroundColor (.-style td)) (new-atom-val :bgc))
-      (set! (.-height (.-style div)) (str (* (new-atom-val :h) line-height) "px"))
-      (set! (.-color (.-style textarea)) (new-atom-val :c)))))
+    (reset! cell-atom value)
+    (set! (.-backgroundColor (.-style td)) @bgc)
+    (set! (.-height (.-style div)) (str (* (js/Math.round (/ height line-height)) line-height) "px"))
+    (set! (.-color (.-style textarea)) @c)))
 
 
 (defn on-click-cell [event]
@@ -84,7 +73,7 @@
 
 
 (defn width-from-cell-atom-v [cell-atom-v]
-  (let [value (cell-atom-v :s)
+  (let [value cell-atom-v
         width (last (first (re-seq #"<W:([0-9]+)>" value)))]
     (max 15 (if width (read-string width) 100))))
 
@@ -105,7 +94,7 @@
        [:div
         [:textarea.cell {:style {
          :width "100%"}
-         :value (@cell-atom :s)
+         :value @cell-atom
          :on-change #(on-input i j cell-atom (.-currentTarget %))}]]])
 
       :component-did-mount
@@ -180,12 +169,6 @@
 ; is tempting to use a simple binding with reagent
 ; should support up to 10,000 cells
 
-(def default-cell
-  {:c "#FFF"
-   :bgc "#272822"
-   :s ""
-   :h 1})
-
 (defn display [new-source]
   (let [clj-src (js->clj new-source)]
     (reset! source
@@ -194,25 +177,20 @@
           (r/atom
             (into []
             (for [cell row]
-              (r/atom {
-                :c "#FFF"
-                :bgc "#272822"
-                :s cell
-                :h 1
-              })))))))))
+              (r/atom cell)))))))))
 
 (defn add-column [column]
   (when-not column
     (doseq [row-atom @source]
       (swap! row-atom
         (fn [row]
-          (conj row (r/atom default-cell)))))))
+          (conj row (r/atom "")))))))
 
 (defn add-row [index]
   (when-not index
     (let [width (apply max (map #(count @%) @source))]
       (swap! source
-        #(conj % (r/atom (into [] (for [i (range width)] (r/atom default-cell)))))))))
+        #(conj % (r/atom (into [] (for [i (range width)] (r/atom "")))))))))
 
 (defn copy [src dst])
 (defn move [src dst])
