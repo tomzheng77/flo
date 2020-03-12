@@ -46,7 +46,9 @@
 (def line-height 20)
 
 (defn on-input [i j cell-atom textarea]
-  (let [td (.-parentNode textarea)
+  (let [div (.-parentNode textarea)
+        td (.-parentNode div)
+        _  (set! (.-height (.-style div)) (str line-height "px"))
         value (.-value textarea)
         height (.-scrollHeight textarea)
         bgc (atom (last (first (re-seq #"<B:(#[A-F0-9]{3}|#[A-F0-9]{6})>" value))))
@@ -54,7 +56,6 @@
         r? (not (nil? (re-seq #"<R>" value)))
         g? (not (nil? (re-seq #"<G>" value)))
         b? (not (nil? (re-seq #"<B>" value)))]
-    (console-log textarea td (.-clientWidth textarea) (.-clientHeight textarea) height)
     (when (and (not @bgc) (not @c))
       (cond
         r? (do (reset! bgc "#F00") (reset! c "#FFF"))
@@ -69,10 +70,16 @@
           (assoc :bgc @bgc)
           (assoc :c @c))]
       (reset! cell-atom new-atom-val)
-      (set! (.-height (.-style td)) (str (* (new-atom-val :h) line-height) "px"))
       (set! (.-backgroundColor (.-style td)) (new-atom-val :bgc))
-      (set! (.-height (.-style textarea)) (str (* (new-atom-val :h) line-height) "px"))
+      (set! (.-height (.-style div)) (str (* (new-atom-val :h) line-height) "px"))
       (set! (.-color (.-style textarea)) (new-atom-val :c)))))
+
+
+(defn on-click-cell [event]
+  (let [td (.-currentTarget event)
+        div (aget (.-childNodes td) 0)
+        textarea (aget (.-childNodes div) 0)]
+    (.focus textarea)))
 
 
 (defn width-from-cell-atom-v [cell-atom-v]
@@ -93,22 +100,25 @@
   (fn []
     (r/create-class {
       :reagent-render (fn [i j cell-atom]
-      [:td {:style {}}
-       [:textarea.cell {:style {
-        :width "100%"}
-        :value (@cell-atom :s)
-        :on-change #(on-input i j cell-atom (.-currentTarget %))}]])
+      [:td {:on-click #(on-click-cell %) :style {:cursor "text"}}
+       [:div
+        [:textarea.cell {:style {
+         :width "100%"}
+         :value (@cell-atom :s)
+         :on-change #(on-input i j cell-atom (.-currentTarget %))}]]])
 
       :component-did-mount
       (fn [comp]
         (let [td (r/dom-node comp)
-              textarea (aget (.-childNodes td) 0)]
+              div (aget (.-childNodes td) 0)
+              textarea (aget (.-childNodes div) 0)]
           (on-input i j cell-atom textarea)))
 
       :component-did-update
       (fn [comp]
         (let [td (r/dom-node comp)
-              textarea (aget (.-childNodes td) 0)]
+              div (aget (.-childNodes td) 0)
+              textarea (aget (.-childNodes div) 0)]
           (on-input i j cell-atom textarea)))})))
 
 
@@ -206,7 +216,7 @@
 (defn copy [src dst])
 (defn move [src dst])
 (defn delete [tgt])
-(defn sort [column method])
+(defn sort-rows [column method])
 
 (set! (.-excel js/window)
   (clj->js {
@@ -216,4 +226,4 @@
     :copy copy
     :move move
     :delete delete
-    :sort sort}))
+    :sort_rows sort-rows}))
