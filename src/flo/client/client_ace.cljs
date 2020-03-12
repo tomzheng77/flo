@@ -88,8 +88,8 @@
 
 (defn view-render []
   [:div {:style {:flex-grow 1 :display (if @visible "flex" "none") :flex-direction "column"}}
-   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
-   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-preview]]])
+   ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor {:style {:height "100%"}}]]
+   ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-preview {:style {:height "100%"}}]]])
 
 (defn view []
   (r/create-class

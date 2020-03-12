@@ -24,14 +24,6 @@
     font-style: italic;
 }
 
-#container-ace-editor {
-    height: 100%;
-}
-
-#container-ace-editor-ro {
-    height: 100%;
-}
-
 #container-excel {
     font-family: 'Go-Mono', 'Microsoft YaHei', Monospace;
     font-size: 13.3333px;
