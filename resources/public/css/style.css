@@ -44,13 +44,13 @@
 
 #container-excel {
     font-family: 'Go-Mono', 'Microsoft YaHei', Monospace;
+    overflow: scroll;
 }
 
 #container-excel table {
     transform: rotateX(0deg);
     table-layout: fixed;
     border-spacing: 0;
-    width: 100%;
 }
 
 #container-excel tr td {
