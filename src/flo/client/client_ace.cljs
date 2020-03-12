@@ -30,6 +30,7 @@
 (def ace-editor-note-name (r/atom nil))
 (def ace-editor (r/atom nil))
 (def ace-editor-preview (r/atom nil))
+(def visible (r/atom true))
 
 ; [TAG-SYNTAX]
 (defn next-tag [editor direction]
@@ -86,7 +87,7 @@
   (.addCommand (.-commands @ace-editor-preview) (clj->js (ctrl-down-command @ace-editor-preview))))
 
 (defn view-render []
-  [:div {:style {:flex-grow 1 :display "flex" :flex-direction "column"}}
+  [:div {:style {:flex-grow 1 :display (if @visible "flex" "none") :flex-direction "column"}}
    ^{:key "e1"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "none" "flex") :flex-direction "column"}} [:div#container-ace-editor]]
    ^{:key "e2"} [:div {:style {:flex-grow 1 :display (if @show-preview-editor "flex" "none") :flex-direction "column"}} [:div#container-ace-editor-preview]]])
 
@@ -94,6 +95,8 @@
   (r/create-class
     {:reagent-render view-render
      :component-did-mount initialize}))
+
+; [PUBLIC METHODS] ==================================================
 
 (defn on-blur []
   (ace/hide-clickables @ace-editor)
@@ -104,9 +107,6 @@
   (when (= "Control" key)
     (ace/show-clickables @ace-editor)
     (ace/show-clickables @ace-editor-preview))
-  (when (and ctrl-key (= "p" key))
-    (.preventDefault original)
-    (rf/dispatch [:toggle-navigation]))
   (when (and ctrl-key (= "q" key))
     (.preventDefault original)
     (ace/insert-at-cursor @ace-editor (.format (js/moment) "YYYY-MM-DD HH:mm:ss")))

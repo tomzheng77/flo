@@ -66,7 +66,7 @@
   [:div#app-inner
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
-   [client-excel/view]
+   ; [client-excel/view]
    [client-ace/view]
    (if @(rf/subscribe [:search]) [search-bar])
    [history-bar]])
@@ -140,6 +140,9 @@
       (when (= "Escape" code)
         (rf/dispatch [:set-search nil])
         (rf/dispatch [:navigation-input nil]))
+      (when (and ctrl-key (= "p" key))
+        (.preventDefault original)
+        (rf/dispatch [:toggle-navigation]))
       (when (and ctrl-key (= "j" key))
         (.preventDefault original)
         (rf/dispatch [:open-history-page]))
