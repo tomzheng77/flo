@@ -54,7 +54,7 @@
         r? (not (nil? (re-seq #"<R>" value)))
         g? (not (nil? (re-seq #"<G>" value)))
         b? (not (nil? (re-seq #"<B>" value)))]
-    (console-log textarea td height)
+    (console-log textarea td (.-clientWidth textarea) (.-clientHeight textarea) height)
     (when (and (not @bgc) (not @c))
       (cond
         r? (do (reset! bgc "#F00") (reset! c "#FFF"))
@@ -74,11 +74,20 @@
       (set! (.-height (.-style textarea)) (str (* (new-atom-val :h) line-height) "px"))
       (set! (.-color (.-style textarea)) (new-atom-val :c)))))
 
+
+(defn width-from-cell-atom-v [cell-atom-v]
+  (let [value (cell-atom-v :s)
+        width (last (first (re-seq #"<W:([0-9]+)>" value)))]
+    (max 15 (if width (read-string width) 100))))
+
+
 (defn col [cell-atom]
   [:col {:style {:width (width-from-cell-atom-v @cell-atom) :min-width (width-from-cell-atom-v @cell-atom)}}])
 
+
 (defn colgroup [row-atom]
   [:colgroup [:col {:style {:width 50}}] (map-indexed (fn [i cell-atom] ^{:key i} [col cell-atom]) @row-atom)])
+
 
 (defn cell-view [i j cell-atom]
   (fn []
@@ -102,15 +111,12 @@
               textarea (aget (.-childNodes td) 0)]
           (on-input i j cell-atom textarea)))})))
 
+
 (defn row-view [i row-atom]
   [:tr [:td {:style {:text-align "center" :background-color "#FFF" :color "#272822"}} (+ i 1)]
     (doall (map-indexed (fn [j cell-atom] ^{:key [i j]}
       [cell-view i j cell-atom]) @row-atom))])
 
-(defn width-from-cell-atom-v [cell-atom-v]
-  (let [value (cell-atom-v :s)
-        width (last (first (re-seq #"<W:([0-9]+)>" value)))]
-    (max 15 (if width (read-string width) 100))))
 
 (defn width-sum []
   (if (> (count @source) 0)
@@ -119,6 +125,7 @@
         (for [cell-atom @first-row-atom]
           (width-from-cell-atom-v @cell-atom))))))
 
+
 (defn index-to-label [index]
   (if (string? index)
     (index-to-label (read-string index))
@@ -126,6 +133,7 @@
       (if (> 26 index) (str (char (+ 65 index)))
         (str (index-to-label (quot index 26))
              (index-to-label (mod index 26)))))))
+
 
 (defn view []
   [:div#container-excel {:style {:flex-grow 1 :overflow :scroll}}
