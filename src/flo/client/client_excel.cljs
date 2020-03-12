@@ -74,6 +74,12 @@
       (set! (.-height (.-style textarea)) (str (* (new-atom-val :h) line-height) "px"))
       (set! (.-color (.-style textarea)) (new-atom-val :c)))))
 
+(defn col [cell-atom]
+  [:col {:style {:width (width-from-cell-atom-v @cell-atom) :min-width (width-from-cell-atom-v @cell-atom)}}])
+
+(defn colgroup [row-atom]
+  [:colgroup [:col {:style {:width 50}}] (map-indexed (fn [i cell-atom] ^{:key i} [col cell-atom]) @row-atom)])
+
 (defn cell-view [i j cell-atom]
   (fn []
     (r/create-class {
@@ -97,19 +103,14 @@
           (on-input i j cell-atom textarea)))})))
 
 (defn row-view [i row-atom]
-  [:tr (doall (map-indexed (fn [j cell-atom] ^{:key [i j]}
-    [cell-view i j cell-atom]) @row-atom))])
+  [:tr [:td {:style {:text-align "center" :background-color "#FFF" :color "#272822"}} (+ i 1)]
+    (doall (map-indexed (fn [j cell-atom] ^{:key [i j]}
+      [cell-view i j cell-atom]) @row-atom))])
 
 (defn width-from-cell-atom-v [cell-atom-v]
   (let [value (cell-atom-v :s)
         width (last (first (re-seq #"<W:([0-9]+)>" value)))]
     (max 15 (if width (read-string width) 100))))
-
-(defn col [cell-atom]
-  [:col {:style {:width (width-from-cell-atom-v @cell-atom) :min-width (width-from-cell-atom-v @cell-atom)}}])
-
-(defn colgroup [row-atom]
-  [:colgroup (map-indexed (fn [i cell-atom] ^{:key i} [col cell-atom]) @row-atom)])
 
 (defn width-sum []
   (if (> (count @source) 0)
@@ -118,13 +119,30 @@
         (for [cell-atom @first-row-atom]
           (width-from-cell-atom-v @cell-atom))))))
 
+(defn index-to-label [index]
+  (if (string? index)
+    (index-to-label (read-string index))
+    (if (or (not (int? index)) (> 0 index)) "A"
+      (if (> 26 index) (str (char (+ 65 index)))
+        (str (index-to-label (quot index 26))
+             (index-to-label (mod index 26)))))))
+
 (defn view []
   [:div#container-excel {:style {:flex-grow 1 :overflow :scroll}}
     [:table {:style {:table-layout :fixed :width (width-sum)}}
       (if (> (count @source) 0)
         (let [first-row-atom (first @source)]
           [colgroup first-row-atom]))
-      [:tbody (doall (map-indexed (fn [i row-atom] ^{:key i} [row-view i row-atom]) @source))]]])
+      [:tbody
+        (if (> (count @source) 0)
+          (let [first-row-atom (first @source)]
+            [:tr [:td {:style {:text-align "center" :background-color "#FFF" :color "#272822"}}]
+              (map-indexed (fn [i cell-atom]
+                ^{:key i} [:td {:style {:text-align "center" :background-color "#FFF" :color "#272822"}}
+                  (index-to-label i)]) @first-row-atom)]))
+        (doall (map-indexed 
+          (fn [i row-atom]
+            ^{:key i} [row-view i row-atom]) @source))]]])
 
 ; the possibility of implementing very lightweight spreadsheet
 ; using contenteditable and terminal emulator
