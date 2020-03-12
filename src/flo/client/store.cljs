@@ -106,6 +106,11 @@
         :history-limit    (* 1000 60 60 24)
         :status-text      "Welcome to FloNote"
 
+        ; when set, the client will prefer to open each note
+        ; using the table mode
+        ; the client may still show a table even if this is not set
+        :prefer-table    false
+
         ; global navigation query
         ; consists of a name and location part
         ; e.g. "fl@fx" means
@@ -156,7 +161,9 @@
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
 (rf/reg-sub :status-text (fn [db v] (:status-text db)))
+(rf/reg-sub :prefer-table (fn [db v] (:prefer-table db)))
 
+(rf/reg-event-db :toggle-prefer-table (fn [db [_ search]] (update db :prefer-table not)))
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
 (rf/reg-event-db :set-history-limit

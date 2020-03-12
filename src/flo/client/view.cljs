@@ -92,6 +92,32 @@
              :on-click #(rf/dispatch [:set-history-limit limit-ms])} label])))
 
 
+(defn toggle-button [label event subscription]
+  (let [hover? (r/atom false)
+        press? (r/atom false)]
+    (fn []
+      [:div {:style {:height "24px"
+                     :font-size "11px"
+                     :line-height "24px"
+                     :text-align "center"
+                     :color "rgba(255, 255, 255, 0.5)"
+                     :user-select "none"
+                     :font-family "Monospace"
+                     :cursor "pointer"
+                     :border-right "1px solid rgba(255, 255, 255, 0.3)"
+                     :padding-left 8
+                     :padding-right 8
+                     :background-color
+                     (cond
+                       (or @press? @(rf/subscribe [subscription])) "rgba(0, 0, 0, 0.3)"
+                       @hover? "rgba(0, 0, 0, 0.1)")}
+             :on-mouse-over #(reset! hover? true)
+             :on-mouse-out #(do (reset! hover? false) (reset! press? false))
+             :on-mouse-down #(reset! press? true)
+             :on-mouse-up #(reset! press? false)
+             :on-click #(rf/dispatch [event])} label])))
+
+
 (defn on-drag-start [event drag-btn-x]
   (let [clj-event (to-clj-event event)]
     (rf/dispatch [:start-drag {:mouse-x (:mouse-x clj-event) :btn-x drag-btn-x}])))
@@ -145,6 +171,7 @@
    [history-limit "M" (* 1000 60 60 24 30)]
    [history-limit "Y" (* 1000 60 60 24 365)]
    [history-limit "A" (* 1000 60 60 24 10000)]
+   [toggle-button "Table" :toggle-prefer-table :prefer-table]
    [status-display]
    ; todo: add realtime switch
    [history-button]])
