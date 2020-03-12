@@ -34,8 +34,6 @@
               (js/stringFromUTF8Array)
               (read-string)))
 
-(console-log (clj->js init))
-
 (when-not js/document.initialized
   (set! (.-initialized js/document) true)
   (let [href js/window.location.href]
@@ -125,47 +123,49 @@
     (rf/dispatch [:set-search nil])))
 
 (defn on-press-key [event]
-  (let [{:keys [code key ctrl-key shift-key original]} event]
-    (when @(rf/subscribe [:navigation])
-      (when (and (#{"ArrowUp"} code))
-        (rf/dispatch [:navigate-up]))
-      (when (and (#{"ArrowDown"} code))
-        (rf/dispatch [:navigate-down]))
-      (when (and (#{"Enter"} code))
-        (rf/dispatch [:navigate-enter (current-time-millis)]))
-      (when (and (#{"Tab"} code))
-        (rf/dispatch [:navigate-direct])))
-    (if (= "ShiftLeft" code)
-      (rf/dispatch [:shift-press (current-time-millis)])
-      (rf/dispatch [:shift-press nil]))
-    (when (= "Escape" code)
-      (rf/dispatch [:set-search nil])
-      (rf/dispatch [:navigation-input nil]))
-    (when (and ctrl-key (= "j" key))
-      (.preventDefault original)
-      (rf/dispatch [:open-history-page]))
-    (when @(rf/subscribe [:search])
-      (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
+  (let [{:keys [code key ctrl-key shift-key original repeat]} event time (current-time-millis)]
+    (when-not repeat
+      (when @(rf/subscribe [:navigation])
+        (when (and (#{"ArrowUp"} code))
+          (rf/dispatch [:navigate-up]))
+        (when (and (#{"ArrowDown"} code))
+          (rf/dispatch [:navigate-down]))
+        (when (and (#{"Enter"} code))
+          (rf/dispatch [:navigate-enter time]))
+        (when (and (#{"Tab"} code))
+          (rf/dispatch [:navigate-direct])))
+      (if (= "ShiftLeft" code)
+        (rf/dispatch [:shift-press time])
+        (rf/dispatch [:shift-press nil]))
+      (when (= "Escape" code)
+        (rf/dispatch [:set-search nil])
+        (rf/dispatch [:navigation-input nil]))
+      (when (and ctrl-key (= "j" key))
         (.preventDefault original)
-        (client-ace/next-search @(rf/subscribe [:search]) shift-key))
-      (when (= "Backspace" key)
-        (rf/dispatch [:swap-search splice-last]))
-      (when (re-matches c/alphanumerical-regex key)
-        (rf/dispatch [:swap-search #(str % (str/upper-case key))]))
-      (when (= "=" key)
-        (rf/dispatch [:swap-search #(str % "=")])))
-    (when (and ctrl-key (= "s" key))
-      (.preventDefault original)
-      (save-opened-note))
-    (client-ace/on-press-key event)))
+        (rf/dispatch [:open-history-page]))
+      (when @(rf/subscribe [:search])
+        (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
+          (.preventDefault original)
+          (client-ace/next-search @(rf/subscribe [:search]) shift-key))
+        (when (= "Backspace" key)
+          (rf/dispatch [:swap-search splice-last]))
+        (when (re-matches c/alphanumerical-regex key)
+          (rf/dispatch [:swap-search #(str % (str/upper-case key))]))
+        (when (= "=" key)
+          (rf/dispatch [:swap-search #(str % "=")])))
+      (when (and ctrl-key (= "s" key))
+        (.preventDefault original)
+        (save-opened-note))
+      (client-ace/on-press-key event))))
 
 (defn on-release-key [event]
-  (let [{:keys [code]} event]
-    (when (= "ShiftLeft" code)
-      (let [delta (- (current-time-millis) (or @(rf/subscribe [:last-shift-press]) 0))]
-        (when (> shift-interval delta)
-          (on-hit-shift)))))
-  (client-ace/on-release-key event))
+  (let [{:keys [code repeat]} event time (current-time-millis)]
+    (when-not repeat
+      (when (= "ShiftLeft" code)
+        (let [delta (- time (or @(rf/subscribe [:last-shift-press]) 0))]
+          (when (> shift-interval delta)
+            (on-hit-shift))))
+      (client-ace/on-release-key event))))
 
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
 (set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))

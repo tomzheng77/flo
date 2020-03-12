@@ -36,6 +36,7 @@
     font-family: 'Go-Mono', 'Microsoft YaHei', Monospace;
     font-size: 13.3333px;
     overflow: scroll;
+    background-color: #272822;
 }
 
 #container-excel table {
