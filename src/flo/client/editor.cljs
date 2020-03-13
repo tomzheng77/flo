@@ -35,6 +35,9 @@
  :active-instance :ace-editor
  :open-note-name nil
  :preview-note-name nil
+
+ ; state may only transition between ace editors or excel editors
+ ; in all methods except set-use-table
  :instances {
   ; each instance data struture should have:
   ; a :view property which contains a component to mount into reagent
@@ -192,16 +195,16 @@
       :excel-editor (editor-ace/focus (active-instance))
       :ace-editor (editor-ace/focus (active-instance)) nil)))
 
-; sets the prefer-table attribute to true or false
+; sets the use-table attribute to true or false
 ; if changed from state, then switch to the corresponding editor
 ; only this transitions between excel and ace editors
-(defn set-prefer-table [prefer-table?]
-  (when-not prefer-table?
+(defn set-use-table [use-table?]
+  (when-not use-table?
     (case (:active-instance @state)
       :excel-editor (do (editor-ace/set-content (-> @state :instances :ace-editor) (editor-excel/get-content (active-instance))) (set-instance :ace-editor))
       :excel-editor-history (do (editor-ace/set-content (-> @state :instances :ace-editor-history) (editor-excel/get-content (active-instance))) (set-instance :ace-editor-history))
       :excel-editor-preview (do (editor-ace/set-content (-> @state :instances :ace-editor-preview) (editor-excel/get-content (active-instance))) (set-instance :ace-editor-preview)) nil))
-  (when prefer-table?
+  (when use-table?
     (case (:active-instance @state)
       :ace-editor (do (editor-excel/set-content (-> @state :instances :excel-editor) (editor-ace/get-content (active-instance))) (set-instance :excel-editor))
       :ace-editor-history (do (editor-excel/set-content (-> @state :instances :excel-editor-history) (editor-ace/get-content (active-instance))) (set-instance :excel-editor-history))
