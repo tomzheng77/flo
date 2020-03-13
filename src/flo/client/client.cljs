@@ -101,6 +101,8 @@
 
 (add-watches-db :open-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
+    (when-not timestamp
+       (editor/close-history))
     (when timestamp
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
@@ -113,6 +115,10 @@
 (add-watch-db :auto-search [:search]
   (fn [_ _ _ search]
     (editor/next-search search false)))
+
+(add-watch-db :prefer-table-toggled [:prefer-table]
+  (fn [_ _ _ prefer-table?]
+    (editor/set-prefer-table prefer-table?)))
 
 (def shift-interval 100)
 (defn on-hit-shift []

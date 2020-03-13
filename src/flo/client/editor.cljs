@@ -21,26 +21,15 @@
     [reagent.dom :as rd]
     [clojure.set :as set]))
 
-; open-note [note opts]
-; open-note-after-preview [note opts]
-; open-history [content opts]
-; preview-note [note opts]
-
-; set-editable [editable?]
-; next-search [keyword reverse?]
-; accept-external-change [note]
-; insert-image [image-id]
-; focus []
-; get-name-and-content []
-
-; on-press-key [event]
-; on-release-key [event]
-; on-window-blur [event]
+; the editor is a facade for
+; editing, previewing and viewing the history of individual notes
+; it supports both table and text mode
 
 (def state (r/atom {
  :active-instance :ace-editor
  :open-note-name nil
  :preview-note-name nil
+ :prefer-table? false
  :instances {
   ; each instance data struture should have:
   ; a :view property which contains a component to mount into reagent
@@ -49,27 +38,57 @@
   :ace-editor-preview (editor-ace/new-instance {:read-only? true :init-active? false})
   :ace-editor-history (editor-ace/new-instance {:read-only? true :init-active? false})}}))
 
-(console-log (clj->js (:instances @state)))
-
 (defn view []
-  (concat
-    [:div {:style {:flex-grow 1 :display "flex" :flex-direction "column"}}]
-    (into [] (for [[k mode] (:instances @state)] [(mode :view)]))))
+  (into []
+    (concat
+      [:div {:style {:flex-grow 1 :display "flex" :flex-direction "column"}}]
+      (into [] (for [[k mode] (:instances @state)] [(mode :view)])))))
 
-(defn open-note [note {:keys [prefer-table? search]}])
+; opens the note in the appropriate instance
+; sets the open note name
+(defn open-note [note {:keys [search]}])
+
+; checks if the preview note name is
+; the same as the open note name
+; if so, copies state from preview instance to regular instance
 (defn open-note-after-preview
   ([note] (open-note-after-preview note {}))
-  ([note {:keys [prefer-table? search]}]))
-(defn open-history [entry {:keys [prefer-table? search]}])
-(defn preview-note [note {:keys [prefer-table? search]}])
+  ([note {:keys [search]}]))
 
-(defn set-editable [editable?])
+; opens the content in the appropriate instance
+; sets the active instance
+(defn open-history [content {:keys [search]}])
+
+; closes the history window and attempts to go back
+; to the regular editor
+; does nothing if history is not open
+(defn close-history [content {:keys [search]}])
+
+; preview the note in the appropriate instance
+; sets the preview note name
+(defn preview-note [note {:keys [search]}])
+
+; sets the prefer-table attribute to true or false
+; if changed from state, then switch to the corresponding editor
+(defn set-prefer-table [prefer-table?])
+
+; passed down to the active instance
 (defn next-search [keyword reverse?])
+
+; passed down to the active instance
+; if the name of the note matches
 (defn accept-external-change [note])
+
 (defn insert-image [image-id])
+
+; passed down to the active instance
 (defn focus [])
+
+; returns the content of the active instance and the note name
+; usually for saving the content
 (defn get-name-and-content [])
 
+; passed down to the active instance
 (defn on-press-key [event])
 (defn on-release-key [event])
 (defn on-window-blur [event])

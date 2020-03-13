@@ -114,6 +114,9 @@
         ; when set, a terminal window should be shown
         :show-terminal   false
 
+        ; when set, history will not be shown smoothly
+        :fast-mode       false
+
         ; global navigation query
         ; consists of a name and location part
         ; e.g. "fl@fx" means
@@ -424,10 +427,6 @@
 (rf/reg-event-fx :drag-changed
   (fn [{:keys [db]} [_ timestamp]]
     {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
-
-; whether the read-only editor should be shown
-(rf/reg-sub :read-only-visible
-  #(or (:history-cursor %1) (:navigation-index %1)))
 
 (rf/reg-event-fx :open-history-page
   [(rf/inject-cofx :time)]

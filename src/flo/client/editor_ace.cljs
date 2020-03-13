@@ -55,7 +55,7 @@
 
 (defn view-render [active?]
   (fn []
-    [:div {:style {:flex-grow 1 :display (if @active? "none" "flex") :flex-direction "column"}}
+    [:div {:style {:flex-grow 1 :display (if @active? "flex" "none") :flex-direction "column"}}
       [:div.container-ace-editor {:style {:height "100%"}}]]))
 
 (defn initialize [ace-editor read-only? event-handler comp]
@@ -79,10 +79,11 @@
   ([{:keys [read-only? event-handler init-active?]}]
    (let [ace-editor (r/atom nil) active? (r/atom (if (nil? init-active?) true init-active?))]
      {:instance-type :client-ace-editor
-      :view (r/create-class {
-        :reagent-render #(view-render active?)
-        :component-did-mount
-        #(initialize ace-editor (if (nil? read-only?) false read-only?) event-handler %)})
+      :view (fn []
+        (r/create-class {
+          :reagent-render #(view-render active?)
+          :component-did-mount
+          #(initialize ace-editor (if (nil? read-only?) false read-only?) event-handler %)}))
       :ace-editor ace-editor
       :active? active?
       :event-handler (or event-handler (fn []))})))
