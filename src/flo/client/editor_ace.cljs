@@ -151,7 +151,7 @@
       (when (= "Control" key)
         (ace/hide-clickables @ace-editor)))))
 
-(defn on-window-blur [this]
+(defn on-window-blur [this event]
   (let [{:keys [active? ace-editor]} this]
     (when @active?
       (ace/hide-clickables @ace-editor))))
