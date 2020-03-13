@@ -82,10 +82,9 @@
                 :source-paths ["src"]
                 :compiler {:output-to "resources/public/js/compiled/flo.js"
                            :main flo.client.client
-                           :optimizations :none
+                           :optimizations :advanced
                            :pretty-print false
                            :npm-deps {:diff "4.0.1"}
-                           :externs ["externs.js"]
                            :install-deps true}}]}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
