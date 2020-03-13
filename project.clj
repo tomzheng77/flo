@@ -82,7 +82,7 @@
                 :source-paths ["src"]
                 :compiler {:output-to "resources/public/js/compiled/flo.js"
                            :main flo.client.client
-                           :optimizations :simple
+                           :optimizations :none
                            :pretty-print false
                            :npm-deps {:diff "4.0.1"}
                            :externs ["externs.js"]
