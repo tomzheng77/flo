@@ -46,7 +46,9 @@
 
 ; opens the note in the appropriate instance
 ; sets the open note name
-(defn open-note [note {:keys [search]}])
+(defn open-note
+  ([note] (open-note {}))
+  ([note {:keys [search]}]))
 
 ; checks if the preview note name is
 ; the same as the open note name
@@ -57,28 +59,29 @@
 
 ; opens the content in the appropriate instance
 ; sets the active instance
-(defn open-history [content {:keys [search]}])
+(defn open-history
+  ([content] (open-history content {}))
+  ([content {:keys [search]}]))
 
 ; closes the history window and attempts to go back
 ; to the regular editor
 ; does nothing if history is not open
-(defn close-history [content {:keys [search]}])
+(defn close-history [])
 
 ; preview the note in the appropriate instance
 ; sets the preview note name
-(defn preview-note [note {:keys [search]}])
-
-; sets the prefer-table attribute to true or false
-; if changed from state, then switch to the corresponding editor
-(defn set-prefer-table [prefer-table?])
+(defn preview-note
+  ([note] (preview-note note {}))
+  ([note {:keys [search]}]))
 
 ; passed down to the active instance
-(defn next-search [keyword reverse?])
+(defn goto-search [keyword reverse?])
 
 ; passed down to the active instance
 ; if the name of the note matches
 (defn accept-external-change [note])
 
+; inserts an image with the specified id
 (defn insert-image [image-id])
 
 ; passed down to the active instance
@@ -87,6 +90,10 @@
 ; returns the content of the active instance and the note name
 ; usually for saving the content
 (defn get-name-and-content [])
+
+; sets the prefer-table attribute to true or false
+; if changed from state, then switch to the corresponding editor
+(defn set-prefer-table [prefer-table?])
 
 ; passed down to the active instance
 (defn on-press-key [event])

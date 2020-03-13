@@ -88,7 +88,7 @@
 (rf/reg-fx :open-note-after-preview
   (fn [note]
     (save-editor-content)
-    (editor/open-note-after-preview note {})))
+    (editor/open-note-after-preview note)))
 
 (rf/reg-fx :open-note
   (fn [[note search]]
@@ -102,19 +102,15 @@
 (add-watches-db :open-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
     (when-not timestamp
-       (editor/close-history))
+      (editor/close-history))
     (when timestamp
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
           (editor/open-history content {:search @(rf/subscribe [:search])}))))))
 
-(add-watches-db :disable-edit [[:search] [:history-cursor]]
-  (fn [_ _ _ [search drag-timestamp]]
-    (editor/set-editable (not (or search drag-timestamp)))))
-
-(add-watch-db :auto-search [:search]
+(add-watch-db :goto-search [:search]
   (fn [_ _ _ search]
-    (editor/next-search search false)))
+    (editor/goto-search search false)))
 
 (add-watch-db :prefer-table-toggled [:prefer-table]
   (fn [_ _ _ prefer-table?]
@@ -156,7 +152,7 @@
       (when @(rf/subscribe [:search])
         (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
           (.preventDefault original)
-          (editor/next-search @(rf/subscribe [:search]) shift-key))
+          (editor/goto-search @(rf/subscribe [:search]) shift-key))
         (when (= "Backspace" key)
           (rf/dispatch [:swap-search splice-last]))
         (when (re-matches c/alphanumerical-regex key)
