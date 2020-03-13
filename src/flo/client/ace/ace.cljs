@@ -5,10 +5,9 @@
 
 (defn $ [& args] (apply js/$ args))
 
-(def instance (atom nil))
-(defn new-instance [element-id]
+(defn new-instance [element-or-id]
   (js/ace.config.set "basePath" "ace")
-  (let [instance (js/ace.edit element-id)]
+  (let [instance (js/ace.edit element-or-id)]
     (.setOptions
       instance
       (clj->js {:fontFamily "Go-Mono"
