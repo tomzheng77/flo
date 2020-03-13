@@ -55,7 +55,22 @@
    :read-only? true
    :init-active? false
    :event-handler
-   #(event-handler :ace-editor-history %)})}})
+   #(event-handler :ace-editor-history %)})
+
+  :excel-editor (editor-excel/new-instance {:event-handler #(event-handler :excel-editor %)})
+  :excel-editor-preview
+  (editor-excel/new-instance {
+   :read-only? true
+   :init-active? false
+   :event-handler
+   #(event-handler :excel-editor-preview %)})
+
+  :excel-editor-history
+  (editor-excel/new-instance {
+   :read-only? true
+   :init-active? false
+   :event-handler
+   #(event-handler :excel-editor-history %)})}})
 
 (defn active-instance []
   (-> @state :instances (:active-instance @state)))
