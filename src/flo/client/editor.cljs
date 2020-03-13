@@ -158,7 +158,7 @@
 ; closes the preview window and attempts to go back
 ; to the regular editor
 ; does nothing if preview is not open
-(defn close-history []
+(defn close-preview []
   (case (:active-instance @state)
     :excel-editor-preview (set-instance (:active-instance-prior @state))
     :ace-editor-preview (set-instance (:active-instance-prior @state)) nil))
