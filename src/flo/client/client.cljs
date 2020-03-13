@@ -109,6 +109,7 @@
         (editor/preview-note note {:search search :use-editor :excel})
         (editor/preview-note note {:search search :use-editor :ace}))))
 
+
 (add-watches-db :open-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
     (when-not timestamp
@@ -132,6 +133,11 @@
   (fn [_ _ _ table-on?]
     (let [use-editor (if table-on? :excel :ace)]
       (editor/change-editor use-editor))))
+
+(add-watch-db :preview-closed [:navigation-index]
+  (fn [_ _ _ navigation-index]
+    (when (nil? navigation-index)
+      (editor/close-preview))))
 
 (def shift-interval 100)
 (defn on-hit-shift []

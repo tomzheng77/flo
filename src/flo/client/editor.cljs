@@ -33,7 +33,7 @@
 
 (reset! state {
  :active-instance :ace-editor
- :active-instance-before-history :ace-editor
+ :active-instance-prior :ace-editor ; the active instance prior to activating history or preview
  :open-note-name nil
  :preview-note-name nil
 
@@ -89,10 +89,12 @@
   ; set the active instance
   (swap! state #(assoc % :active-instance instance-label))
 
-  ; set the known last instance before activating the history instance
-  (when (and (not (= instance-label :excel-editor-history))
+  ; set the known last instance before activating a preview or history instance
+  (when (and (not (= instance-label :excel-editor-preview))
+             (not (= instance-label :excel-editor-history))
+             (not (= instance-label :ace-editor-preview))
              (not (= instance-label :ace-editor-history)))
-    (swap! state #(assoc % :active-instance-before-history instance-label)))
+    (swap! state #(assoc % :active-instance-prior instance-label)))
 
   (reset! (:active? (instance-label (:instances @state))) true)
   (doseq [[k instance] (:instances @state)]
@@ -153,13 +155,21 @@
        :excel (do (set-instance :excel-editor-history) (editor-excel/open-note (get-instance :excel-editor-history) {:content content} open-opts))
        :ace (do (set-instance :ace-editor-history) (editor-ace/open-note (get-instance :ace-editor-history) {:content content} open-opts))))))
 
+; closes the preview window and attempts to go back
+; to the regular editor
+; does nothing if preview is not open
+(defn close-history []
+  (case (:active-instance @state)
+    :excel-editor-preview (set-instance (:active-instance-prior @state))
+    :ace-editor-preview (set-instance (:active-instance-prior @state)) nil))
+
 ; closes the history window and attempts to go back
 ; to the regular editor
 ; does nothing if history is not open
 (defn close-history []
   (case (:active-instance @state)
-    :excel-editor-history (set-instance (:active-instance-before-history @state))
-    :ace-editor-history (set-instance (:active-instance-before-history @state)) nil))
+    :excel-editor-history (set-instance (:active-instance-prior @state))
+    :ace-editor-history (set-instance (:active-instance-prior @state)) nil))
 
 ; preview the note in the appropriate instance
 ; sets the preview note name
