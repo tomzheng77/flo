@@ -128,7 +128,7 @@
   (let [{:keys [active? ace-editor]} this]
     (ace/get-text @ace-editor)))
 
-(defn accept-external-change [this {:keys [content]}]
+(defn set-content [this content]
   (let [{:keys [ace-editor]} this]
     (ace/set-text @ace-editor content)))
 
