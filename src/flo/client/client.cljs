@@ -22,7 +22,7 @@
     [clojure.set :as set]))
 
 (defn prefer-excel [s]
-  (or (str/starts-with? s "\"<TBL>\"")
+  (or (str/starts-with? s "\"<TBL>")
       (str/starts-with? s "<TBL>")))
 
 (enable-console-print!)
