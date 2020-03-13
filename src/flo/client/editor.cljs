@@ -19,13 +19,19 @@
     [goog.crypt.base64 :as b64]
     [reagent.core :as r]
     [reagent.dom :as rd]
+    [re-frame.core :as rf]
     [clojure.set :as set]))
 
 ; the editor is a facade for
 ; editing, previewing and viewing the history of individual notes
 ; it supports both table and text mode
 
-(def state (r/atom {
+(def state (r/atom nil))
+(defn event-handler [instance-label event]
+  (when (= instance-label (@state :active-instance))
+    (rf/dispatch event)))
+
+(reset! state {
  :active-instance :ace-editor
  :open-note-name nil
  :preview-note-name nil
@@ -34,21 +40,42 @@
   ; each instance data struture should have:
   ; a :view property which contains a component to mount into reagent
   ; an :active? atom which when set will decide visibility
-  :ace-editor (editor-ace/new-instance)
-  :ace-editor-preview (editor-ace/new-instance {:read-only? true :init-active? false})
-  :ace-editor-history (editor-ace/new-instance {:read-only? true :init-active? false})}}))
+  :ace-editor (editor-ace/new-instance {:event-handler #(event-handler :ace-editor %)})
+  :ace-editor-preview
+  (editor-ace/new-instance {
+   :read-only? true
+   :init-active? false
+   :event-handler
+   #(event-handler :ace-editor-preview %)})
+
+  :ace-editor-history
+  (editor-ace/new-instance {
+   :read-only? true
+   :init-active? false
+   :event-handler
+   #(event-handler :ace-editor-history %)})}})
+
+(defn set-instance [instance-label]  
+  ; (swap! state #(assoc % :active-instance instance-label))
+  ; (reset! (:active? (instance-label (:instances @state))) true)
+  ; (doseq [[k instance] (:instances @state)]
+  ;   (reset! (:active? instance) false))
+  )
 
 (defn view []
   (into []
     (concat
       [:div {:style {:flex-grow 1 :display "flex" :flex-direction "column"}}]
-      (into [] (for [[k mode] (:instances @state)] [(mode :view)])))))
+      (into [] (for [[k instance] (:instances @state)] [(:view instance)])))))
 
 ; opens the note in the appropriate instance
 ; sets the open note name
 (defn open-note
   ([note] (open-note {}))
-  ([note {:keys [search]}]))
+  ([note {:keys [search]}]
+    (swap! state #(assoc % :open-note-name (:name note)))
+    (set-instance :ace-editor)
+    (editor-ace/open-note (-> @state :instances :ace-editor) note {:search search})))
 
 ; checks if the preview note name is
 ; the same as the open note name
@@ -61,12 +88,15 @@
 ; sets the active instance
 (defn open-history
   ([content] (open-history content {}))
-  ([content {:keys [search]}]))
+  ([content {:keys [search]}]
+    (set-instance :ace-editor-history)
+    (editor-ace/open-note (-> @state :instances :ace-editor-history) {:content content} {:search search})))
 
 ; closes the history window and attempts to go back
 ; to the regular editor
 ; does nothing if history is not open
-(defn close-history [])
+(defn close-history []
+  (set-instance :ace-editor))
 
 ; preview the note in the appropriate instance
 ; sets the preview note name

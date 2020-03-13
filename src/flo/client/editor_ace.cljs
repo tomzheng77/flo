@@ -88,9 +88,9 @@
       :active? active?
       :event-handler (or event-handler (fn []))})))
 
-(defn open-note ([this note] (open-note note nil))
-  ([{:keys [ace-editor]} {:keys [name content selection]} search]
-   (console-log (str "open note " name))
+(defn open-note
+  ([this note] (open-note note nil))
+  ([{:keys [ace-editor]} {:keys [content selection]} {:keys [search]}]
    (set! (.-autoChangeSelection @ace-editor) true)
    (ace/set-text @ace-editor (or content ""))
    (js/setTimeout
