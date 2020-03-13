@@ -77,10 +77,6 @@
 ; passed down to the active instance
 (defn goto-search [keyword reverse?])
 
-; passed down to the active instance
-; if the name of the note matches
-(defn accept-external-change [note])
-
 ; inserts an image with the specified id
 (defn insert-image [image-id])
 
@@ -90,6 +86,10 @@
 ; returns the content of the active instance and the note name
 ; usually for saving the content
 (defn get-name-and-content [])
+
+; passed down to the active instance
+; if the name of the note matches
+(defn accept-external-change [note])
 
 ; sets the prefer-table attribute to true or false
 ; if changed from state, then switch to the corresponding editor

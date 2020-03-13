@@ -88,40 +88,6 @@
       :active? active?
       :event-handler (or event-handler (fn []))})))
 
-(defn on-window-blur [this]
-  (let [{:keys [active? ace-editor]} this]
-    (when @active?
-      (ace/hide-clickables @ace-editor))))
-
-(defn on-press-key
-  [this {:keys [code key ctrl-key shift-key original]}]
-  (let [{:keys [active? ace-editor]} this]
-    (when @active?
-      (when (= "Control" key)
-        (ace/show-clickables @ace-editor))
-      (when (and ctrl-key (= "q" key))
-        (.preventDefault original)
-        (ace/insert-at-cursor @ace-editor (.format (js/moment) "YYYY-MM-DD HH:mm:ss"))))))
-
-(defn on-release-key
-  [this {:keys [code key ctrl-key shift-key original]}]
-  (let [{:keys [active? ace-editor]} this]
-    (when @active?
-      (when (= "Control" key)
-        (ace/hide-clickables @ace-editor)))))
-
-(defn next-search [this search backwards]
-  (let [{:keys [active? ace-editor]} this]
-    (ace/navigate @ace-editor search {:backwards backwards})))
-
-(defn get-content [this]
-  (let [{:keys [active? ace-editor]} this]
-    (ace/get-text @ace-editor)))
-
-(defn focus [this]
-  (let [{:keys [active? ace-editor]} this]
-    (.focus @ace-editor)))
-
 (defn open-note ([this note] (open-note note nil))
   ([{:keys [ace-editor]} {:keys [name content selection]} search]
    (console-log (str "open note " name))
@@ -142,14 +108,48 @@
            (.focus @ace-editor)
            (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
+(defn goto-search [this search backwards]
+  (let [{:keys [active? ace-editor]} this]
+    (ace/navigate @ace-editor search {:backwards backwards})))
+
 (defn insert-image [this image-id]
   (let [{:keys [ace-editor]} this]
     (ace/insert-at-cursor @ace-editor (str "[*" image-id "]\n"))))
 
-(defn set-editable [this can-edit?]
+(defn set-editable [this editable?]
   (let [{:keys [ace-editor]} this]
-    (ace/set-read-only @ace-editor (not can-edit?))))
+    (ace/set-read-only @ace-editor (not editable?))))
 
-(defn accept-external-change [this {:keys [name content]}]
+(defn focus [this]
+  (let [{:keys [active? ace-editor]} this]
+    (.focus @ace-editor)))
+
+(defn get-content [this]
+  (let [{:keys [active? ace-editor]} this]
+    (ace/get-text @ace-editor)))
+
+(defn accept-external-change [this {:keys [content]}]
   (let [{:keys [ace-editor]} this]
     (ace/set-text @ace-editor content)))
+
+(defn on-press-key
+  [this {:keys [code key ctrl-key shift-key original]}]
+  (let [{:keys [active? ace-editor]} this]
+    (when @active?
+      (when (= "Control" key)
+        (ace/show-clickables @ace-editor))
+      (when (and ctrl-key (= "q" key))
+        (.preventDefault original)
+        (ace/insert-at-cursor @ace-editor (.format (js/moment) "YYYY-MM-DD HH:mm:ss"))))))
+
+(defn on-release-key
+  [this {:keys [code key ctrl-key shift-key original]}]
+  (let [{:keys [active? ace-editor]} this]
+    (when @active?
+      (when (= "Control" key)
+        (ace/hide-clickables @ace-editor)))))
+
+(defn on-window-blur [this]
+  (let [{:keys [active? ace-editor]} this]
+    (when @active?
+      (ace/hide-clickables @ace-editor))))
