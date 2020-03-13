@@ -21,19 +21,8 @@
     [reagent.core :as r]
     [reagent.dom :as rd]
     [re-frame.core :as rf]
-    [clojure.set :as set]))
-
-; an atom
-; of vector of atoms (rows)
-; of vector of atoms (cols)
-; of strings (cells)
-(def source (r/atom
-  (into []
-    (for [row (range 150)]
-      (r/atom
-        (into []
-        (for [col (range 10)]
-          (r/atom (str row "-" col)))))))))
+    [clojure.set :as set]
+    [testdouble.cljs.csv :as csv]))
 
 (def line-height 20)
 (def number-column-width 50)
@@ -115,7 +104,7 @@
       [cell-view i j cell-atom]) @row-atom))])
 
 
-(defn width-sum []
+(defn width-sum [source]
   (if (> (count @source) 0)
     (let [first-row-atom (first @source)]
       (apply +
@@ -132,22 +121,23 @@
              (index-to-label (mod index 26)))))))
 
 
-(defn view []
-  [:div#container-excel {:style {:flex-grow 1 :overflow :scroll}}
-    [:table {:style {:table-layout :fixed :width (width-sum)}}
-      (if (> (count @source) 0)
-        (let [first-row-atom (first @source)]
-          [colgroup first-row-atom]))
-      [:tbody
+(defn view-render [source]
+  (fn []
+    [:div#container-excel {:style {:flex-grow 1 :overflow :scroll}}
+      [:table {:style {:table-layout :fixed :width (width-sum source)}}
         (if (> (count @source) 0)
           (let [first-row-atom (first @source)]
-            [:tr [:td {:style {:text-align "center" :background-color "#FFF" :color "#272822"}}]
-              (map-indexed (fn [i cell-atom]
-                ^{:key i} [:td {:style {:text-align "center" :background-color "#FFF" :color "#272822"}}
-                  (index-to-label i)]) @first-row-atom)]))
-        (doall (map-indexed 
-          (fn [i row-atom]
-            ^{:key i} [row-view i row-atom]) @source))]]])
+            [colgroup first-row-atom]))
+        [:tbody
+          (if (> (count @source) 0)
+            (let [first-row-atom (first @source)]
+              [:tr [:td {:style {:text-align "center" :background-color "#FFF" :color "#272822"}}]
+                (map-indexed (fn [i cell-atom]
+                  ^{:key i} [:td {:style {:text-align "center" :background-color "#FFF" :color "#272822"}}
+                    (index-to-label i)]) @first-row-atom)]))
+          (doall (map-indexed 
+            (fn [i row-atom]
+              ^{:key i} [row-view i row-atom]) @source))]]]))
 
 ; the possibility of implementing very lightweight spreadsheet
 ; using contenteditable and terminal emulator
@@ -166,26 +156,27 @@
 ; is tempting to use a simple binding with reagent
 ; should support up to 10,000 cells
 
-(defn display [new-source]
-  (let [clj-src (js->clj new-source)]
+(defn display [source array-2d]
+  (let [clj-src (js->clj array-2d)
+        w (apply max (map count array-2d))]
     (reset! source
       (into []
         (for [row clj-src]
           (r/atom
             (into []
-            (for [cell row]
-              (r/atom cell)))))))))
+              (for [cell-index (range w)]
+                (r/atom (str (apply cell-index row)))))))))))
 
-(defn add-column [column]
+(defn add-column [this column]
   (when-not column
-    (doseq [row-atom @source]
+    (doseq [row-atom @(:source this)]
       (swap! row-atom
         (fn [row]
           (conj row (r/atom "")))))))
 
-(defn add-row [index]
+(defn add-row [this index]
   (when-not index
-    (let [width (apply max (map #(count @%) @source))]
+    (let [width (apply max (map #(count @%) @(:source this)))]
       (swap! source
         #(conj % (r/atom (into [] (for [i (range width)] (r/atom "")))))))))
 
@@ -203,3 +194,58 @@
     :move move
     :delete delete
     :sort_rows sort-rows}))
+
+; an atom
+; of vector of atoms (rows)
+; of vector of atoms (cols)
+; of strings (cells)
+(def example-source (r/atom
+  (into []
+    (for [row (range 150)]
+      (r/atom
+        (into []
+        (for [col (range 10)]
+          (r/atom (str row "-" col)))))))))
+
+; ========== [PUBLIC METHODS] ==========
+
+(defn new-instance
+  ([] (new-instance {}))
+  ([{:keys [read-only? event-handler init-active?]}]
+   (let [source (r/atom []) active? (r/atom (if (nil? init-active?) true init-active?))]
+     {:instance-type :client-excel-editor
+      :source source
+      :view (fn []
+        (r/create-class {
+          :reagent-render #(view-render source)})
+      :active? active?
+      :event-handler event-handler)})))
+
+(defn open-note
+  ([this note] (open-note this note nil))
+  ([this {:keys [content]} open-opts] (set-content this content)))
+
+(defn copy-state-from [this another]
+  (set-content this (get-content another)))
+
+(defn goto-search [this search backwards])
+(defn insert-image [this image-id])
+(defn focus [this])
+
+(defn get-content [this]
+  (let [source (:source this)
+        array-2d
+        (into []
+          (for [row-atom @source]
+            (into []
+              (for [cell-atom @row-atom] @cell-atom))))]
+    (csv/write-csv array-2d :quote? true)))
+
+(defn set-content [this content]
+  (let [source (:source this)
+        array-2d (csv/read-csv content)]
+    (display source array-2d)))
+
+(defn on-press-key [this event])
+(defn on-release-key [this event])
+(defn on-window-blur [this event])

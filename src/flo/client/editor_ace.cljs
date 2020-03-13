@@ -74,6 +74,8 @@
     (.addCommand (.-commands @ace-editor) (clj->js (command-ctrl-down @ace-editor)))
     (.addCommand (.-commands @ace-editor) (clj->js (command-insert-time @ace-editor)))))
 
+; ========== [PUBLIC METHODS] ==========
+
 (defn new-instance
   ([] (new-instance {}))
   ([{:keys [read-only? event-handler init-active?]}]
@@ -89,13 +91,13 @@
       :event-handler (or event-handler (fn []))})))
 
 (defn open-note
-  ([this note] (open-note note nil))
+  ([this note] (open-note this note nil))
   ([{:keys [ace-editor]} {:keys [content selection]} {:keys [search]}]
    (set! (.-autoChangeSelection @ace-editor) true)
    (ace/set-text @ace-editor (or content ""))
    (js/setTimeout
      #(do (ace/set-selection @ace-editor selection)
-          (ace/navigate @ace-editor search)
+          (if search (ace/navigate @ace-editor search))
           (.focus @ace-editor)
           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
