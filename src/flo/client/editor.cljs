@@ -33,12 +33,12 @@
 
 (reset! state {
  :active-instance :ace-editor
- :last-before-history :ace-editor
+ :active-instance-before-history :ace-editor
  :open-note-name nil
  :preview-note-name nil
 
  ; state may only transition between ace editors or excel editors
- ; in all methods except set-use-table
+ ; in all methods except change-editor
  :instances {
   ; each instance data struture should have:
   ; a :view property which contains a component to mount into reagent
@@ -92,7 +92,7 @@
   ; set the known last instance before activating the history instance
   (when (and (not (= instance-label :excel-editor-history))
              (not (= instance-label :ace-editor-history)))
-    (swap! state #(assoc % :last-before-history instance-label)))
+    (swap! state #(assoc % :active-instance-before-history instance-label)))
 
   (reset! (:active? (instance-label (:instances @state))) true)
   (doseq [[k instance] (:instances @state)]
@@ -111,16 +111,14 @@
 ; opens the note in the appropriate instance
 ; sets the open note name
 (defn open-note
-  ([note] (open-note {}))
+  ([note] (open-note note {}))
   ([note open-opts]
    (swap! state #(assoc % :open-note-name (:name note)))
-   (case (active-instance-type)
-     :excel
-     (do (set-instance :excel-editor)
-         (editor-excel/open-note (get-instance :excel-editor) note open-opts))
-     :ace
-     (do (set-instance :ace-editor)
-         (editor-ace/open-note (get-instance :ace-editor) note open-opts)))))
+   (let [use-editor (:use-editor open-opts)]
+     (console-log use-editor)
+     (case (or use-editor (active-instance-type))
+           :excel (do (set-instance :excel-editor) (editor-excel/open-note (get-instance :excel-editor) note open-opts))
+           :ace (do (set-instance :ace-editor) (editor-ace/open-note (get-instance :ace-editor) note open-opts))))))
 
 ; checks if the preview note name is
 ; the same as the open note name
@@ -130,34 +128,38 @@
   ([note open-opts]
    (if-not (= (:name note) (:preview-note-name @state))
      (open-note note open-opts))
-     (case (:active-instance @state)
-       :excel-editor-preview
-       (do (set-instance :excel-editor)
-           (editor-excel/open-note (get-instance :excel-editor) note open-opts))
-       :ace-editor-preview
-       (do (set-instance :ace-editor)
-           (editor-ace/open-note (get-instance :ace-editor) note open-opts)))))
+     (let [use-editor (:use-editor open-opts)
+           preview-instance (active-instance)]
+       (case (:active-instance @state)
+         :excel-editor-preview
+         (if (= use-editor :ace)
+           (open-note note open-opts)
+           (do (set-instance :excel-editor) (editor-excel/copy-state (get-instance :excel-editor) preview-instance)))
+         :ace-editor-preview
+         (if (= use-editor :excel)
+           (open-note note open-opts)
+           (do (set-instance :ace-editor) (editor-ace/copy-state (get-instance :ace-editor) preview-instance)))))))
 
 ; opens the content in the appropriate instance
 ; sets the active instance
 (defn open-history
   ([content] (open-history content {}))
   ([content open-opts]
-   (case (active-instance-type)
-     :excel
-     (do (set-instance :excel-editor-history)
-         (editor-excel/open-note (get-instance :excel-editor-history) {:content content} open-opts))
-     :ace
-     (do (set-instance :ace-editor-history)
-         (editor-ace/open-note (get-instance :ace-editor-history) {:content content} open-opts)))))
+   (let [use-editor (:use-editor open-opts)]
+     (case (or use-editor (active-instance-type))
+       :excel (do (set-instance :excel-editor-history) (editor-excel/open-note (get-instance :excel-editor-history) {:content content} open-opts))
+       :ace (do (set-instance :ace-editor-history) (editor-ace/open-note (get-instance :ace-editor-history) {:content content} open-opts))))))
 
 ; closes the history window and attempts to go back
 ; to the regular editor
 ; does nothing if history is not open
 (defn close-history []
   (case (:active-instance @state)
-    :excel-editor-history (set-instance (:last-before-history @state))
-    :ace-editor-history (set-instance (:last-before-history @state)) nil))
+    :excel-editor-history (set-instance (:active-instance-before-history @state))
+    :ace-editor-history (set-instance (:active-instance-before-history @state)) nil)
+  (case (active-instance-type)
+    :excel (rf/dispatch [:set-table-on true])
+    :ace (rf/dispatch [:set-table-on false])))
 
 ; preview the note in the appropriate instance
 ; sets the preview note name
@@ -165,13 +167,10 @@
   ([note] (preview-note note {}))
   ([note open-opts]
    (swap! state #(assoc % :preview-note-name (:name note)))
-   (case (active-instance-type)
-     :excel
-     (do (set-instance :excel-editor-preview)
-         (editor-excel/open-note (get-instance :excel-editor-preview) note open-opts))
-     :ace
-     (do (set-instance :ace-editor-preview)
-         (editor-ace/open-note (get-instance :ace-editor-preview) note open-opts)))))
+   (let [use-editor (:use-editor open-opts)]
+     (case (or use-editor (active-instance-type))
+       :excel (do (set-instance :excel-editor-preview) (editor-excel/open-note (get-instance :excel-editor-preview) note open-opts))
+       :ace (do (set-instance :ace-editor-preview) (editor-ace/open-note (get-instance :ace-editor-preview) note open-opts))))))
 
 ; passed down to the active instance
 (defn goto-search 
@@ -221,17 +220,17 @@
 ; sets the use-table attribute to true or false
 ; if changed from state, then switch to the corresponding editor
 ; only this transitions between excel and ace editors
-(defn set-use-table [use-table?]
-  (when-not use-table?
+(defn change-editor [use-editor]
+  (when (= use-editor :ace)
     (case (:active-instance @state)
-      :excel-editor (do (editor-ace/set-content (-> @state :instances :ace-editor) (editor-excel/get-content (active-instance))) (set-instance :ace-editor))
-      :excel-editor-history (do (editor-ace/set-content (-> @state :instances :ace-editor-history) (editor-excel/get-content (active-instance))) (set-instance :ace-editor-history))
-      :excel-editor-preview (do (editor-ace/set-content (-> @state :instances :ace-editor-preview) (editor-excel/get-content (active-instance))) (set-instance :ace-editor-preview)) nil))
-  (when use-table?
+      :excel-editor (do (editor-ace/set-content (get-instance :ace-editor) (editor-excel/get-content (active-instance))) (set-instance :ace-editor))
+      :excel-editor-history (do (editor-ace/set-content (get-instance :ace-editor-history) (editor-excel/get-content (active-instance))) (set-instance :ace-editor-history))
+      :excel-editor-preview (do (editor-ace/set-content (get-instance :ace-editor-preview) (editor-excel/get-content (active-instance))) (set-instance :ace-editor-preview)) nil))
+  (when (= use-editor :excel)
     (case (:active-instance @state)
-      :ace-editor (do (editor-excel/set-content (-> @state :instances :excel-editor) (editor-ace/get-content (active-instance))) (set-instance :excel-editor))
-      :ace-editor-history (do (editor-excel/set-content (-> @state :instances :excel-editor-history) (editor-ace/get-content (active-instance))) (set-instance :excel-editor-history))
-      :ace-editor-preview (do (editor-excel/set-content (-> @state :instances :excel-editor-preview) (editor-ace/get-content (active-instance))) (set-instance :excel-editor-preview)) nil)))
+      :ace-editor (do (editor-excel/set-content (get-instance :excel-editor) (editor-ace/get-content (active-instance))) (set-instance :excel-editor))
+      :ace-editor-history (do (editor-excel/set-content (get-instance :excel-editor-history) (editor-ace/get-content (active-instance))) (set-instance :excel-editor-history))
+      :ace-editor-preview (do (editor-excel/set-content (get-instance :excel-editor-preview) (editor-ace/get-content (active-instance))) (set-instance :excel-editor-preview)) nil)))
 
 ; passed down to the active instance
 (defn on-press-key [event]

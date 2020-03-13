@@ -101,7 +101,7 @@
           (.focus @ace-editor)
           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
-(defn copy-state-from [this another]
+(defn copy-state [this another]
   (let [{:keys [ace-editor]} this another-ace-editor (another :ace-editor)]
     (set! (.-autoChangeSelection @ace-editor) true)
     (ace/set-text @ace-editor (ace/get-text @another-ace-editor))

@@ -21,6 +21,10 @@
     [re-frame.core :as rf]
     [clojure.set :as set]))
 
+(defn prefer-excel [s]
+  (or (str/starts-with? s "\"<TBL>\"")
+      (str/starts-with? s "<TBL>")))
+
 (enable-console-print!)
 (defonce init
          (->> "init"
@@ -88,16 +92,22 @@
 (rf/reg-fx :open-note-after-preview
   (fn [note]
     (save-editor-content)
-    (editor/open-note-after-preview note)))
+    (if (prefer-excel (:content note))
+      (do (editor/open-note-after-preview note {:use-editor :excel}) (rf/dispatch [:set-table-on true]))
+      (do (editor/open-note-after-preview note {:use-editor :ace}) (rf/dispatch [:set-table-on false])))))
 
 (rf/reg-fx :open-note
   (fn [[note search]]
     (save-editor-content)
-    (editor/open-note note {:search search})))
+    (if (prefer-excel (:content note))
+      (do (editor/open-note note {:search search :use-editor :excel}) (rf/dispatch [:set-table-on true]))
+      (do (editor/open-note note {:search search :use-editor :ace}) (rf/dispatch [:set-table-on false])))))
 
 (rf/reg-fx :preview-note
   (fn [[note search]]
-    (editor/preview-note note {:search search})))
+    (if (prefer-excel (:content note))
+        (do (editor/preview-note note {:search search :use-editor :excel}) (rf/dispatch [:set-table-on true]))
+        (do (editor/preview-note note {:search search :use-editor :ace}) (rf/dispatch [:set-table-on false])))))
 
 (add-watches-db :open-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
@@ -106,15 +116,18 @@
     (when timestamp
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
-          (editor/open-history content {:search @(rf/subscribe [:search])}))))))
+          (if (prefer-excel content)
+            (do (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :excel}) (rf/dispatch [:set-table-on true]))
+            (do (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :ace}) (rf/dispatch [:set-table-on false]))))))))
 
 (add-watch-db :goto-search [:search]
   (fn [_ _ _ search]
     (editor/goto-search search false)))
 
-(add-watch-db :prefer-table-toggled [:prefer-table]
-  (fn [_ _ _ prefer-table?]
-    (editor/set-use-table prefer-table?)))
+(add-watch-db :table-on-toggled [:table-on]
+  (fn [_ _ _ table-on?]
+    (let [use-editor (if table-on? :excel :ace)]
+      (editor/change-editor use-editor))))
 
 (def shift-interval 100)
 (defn on-hit-shift []

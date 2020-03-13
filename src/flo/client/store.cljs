@@ -109,7 +109,7 @@
         ; when set, the client will prefer to open each note
         ; using the table mode
         ; the client may still show a table even if this is not set
-        :prefer-table    false
+        :table-on        false
 
         ; when set, a terminal window should be shown
         :show-terminal   false
@@ -170,10 +170,11 @@
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
 (rf/reg-sub :status-text (fn [db v] (:status-text db)))
-(rf/reg-sub :prefer-table (fn [db v] (:prefer-table db)))
+(rf/reg-sub :table-on (fn [db v] (:table-on db)))
 (rf/reg-sub :show-terminal (fn [db v] (:show-terminal db)))
 
-(rf/reg-event-db :toggle-prefer-table (fn [db [_ search]] (update db :prefer-table not)))
+(rf/reg-event-db :toggle-table-on (fn [db [_ search]] (update db :table-on not)))
+(rf/reg-event-db :set-table-on (fn [db [_ prefer-table?]] (assoc db :table-on prefer-table?)))
 (rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
