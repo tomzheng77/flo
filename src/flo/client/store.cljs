@@ -170,12 +170,17 @@
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
 (rf/reg-sub :status-text (fn [db v] (:status-text db)))
+
 (rf/reg-sub :table-on (fn [db v] (:table-on db)))
 (rf/reg-sub :show-terminal (fn [db v] (:show-terminal db)))
+(rf/reg-sub :autosave (fn [db v] (:autosave db)))
 
 (rf/reg-event-db :toggle-table-on (fn [db [_ search]] (update db :table-on not)))
 (rf/reg-event-db :set-table-on (fn [db [_ table-on?]] (assoc db :table-on table-on?)))
+
 (rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
+(rf/reg-event-db :toggle-autosave (fn [db [_ search]] (update db :autosave not)))
+
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
 (rf/reg-event-db :set-history-limit

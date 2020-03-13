@@ -201,6 +201,6 @@
 (set! (.-onblur js/window) #(editor/on-window-blur (to-clj-event %)))
 
 (rf/dispatch-sync [:hash-change js/window.location.href])
-(js/setInterval (fn [] (save-editor-content)) 5000)
+(js/setInterval (fn [] (when @(rf/subscribe [:autosave]) (save-editor-content))) 1000)
 
 (defn on-js-reload [])

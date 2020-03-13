@@ -172,7 +172,7 @@
    [history-limit "Y" (* 1000 60 60 24 365)]
    [history-limit "A" (* 1000 60 60 24 10000)]
    [toggle-button "Table" :toggle-table-on :table-on]
-   [toggle-button "Terminal" :toggle-show-terminal :show-terminal]
+   [toggle-button "Autosave" :toggle-autosave :autosave]
    [status-display]
    ; todo: add realtime switch
    [history-button]])
