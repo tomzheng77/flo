@@ -97,7 +97,11 @@
   (reset! (:active? (instance-label (:instances @state))) true)
   (doseq [[k instance] (:instances @state)]
     (when-not (= k instance-label)
-      (reset! (:active? instance) false))))
+      (reset! (:active? instance) false)))
+
+  (case (active-instance-type)
+    :excel (rf/dispatch [:set-table-on true])
+    :ace (rf/dispatch [:set-table-on false])))
 
 (defn get-instance [instance-label]
   (-> @state :instances instance-label))
@@ -115,10 +119,9 @@
   ([note open-opts]
    (swap! state #(assoc % :open-note-name (:name note)))
    (let [use-editor (:use-editor open-opts)]
-     (console-log use-editor)
      (case (or use-editor (active-instance-type))
-           :excel (do (set-instance :excel-editor) (editor-excel/open-note (get-instance :excel-editor) note open-opts))
-           :ace (do (set-instance :ace-editor) (editor-ace/open-note (get-instance :ace-editor) note open-opts))))))
+           :excel (do (set-instance :excel-editor) (editor-excel/open-note (get-instance :excel-editor) note (assoc open-opts :focus true)))
+           :ace (do (set-instance :ace-editor) (editor-ace/open-note (get-instance :ace-editor) note (assoc open-opts :focus true)))))))
 
 ; checks if the preview note name is
 ; the same as the open note name
@@ -156,10 +159,7 @@
 (defn close-history []
   (case (:active-instance @state)
     :excel-editor-history (set-instance (:active-instance-before-history @state))
-    :ace-editor-history (set-instance (:active-instance-before-history @state)) nil)
-  (case (active-instance-type)
-    :excel (rf/dispatch [:set-table-on true])
-    :ace (rf/dispatch [:set-table-on false])))
+    :ace-editor-history (set-instance (:active-instance-before-history @state)) nil))
 
 ; preview the note in the appropriate instance
 ; sets the preview note name

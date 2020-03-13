@@ -93,21 +93,21 @@
   (fn [note]
     (save-editor-content)
     (if (prefer-excel (:content note))
-      (do (editor/open-note-after-preview note {:use-editor :excel}) (rf/dispatch [:set-table-on true]))
-      (do (editor/open-note-after-preview note {:use-editor :ace}) (rf/dispatch [:set-table-on false])))))
+      (editor/open-note-after-preview note {:use-editor :excel})
+      (editor/open-note-after-preview note {:use-editor :ace}))))
 
 (rf/reg-fx :open-note
   (fn [[note search]]
     (save-editor-content)
     (if (prefer-excel (:content note))
-      (do (editor/open-note note {:search search :use-editor :excel}) (rf/dispatch [:set-table-on true]))
-      (do (editor/open-note note {:search search :use-editor :ace}) (rf/dispatch [:set-table-on false])))))
+      (editor/open-note note {:search search :use-editor :excel})
+      (editor/open-note note {:search search :use-editor :ace}))))
 
 (rf/reg-fx :preview-note
   (fn [[note search]]
     (if (prefer-excel (:content note))
-        (do (editor/preview-note note {:search search :use-editor :excel}) (rf/dispatch [:set-table-on true]))
-        (do (editor/preview-note note {:search search :use-editor :ace}) (rf/dispatch [:set-table-on false])))))
+        (editor/preview-note note {:search search :use-editor :excel})
+        (editor/preview-note note {:search search :use-editor :ace}))))
 
 (add-watches-db :open-history [[:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [timestamp history direction]]
@@ -117,8 +117,8 @@
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
           (if (prefer-excel content)
-            (do (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :excel}) (rf/dispatch [:set-table-on true]))
-            (do (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :ace}) (rf/dispatch [:set-table-on false]))))))))
+            (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :excel})
+            (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :ace})))))))
 
 ; (add-watches-db :disable-edit [[:search] [:history-cursor] [:navigation]]
 ;   (fn [_ _ _ [search drag-timestamp navigation]]

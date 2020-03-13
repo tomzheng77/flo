@@ -92,13 +92,13 @@
 
 (defn open-note
   ([this note] (open-note this note nil))
-  ([{:keys [ace-editor]} {:keys [content selection]} {:keys [search]}]
+  ([{:keys [ace-editor]} {:keys [content selection]} {:keys [search focus?]}]
    (set! (.-autoChangeSelection @ace-editor) true)
    (ace/set-text @ace-editor (or content ""))
    (js/setTimeout
      #(do (ace/set-selection @ace-editor selection)
           (if search (ace/navigate @ace-editor search))
-          (.focus @ace-editor)
+          (if focus? (.focus @ace-editor))
           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
 
 (defn copy-state [this another]
