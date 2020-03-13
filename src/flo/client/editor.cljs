@@ -108,11 +108,11 @@
    (swap! state #(assoc % :open-note-name (:name note)))
    (case (active-instance-type)
      :excel
-     (set-instance :excel-editor)
-     (editor-excel/open-note (get-instance :excel-editor) note open-opts)
+     (do (set-instance :excel-editor)
+         (editor-excel/open-note (get-instance :excel-editor) note open-opts))
      :ace
-     (set-instance :ace-editor)
-     (editor-ace/open-note (get-instance :ace-editor) note open-opts))))
+     (do (set-instance :ace-editor)
+         (editor-ace/open-note (get-instance :ace-editor) note open-opts)))))
 
 ; checks if the preview note name is
 ; the same as the open note name
@@ -124,11 +124,11 @@
      (open-note note open-opts))
      (case (:active-instance @state)
        :excel-editor-preview
-       (set-instance :excel-editor)
-       (editor-excel/open-note (get-instance :excel-editor) {:content content} open-opts)
+       (do (set-instance :excel-editor)
+           (editor-excel/open-note (get-instance :excel-editor) note open-opts))
        :ace-editor-preview
-       (set-instance :ace-editor)
-       (editor-ace/open-note (get-instance :ace-editor) {:content content} open-opts))))
+       (do (set-instance :ace-editor)
+           (editor-ace/open-note (get-instance :ace-editor) note open-opts)))))
 
 ; opens the content in the appropriate instance
 ; sets the active instance
@@ -137,11 +137,11 @@
   ([content open-opts]
    (case (active-instance-type)
      :excel
-     (set-instance :excel-editor-history)
-     (editor-excel/open-note (get-instance :excel-editor-history) {:content content} open-opts)
+     (do (set-instance :excel-editor-history)
+         (editor-excel/open-note (get-instance :excel-editor-history) {:content content} open-opts))
      :ace
-     (set-instance :ace-editor-history)
-     (editor-ace/open-note (get-instance :ace-editor-history) {:content content} open-opts))))
+     (do (set-instance :ace-editor-history)
+         (editor-ace/open-note (get-instance :ace-editor-history) {:content content} open-opts)))))
 
 ; closes the history window and attempts to go back
 ; to the regular editor
@@ -159,11 +159,11 @@
    (swap! state #(assoc % :preview-note-name (:name note)))
    (case (active-instance-type)
      :excel
-     (set-instance :excel-editor-preview)
-     (editor-excel/open-note (get-instance :excel-editor-preview) note open-opts)
+     (do (set-instance :excel-editor-preview)
+         (editor-excel/open-note (get-instance :excel-editor-preview) note open-opts))
      :ace
-     (set-instance :ace-editor-preview)
-     (editor-ace/open-note (get-instance :ace-editor-preview) note open-opts)))
+     (do (set-instance :ace-editor-preview)
+         (editor-ace/open-note (get-instance :ace-editor-preview) note open-opts)))))
 
 ; passed down to the active instance
 (defn goto-search 

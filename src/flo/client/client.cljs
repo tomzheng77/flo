@@ -114,7 +114,7 @@
 
 (add-watch-db :prefer-table-toggled [:prefer-table]
   (fn [_ _ _ prefer-table?]
-    (editor/set-prefer-table prefer-table?)))
+    (editor/set-use-table prefer-table?)))
 
 (def shift-interval 100)
 (defn on-hit-shift []
