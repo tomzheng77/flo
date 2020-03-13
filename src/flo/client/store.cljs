@@ -174,7 +174,7 @@
 (rf/reg-sub :show-terminal (fn [db v] (:show-terminal db)))
 
 (rf/reg-event-db :toggle-table-on (fn [db [_ search]] (update db :table-on not)))
-(rf/reg-event-db :set-table-on (fn [db [_ prefer-table?]] (assoc db :table-on prefer-table?)))
+(rf/reg-event-db :set-table-on (fn [db [_ table-on?]] (assoc db :table-on table-on?)))
 (rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
