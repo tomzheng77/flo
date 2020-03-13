@@ -117,6 +117,9 @@
         ; when set, history will not be shown smoothly
         :fast-mode       false
 
+        ; when set, changes will be saved at regular intervals
+        :autosave        true
+
         ; global navigation query
         ; consists of a name and location part
         ; e.g. "fl@fx" means

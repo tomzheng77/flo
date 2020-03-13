@@ -121,9 +121,9 @@
              (index-to-label (mod index 26)))))))
 
 
-(defn view-render [source]
+(defn view-render [source active?]
   (fn []
-    [:div#container-excel {:style {:flex-grow 1 :overflow :scroll}}
+    [:div#container-excel {:style {:flex-grow 1 :display (if @active? "flex" "none") :flex-direction "column" :overflow :scroll}}
       [:table {:style {:table-layout :fixed :width (width-sum source)}}
         (if (> (count @source) 0)
           (let [first-row-atom (first @source)]
@@ -165,7 +165,7 @@
           (r/atom
             (into []
               (for [cell-index (range w)]
-                (r/atom (str (apply cell-index row)))))))))))
+                (r/atom (str (get row cell-index)))))))))))
 
 (defn add-column [this column]
   (when-not column
@@ -177,7 +177,7 @@
 (defn add-row [this index]
   (when-not index
     (let [width (apply max (map #(count @%) @(:source this)))]
-      (swap! source
+      (swap! (:source this)
         #(conj % (r/atom (into [] (for [i (range width)] (r/atom "")))))))))
 
 (defn copy [src dst])
@@ -217,20 +217,9 @@
       :source source
       :view (fn []
         (r/create-class {
-          :reagent-render #(view-render source)})
+          :reagent-render #(view-render source active?)}))
       :active? active?
-      :event-handler event-handler)})))
-
-(defn open-note
-  ([this note] (open-note this note nil))
-  ([this {:keys [content]} open-opts] (set-content this content)))
-
-(defn copy-state-from [this another]
-  (set-content this (get-content another)))
-
-(defn goto-search [this search backwards])
-(defn insert-image [this image-id])
-(defn focus [this])
+      :event-handler event-handler})))
 
 (defn get-content [this]
   (let [source (:source this)
@@ -245,6 +234,17 @@
   (let [source (:source this)
         array-2d (csv/read-csv content)]
     (display source array-2d)))
+
+(defn open-note
+  ([this note] (open-note this note nil))
+  ([this {:keys [content]} open-opts] (set-content this content)))
+
+(defn copy-state-from [this another]
+  (set-content this (get-content another)))
+
+(defn goto-search [this search backwards])
+(defn insert-image [this image-id])
+(defn focus [this])
 
 (defn on-press-key [this event])
 (defn on-release-key [this event])

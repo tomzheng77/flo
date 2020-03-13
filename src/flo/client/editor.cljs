@@ -33,6 +33,7 @@
 
 (reset! state {
  :active-instance :ace-editor
+ :last-before-history :ace-editor
  :open-note-name nil
  :preview-note-name nil
 
@@ -73,7 +74,7 @@
    #(event-handler :excel-editor-history %)})}})
 
 (defn active-instance []
-  (-> @state :instances (:active-instance @state)))
+  ((:active-instance @state) (:instances @state)))
 
 (defn active-instance-type []
   (case (:active-instance @state)
@@ -85,7 +86,14 @@
     :ace-editor-preview :ace))
 
 (defn set-instance [instance-label]  
+  ; set the active instance
   (swap! state #(assoc % :active-instance instance-label))
+
+  ; set the known last instance before activating the history instance
+  (when (and (not (= instance-label :excel-editor-history))
+             (not (= instance-label :ace-editor-history)))
+    (swap! state #(assoc % :last-before-history instance-label)))
+
   (reset! (:active? (instance-label (:instances @state))) true)
   (doseq [[k instance] (:instances @state)]
     (when-not (= k instance-label)
@@ -148,8 +156,8 @@
 ; does nothing if history is not open
 (defn close-history []
   (case (:active-instance @state)
-    :excel-editor-history (set-instance :excel-editor)
-    :ace-editor-history (set-instance :ace-editor)))
+    :excel-editor-history (set-instance (:last-before-history @state))
+    :ace-editor-history (set-instance (:last-before-history @state)) nil))
 
 ; preview the note in the appropriate instance
 ; sets the preview note name
@@ -197,7 +205,7 @@
 ; usually for saving the content
 (defn get-name-and-content []
   (let [name (:open-note-name @state)]
-    (if name
+    (when name
       (case (:active-instance @state)
         :excel-editor {:name name :content (editor-excel/get-content (active-instance))}
         :ace-editor {:name name :content (editor-ace/get-content (active-instance))} nil))))
