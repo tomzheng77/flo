@@ -120,6 +120,10 @@
             (do (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :excel}) (rf/dispatch [:set-table-on true]))
             (do (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :ace}) (rf/dispatch [:set-table-on false]))))))))
 
+; (add-watches-db :disable-edit [[:search] [:history-cursor] [:navigation]]
+;   (fn [_ _ _ [search drag-timestamp navigation]]
+;     (editor/set-editable (nil? (or search drag-timestamp navigation)))))
+
 (add-watch-db :goto-search [:search]
   (fn [_ _ _ search]
     (editor/goto-search search false)))

@@ -123,7 +123,7 @@
 
 (defn view-render [source active?]
   (fn []
-    [:div#container-excel {:style {:flex-grow 1 :display (if @active? "flex" "none") :flex-direction "column" :overflow :scroll}}
+    [:div.container-excel {:style {:flex-grow 1 :display (if @active? "flex" "none") :flex-direction "column" :overflow :scroll}}
       [:table {:style {:table-layout :fixed :width (width-sum source)}}
         (if (> (count @source) 0)
           (let [first-row-atom (first @source)]

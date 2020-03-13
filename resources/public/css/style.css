@@ -24,20 +24,20 @@
     font-style: italic;
 }
 
-#container-excel {
+.container-excel {
     font-family: 'Go-Mono', 'Microsoft YaHei', Monospace;
     font-size: 13.3333px;
     overflow: scroll;
     background-color: #272822;
 }
 
-#container-excel table {
+.container-excel table {
     transform: rotateX(0deg);
     table-layout: fixed;
     border-spacing: 0;
 }
 
-#container-excel tr td {
+.container-excel tr td {
     background-color: #272822;
     border: 1px solid rgba(255,255,255,0.3);
     color: white;
@@ -47,12 +47,12 @@
     max-height: 10px !important;
 }
 
-#container-excel tr td div {
+.container-excel tr td div {
     overflow: hidden;
     height: 20px;
 }
 
-#container-excel tr td div textarea {
+.container-excel tr td div textarea {
     background: transparent;
     border: none;
     overflow: hidden;
