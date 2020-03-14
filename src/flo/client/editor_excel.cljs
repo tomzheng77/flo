@@ -123,7 +123,7 @@
 
 (defn view-render [source active?]
   (fn []
-    [:div.container-excel {:style {:flex-grow 1 :display (if @active? "flex" "none") :flex-direction "column" :overflow :scroll}}
+    [:div.container-excel {:style {:height "100%" :display (if @active? "block" "none") :overflow :scroll}}
       [:table {:style {:table-layout :fixed :width (width-sum source)}}
         (if (> (count @source) 0)
           (let [first-row-atom (first @source)]
@@ -232,7 +232,7 @@
 
 (defn set-content [this content]
   (let [source (:source this)
-        content-fixed (str/replace content #"\r\n|\r|\n\r" "\n")
+        content-fixed (str/replace (str/replace content #"\r\n|\n\r" "\n") #"\r" "\n")
         array-2d (csv/read-csv content-fixed)]
     (display source array-2d)))
 
