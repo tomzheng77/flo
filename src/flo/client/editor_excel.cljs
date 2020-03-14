@@ -232,7 +232,8 @@
 
 (defn set-content [this content]
   (let [source (:source this)
-        array-2d (csv/read-csv content)]
+        content-fixed (str/replace content #"\r\n|\r|\n\r" "\n")
+        array-2d (csv/read-csv content-fixed)]
     (display source array-2d)))
 
 (defn open-note
