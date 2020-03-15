@@ -224,8 +224,8 @@
 (defn accept-external-change [note]
   (when (= (:name note) (:open-note-name @state))
     (case (:active-instance @state)
-      :excel-editor (editor-ace/focus (active-instance))
-      :ace-editor (editor-ace/focus (active-instance)) nil)))
+      :excel-editor (editor-excel/set-content (active-instance) (:content note))
+      :ace-editor (editor-ace/set-content (active-instance) (:content note)))))
 
 ; sets the use-table attribute to true or false
 ; if changed from state, then switch to the corresponding editor
