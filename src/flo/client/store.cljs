@@ -88,8 +88,7 @@
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)]
       {:dispatch [:request-open-note active-note-name]
        :db
-       {:last-shift-press nil ; the time when the shift key was last pressed
-        :search           nil ; the active label being searched, nil means no search
+       {:search           nil ; the active label being searched, nil means no search
         :window-width     (.-innerWidth js/window)
 
         ; if this flag is set to true
@@ -159,7 +158,6 @@
   (let [updated (active-time-updated db)]
     (clamp (- updated (:history-limit db)) updated (active-time-created db))))
 
-(rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
 (rf/reg-sub :search (fn [db v] (:search db)))
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
 (rf/reg-sub :drag-btn-width (fn [db v] (:drag-btn-width db)))
@@ -197,7 +195,6 @@
 
 (rf/reg-event-db :window-resize (fn [db [_ width _]] (assoc db :window-width width)))
 (rf/reg-event-db :start-drag (fn [db [_ item]] (assoc db :drag-start item)))
-(rf/reg-event-db :shift-press (fn [db [_ t]] (assoc db :last-shift-press t)))
 
 ; whenever the mouse has been moved
 (rf/reg-event-db :mouse-move

@@ -157,9 +157,6 @@
           (rf/dispatch [:navigate-enter time]))
         (when (and (#{"Tab"} code))
           (rf/dispatch [:navigate-direct])))
-      (if (= "ShiftLeft" code)
-        (rf/dispatch [:shift-press time])
-        (rf/dispatch [:shift-press nil]))
       (when (= "Escape" code)
         (rf/dispatch [:set-search nil])
         (rf/dispatch [:navigation-input nil]))
@@ -190,10 +187,6 @@
 (defn on-release-key [event]
   (let [{:keys [code repeat]} event time (current-time-millis)]
     (when-not repeat
-      (when (= "ShiftLeft" code)
-        (let [delta (- time (or @(rf/subscribe [:last-shift-press]) 0))]
-          (when (> shift-interval delta)
-            (on-hit-shift))))
       (editor/on-release-key event))))
 
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
