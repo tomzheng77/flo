@@ -132,7 +132,7 @@
   ([note] (open-note-after-preview note {}))
   ([note open-opts]
    (if-not (= (:name note) (:preview-note-name @state))
-     (open-note note open-opts))
+     (open-note note open-opts)
      (let [use-editor (:use-editor open-opts)
            preview-instance (active-instance)]
        (case (:active-instance @state)
@@ -143,7 +143,7 @@
          :ace-editor-preview
          (if (= use-editor :excel)
            (open-note note open-opts)
-           (do (set-instance :ace-editor) (editor-ace/copy-state (get-instance :ace-editor) preview-instance)))))))
+           (do (set-instance :ace-editor) (editor-ace/copy-state (get-instance :ace-editor) preview-instance))))))))
 
 ; opens the content in the appropriate instance
 ; sets the active instance
