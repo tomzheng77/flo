@@ -94,7 +94,7 @@
   ([this note] (open-note this note nil))
   ([{:keys [ace-editor]} {:keys [name content selection]} {:keys [search focus?]}]
    (set! (.-autoChangeSelection @ace-editor) true)
-   (if (ends-with? name ".js")
+   (if (str/ends-with? name ".js")
      (do (console-log "change to JS mode") (.setMode (.-session @ace-editor) "ace/mode/javascript"))
      (do (console-log "change to MD mode") (.setMode (.-session @ace-editor) "ace/mode/markdown")))
    (ace/set-text @ace-editor (or content ""))

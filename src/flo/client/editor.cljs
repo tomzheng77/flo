@@ -108,7 +108,7 @@
 
 (defn get-active-ace []
   (if (= :ace-editor (:active-instance @state))
-    (:ace-editor (active-instance))))
+    @(:ace-editor (active-instance))))
 
 (defn view []
   (into []
@@ -135,17 +135,17 @@
   ([note open-opts]
    (if-not (= (:name note) (:preview-note-name @state))
      (open-note note open-opts)
-     (let [use-editor (:use-editor open-opts)
-           preview-instance (active-instance)]
+     (let [use-editor (:use-editor open-opts)]
        (case (:active-instance @state)
          :excel-editor-preview
          (if (= use-editor :ace)
            (open-note note open-opts)
-           (do (set-instance :excel-editor) (editor-excel/copy-state (get-instance :excel-editor) preview-instance)))
+           (do (set-instance :excel-editor) (editor-excel/copy-state (get-instance :excel-editor) (get-instance :excel-editor-preview))))
          :ace-editor-preview
          (if (= use-editor :excel)
            (open-note note open-opts)
-           (do (set-instance :ace-editor) (editor-ace/copy-state (get-instance :ace-editor) preview-instance))))))))
+           (do (set-instance :ace-editor) (editor-ace/copy-state (get-instance :ace-editor) (get-instance :ace-editor-preview))))
+         (do (console-log "open after preview") (open-note note open-opts)))))))
 
 ; opens the content in the appropriate instance
 ; sets the active instance

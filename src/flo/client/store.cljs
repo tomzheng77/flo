@@ -241,7 +241,7 @@
     (when js-code
       (set! (.-plugins js/window) (clj->js {}))
       (set! (.-editor js/window) (clj->js {
-       :getActiveAce (editor/get-active-ace)}))
+       :getActiveAce #(editor/get-active-ace)}))
       (js/eval js-code))))
 
 (rf/reg-fx :run-plugin
@@ -453,7 +453,7 @@
        (if (= name plugins-name) content)})))
 
 (rf/reg-event-fx :run-plugin
-  (fn [{:keys db} [_ plugin-name]]
+  (fn [{:keys [db]} [_ plugin-name]]
     {:db db :run-plugin plugin-name}))
 
 (rf/reg-event-fx :change
