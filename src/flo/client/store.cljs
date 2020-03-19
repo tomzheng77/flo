@@ -185,8 +185,13 @@
 (rf/reg-sub :show-terminal (fn [db v] (:show-terminal db)))
 (rf/reg-sub :autosave (fn [db v] (:autosave db)))
 
-(rf/reg-event-db :toggle-table-on (fn [db [_ search]] (update db :table-on not)))
-(rf/reg-event-db :set-table-on (fn [db [_ table-on?]] (assoc db :table-on table-on?)))
+(rf/reg-event-fx :toggle-table-on (fn [{:keys [db]} [_]]
+  {:db (update db :table-on not) :change-editor (not (:table-on db))}))
+
+(rf/reg-event-fx :set-table-on (fn [{:keys [db]} [_ table-on? cascade?]]
+  (if cascade?
+    {:db (assoc db :table-on table-on?) :change-editor table-on?}
+    {:db (assoc db :table-on table-on?)})))
 
 (rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
 (rf/reg-event-db :toggle-autosave (fn [db [_ search]] (update db :autosave not)))

@@ -129,8 +129,8 @@
   (fn [_ _ _ search]
     (editor/goto-search search false)))
 
-(add-watch-db :table-on-toggled [:table-on]
-  (fn [_ _ _ table-on?]
+(rf/reg-fx :change-editor
+  (fn [table-on?]
     (let [use-editor (if table-on? :excel :ace)]
       (editor/change-editor use-editor))))
 
