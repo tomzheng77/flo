@@ -485,7 +485,3 @@
           note-name (:active-note-name db)
           path (str "/history?t=" time-string "#" note-name)]
       {:db db :open-window path})))
-
-(rf/reg-fx :open-window
-  (fn [path]
-    (.open js/window path "_blank")))
