@@ -6,8 +6,6 @@
     [flo.client.editor-ace :as editor-ace]
     [flo.client.editor-excel :as editor-excel]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
-    [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
-    [flo.client.network]
     [flo.client.view :refer [navigation search-bar history-bar]]
     [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
@@ -108,6 +106,10 @@
 (defn get-instance [instance-label]
   (-> @state :instances instance-label))
 
+(defn get-active-ace []
+  (if (= :ace-editor (:active-instance @state))
+    (:ace-editor (active-instance))))
+
 (defn view []
   (into []
     (concat
@@ -148,12 +150,12 @@
 ; opens the content in the appropriate instance
 ; sets the active instance
 (defn open-history
-  ([content] (open-history content {}))
-  ([content open-opts]
+  ([name content] (open-history name content {}))
+  ([name content open-opts]
    (let [use-editor (:use-editor open-opts)]
      (case (or use-editor (active-instance-type))
-       :excel (do (set-instance :excel-editor-history) (editor-excel/open-note (get-instance :excel-editor-history) {:content content} open-opts))
-       :ace (do (set-instance :ace-editor-history) (editor-ace/open-note (get-instance :ace-editor-history) {:content content} open-opts))))))
+       :excel (do (set-instance :excel-editor-history) (editor-excel/open-note (get-instance :excel-editor-history) {:name name :content content} open-opts))
+       :ace (do (set-instance :ace-editor-history) (editor-ace/open-note (get-instance :ace-editor-history) {:name name :content content} open-opts))))))
 
 ; closes the preview window and attempts to go back
 ; to the regular editor

@@ -92,8 +92,11 @@
 
 (defn open-note
   ([this note] (open-note this note nil))
-  ([{:keys [ace-editor]} {:keys [content selection]} {:keys [search focus?]}]
+  ([{:keys [ace-editor]} {:keys [name content selection]} {:keys [search focus?]}]
    (set! (.-autoChangeSelection @ace-editor) true)
+   (if (ends-with? name ".js")
+     (do (console-log "change to JS mode") (.setMode (.-session @ace-editor) "ace/mode/javascript"))
+     (do (console-log "change to MD mode") (.setMode (.-session @ace-editor) "ace/mode/markdown")))
    (ace/set-text @ace-editor (or content ""))
    (js/setTimeout
      #(do (ace/set-selection @ace-editor selection)
@@ -104,6 +107,7 @@
 (defn copy-state [this another]
   (let [{:keys [ace-editor]} this another-ace-editor (another :ace-editor)]
     (set! (.-autoChangeSelection @ace-editor) true)
+    (.setMode (.-session @ace-editor) (.getMode (.-session @another-ace-editor)))
     (ace/set-text @ace-editor (ace/get-text @another-ace-editor))
     (js/setTimeout
       #(do (ace/set-selection @ace-editor (ace/get-selection @another-ace-editor))
