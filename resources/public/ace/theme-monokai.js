@@ -195,7 +195,7 @@ font-weight: bold;\
 .ace-monokai .ace_list.ace_c { color: #0F9795; }\
 .ace-monokai .ace_list.ace_d { color: #C93B48; }\
 .ace-monokai .ace_list.ace_e { color: #629755; }\
-.ace-monokai .ace_duration { color: #9332a8; font-weight: bold; }\
+.ace-monokai .ace_duration { color: #dbb50f; font-weight: bold; }\
 \
 \
 "
