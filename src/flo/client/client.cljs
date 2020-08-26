@@ -110,16 +110,16 @@
         (editor/preview-note note {:search search :use-editor :ace}))))
 
 
-(add-watches-db :open-history [[:history-cursor] active-history [:history-direction]]
-  (fn [_ _ _ [timestamp history direction]]
+(add-watches-db :open-history [[:active-note-name] [:history-cursor] active-history [:history-direction]]
+  (fn [_ _ _ [name timestamp history direction]]
     (when-not timestamp
       (editor/close-history))
     (when timestamp
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
           (if (prefer-excel content)
-            (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :excel})
-            (editor/open-history content {:search @(rf/subscribe [:search]) :use-editor :ace})))))))
+            (editor/open-history name content {:search @(rf/subscribe [:search]) :use-editor :excel})
+            (editor/open-history name content {:search @(rf/subscribe [:search]) :use-editor :ace})))))))
 
 ; (add-watches-db :disable-edit [[:search] [:history-cursor] [:navigation]]
 ;   (fn [_ _ _ [search drag-timestamp navigation]]
@@ -129,8 +129,8 @@
   (fn [_ _ _ search]
     (editor/goto-search search false)))
 
-(add-watch-db :table-on-toggled [:table-on]
-  (fn [_ _ _ table-on?]
+(rf/reg-fx :change-editor
+  (fn [table-on?]
     (let [use-editor (if table-on? :excel :ace)]
       (editor/change-editor use-editor))))
 
@@ -157,9 +157,6 @@
           (rf/dispatch [:navigate-enter time]))
         (when (and (#{"Tab"} code))
           (rf/dispatch [:navigate-direct])))
-      (if (= "ShiftLeft" code)
-        (rf/dispatch [:shift-press time])
-        (rf/dispatch [:shift-press nil]))
       (when (= "Escape" code)
         (rf/dispatch [:set-search nil])
         (rf/dispatch [:navigation-input nil]))
@@ -190,10 +187,6 @@
 (defn on-release-key [event]
   (let [{:keys [code repeat]} event time (current-time-millis)]
     (when-not repeat
-      (when (= "ShiftLeft" code)
-        (let [delta (- time (or @(rf/subscribe [:last-shift-press]) 0))]
-          (when (> shift-interval delta)
-            (on-hit-shift))))
       (editor/on-release-key event))))
 
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))

@@ -3,6 +3,7 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require [clojure.data.avl :as avl]
+            [flo.client.editor :as editor]
             [reagent.core :as r]
             [re-frame.core :as rf]
             [re-frame.db :as db]
@@ -11,6 +12,12 @@
             [flo.client.functions :refer [find-all]]
             [clojure.set :as set]
             [flo.client.constants :as c]))
+
+(def plugins-name "plugins.js")
+
+(defn remove-nils [record]
+  (apply dissoc record
+    (for [[k v] record :when (nil? v)] k)))
 
 ; determines a tag for the note
 (defn find-ntag [content]
@@ -85,11 +92,15 @@
   :initialize
   (fn [_ [_ time {:keys [notes read-only]} href]]
     (let [active-note-name (or (re-find c/url-hash-regex href) "default")
-          notes-valid (filter #(> name-length-limit (count (:name %))) notes)]
+          notes-valid (filter #(> name-length-limit (count (:name %))) notes)
+          plugins-js 
+          (:content
+            (first
+              (filter #(= (:name %) plugins-name) notes)))]
       {:dispatch [:request-open-note active-note-name]
+       :eval-plugins-js plugins-js
        :db
-       {:last-shift-press nil ; the time when the shift key was last pressed
-        :search           nil ; the active label being searched, nil means no search
+       {:search           nil ; the active label being searched, nil means no search
         :window-width     (.-innerWidth js/window)
 
         ; if this flag is set to true
@@ -145,8 +156,8 @@
                                (map #(assoc % :type :note))
                                (map #(assoc % :selection {:row 0 :column 0}))
                                (map #(assoc % :ntag (find-ntag (:content %))))
+                               (map #(assoc % :history (avl/sorted-map)))
                                (map (fn [n] [(:name n) n]))
-                               (map (fn [[k v]] [k (assoc v :history (avl/sorted-map))]))
                                (into {})
                                ((fn [m] (if (get m active-note-name) m
                                  (assoc m active-note-name
@@ -159,7 +170,6 @@
   (let [updated (active-time-updated db)]
     (clamp (- updated (:history-limit db)) updated (active-time-created db))))
 
-(rf/reg-sub :last-shift-press (fn [db v] (:last-shift-press db)))
 (rf/reg-sub :search (fn [db v] (:search db)))
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
 (rf/reg-sub :drag-btn-width (fn [db v] (:drag-btn-width db)))
@@ -175,8 +185,13 @@
 (rf/reg-sub :show-terminal (fn [db v] (:show-terminal db)))
 (rf/reg-sub :autosave (fn [db v] (:autosave db)))
 
-(rf/reg-event-db :toggle-table-on (fn [db [_ search]] (update db :table-on not)))
-(rf/reg-event-db :set-table-on (fn [db [_ table-on?]] (assoc db :table-on table-on?)))
+(rf/reg-event-fx :toggle-table-on (fn [{:keys [db]} [_]]
+  {:db (update db :table-on not) :change-editor (not (:table-on db))}))
+
+(rf/reg-event-fx :set-table-on (fn [{:keys [db]} [_ table-on? cascade?]]
+  (if cascade?
+    {:db (assoc db :table-on table-on?) :change-editor table-on?}
+    {:db (assoc db :table-on table-on?)})))
 
 (rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
 (rf/reg-event-db :toggle-autosave (fn [db [_ search]] (update db :autosave not)))
@@ -192,12 +207,12 @@
              (- (active-time-updated db) limit)
              (active-time-updated db) %))))))
 
+(rf/reg-sub :active-note-name (fn [db v] (:active-note-name db)))
 (rf/reg-sub :active-time-updated (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
 (rf/reg-sub :initial-content (fn [db v] (get-in db [:notes (:active-note-name db) :content])))
 
 (rf/reg-event-db :window-resize (fn [db [_ width _]] (assoc db :window-width width)))
 (rf/reg-event-db :start-drag (fn [db [_ item]] (assoc db :drag-start item)))
-(rf/reg-event-db :shift-press (fn [db [_ t]] (assoc db :last-shift-press t)))
 
 ; whenever the mouse has been moved
 (rf/reg-event-db :mouse-move
@@ -218,6 +233,25 @@
                     new-direction (if (or (nil? old-history-cursor) (< new-history-cursor old-history-cursor)) :bkwd :fwd)]
                 (if (= new-history-cursor old-history-cursor) db
                   (assoc db :history-cursor new-history-cursor :history-direction new-direction)))))))))
+
+; runs the contents of plugins.js
+; should add functions to the window.plugins object
+; if editor is in the :editor-ace mode
+; then returns the active ace instance
+; editor.getActiveAce();
+; editor.getContent();
+; editor.setContent(content);
+(rf/reg-fx :eval-plugins-js 
+  (fn [js-code]
+    (when js-code
+      (set! (.-plugins js/window) (clj->js {}))
+      (set! (.-editor js/window) (clj->js {
+       :getActiveAce #(editor/get-active-ace)}))
+      (js/eval js-code))))
+
+(rf/reg-fx :run-plugin
+  (fn [plugin-name]
+    (.runPlugin (.-plugins js/window) plugin-name)))
 
 (defn exists-newer-note [db {:keys [name time]}]
   (let [existing-note (get-in db [:notes name])]
@@ -419,7 +453,13 @@
                (assoc-in [:notes name :content] content)
                (assoc-in [:notes name :time-updated] time))
        :chsk-send
-       (if-not (:read-only db) [:flo/save [name time content]])})))
+       (if-not (:read-only db) [:flo/save [name time content]])
+       :eval-plugins-js
+       (if (= name plugins-name) content)})))
+
+(rf/reg-event-fx :run-plugin
+  (fn [{:keys [db]} [_ plugin-name]]
+    {:db db :run-plugin plugin-name}))
 
 (rf/reg-event-fx :change
   [(rf/inject-cofx :time)]
@@ -445,7 +485,3 @@
           note-name (:active-note-name db)
           path (str "/history?t=" time-string "#" note-name)]
       {:db db :open-window path})))
-
-(rf/reg-fx :open-window
-  (fn [path]
-    (.open js/window path "_blank")))

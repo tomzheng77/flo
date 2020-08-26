@@ -6,8 +6,6 @@
     [flo.client.editor-ace :as editor-ace]
     [flo.client.editor-excel :as editor-excel]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
-    [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
-    [flo.client.network]
     [flo.client.view :refer [navigation search-bar history-bar]]
     [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
@@ -85,6 +83,15 @@
     :ace-editor-history :ace
     :ace-editor-preview :ace))
 
+(defn instance-type [instance-label]
+  (case instance-label
+    :excel-editor :excel
+    :excel-editor-history :excel
+    :excel-editor-preview :excel
+    :ace-editor :ace
+    :ace-editor-history :ace
+    :ace-editor-preview :ace))
+
 (defn set-instance [instance-label]  
   ; set the active instance
   (swap! state #(assoc % :active-instance instance-label))
@@ -101,12 +108,16 @@
     (when-not (= k instance-label)
       (reset! (:active? instance) false)))
 
-  (case (active-instance-type)
-    :excel (rf/dispatch [:set-table-on true])
-    :ace (rf/dispatch [:set-table-on false])))
+  (case (instance-type instance-label)
+    :excel (rf/dispatch [:set-table-on true false])
+    :ace (rf/dispatch [:set-table-on false false])))
 
 (defn get-instance [instance-label]
   (-> @state :instances instance-label))
+
+(defn get-active-ace []
+  (if (= :ace-editor (:active-instance @state))
+    @(:ace-editor (active-instance))))
 
 (defn view []
   (into []
@@ -122,8 +133,8 @@
    (swap! state #(assoc % :open-note-name (:name note)))
    (let [use-editor (:use-editor open-opts)]
      (case (or use-editor (active-instance-type))
-           :excel (do (set-instance :excel-editor) (editor-excel/open-note (get-instance :excel-editor) note (assoc open-opts :focus true)))
-           :ace (do (set-instance :ace-editor) (editor-ace/open-note (get-instance :ace-editor) note (assoc open-opts :focus true)))))))
+           :excel (do (editor-excel/open-note (get-instance :excel-editor) note (assoc open-opts :focus true)) (set-instance :excel-editor))
+           :ace (do (editor-ace/open-note (get-instance :ace-editor) note (assoc open-opts :focus true)) (set-instance :ace-editor))))))
 
 ; checks if the preview note name is
 ; the same as the open note name
@@ -132,28 +143,32 @@
   ([note] (open-note-after-preview note {}))
   ([note open-opts]
    (if-not (= (:name note) (:preview-note-name @state))
-     (open-note note open-opts))
-     (let [use-editor (:use-editor open-opts)
-           preview-instance (active-instance)]
+     (open-note note open-opts)
+     (let [use-editor (:use-editor open-opts)]
        (case (:active-instance @state)
          :excel-editor-preview
          (if (= use-editor :ace)
            (open-note note open-opts)
-           (do (set-instance :excel-editor) (editor-excel/copy-state (get-instance :excel-editor) preview-instance)))
+           (do (editor-excel/copy-state (get-instance :excel-editor) (get-instance :excel-editor-preview)) 
+               (set-instance :excel-editor)))
          :ace-editor-preview
          (if (= use-editor :excel)
            (open-note note open-opts)
-           (do (set-instance :ace-editor) (editor-ace/copy-state (get-instance :ace-editor) preview-instance)))))))
+           (do (editor-ace/copy-state (get-instance :ace-editor) (get-instance :ace-editor-preview))
+               (set-instance :ace-editor)))
+         (do (console-log "open after preview") (open-note note open-opts)))))))
 
 ; opens the content in the appropriate instance
 ; sets the active instance
 (defn open-history
-  ([content] (open-history content {}))
-  ([content open-opts]
+  ([name content] (open-history name content {}))
+  ([name content open-opts]
    (let [use-editor (:use-editor open-opts)]
      (case (or use-editor (active-instance-type))
-       :excel (do (set-instance :excel-editor-history) (editor-excel/open-note (get-instance :excel-editor-history) {:content content} open-opts))
-       :ace (do (set-instance :ace-editor-history) (editor-ace/open-note (get-instance :ace-editor-history) {:content content} open-opts))))))
+       :excel (do (editor-excel/open-note (get-instance :excel-editor-history) {:name name :content content} open-opts)
+                  (set-instance :excel-editor-history))
+       :ace (do (editor-ace/open-note (get-instance :ace-editor-history) {:name name :content content} open-opts)
+                (set-instance :ace-editor-history))))))
 
 ; closes the preview window and attempts to go back
 ; to the regular editor
@@ -179,8 +194,10 @@
    (swap! state #(assoc % :preview-note-name (:name note)))
    (let [use-editor (:use-editor open-opts)]
      (case (or use-editor (active-instance-type))
-       :excel (do (set-instance :excel-editor-preview) (editor-excel/open-note (get-instance :excel-editor-preview) note open-opts))
-       :ace (do (set-instance :ace-editor-preview) (editor-ace/open-note (get-instance :ace-editor-preview) note open-opts))))))
+       :excel (do (editor-excel/open-note (get-instance :excel-editor-preview) note open-opts)
+                  (set-instance :excel-editor-preview))
+       :ace (do (editor-ace/open-note (get-instance :ace-editor-preview) note open-opts)
+                (set-instance :ace-editor-preview))))))
 
 ; passed down to the active instance
 (defn goto-search 
@@ -224,8 +241,8 @@
 (defn accept-external-change [note]
   (when (= (:name note) (:open-note-name @state))
     (case (:active-instance @state)
-      :excel-editor (editor-ace/focus (active-instance))
-      :ace-editor (editor-ace/focus (active-instance)) nil)))
+      :excel-editor (editor-excel/set-content (active-instance) (:content note))
+      :ace-editor (editor-ace/set-content (active-instance) (:content note)))))
 
 ; sets the use-table attribute to true or false
 ; if changed from state, then switch to the corresponding editor
