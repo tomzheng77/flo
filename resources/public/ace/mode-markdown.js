@@ -2638,7 +2638,7 @@ var MarkdownHighlightRules = function() {
     codeBlockStartRule,
     { // block quote
         token : "string.blockquote", // ---------- [CUSTOM,LISTS] ----------
-        regex : "^\\s*>\\s*(?:[*+\\-$#@&%>]|\\d+\\.)?\\s+",
+        regex : "^\\s*>>\\s*(?:[*+\\-$#@&%>]|\\d+\\.)?\\s+",
         next  : "blockquote"
     }, { // HR * - _
         token : "constant",
@@ -2709,6 +2709,9 @@ var MarkdownHighlightRules = function() {
         }, {
             token: "timestamp",
             regex: "([0-9]{4}-[0-9]{2}-[0-9]{2},? |[0-9]{2}-[0-9]{2},? |)([0-9]{1,2}(:[0-9]{2})?(:[0-9]{2})?( AM| PM|) ?- ?)?([0-9]{1,2}(:[0-9]{2})?(:[0-9]{2})? (AM|PM)|[0-9]{1,2}:[0-9]{2}(:[0-9]{2})?)"
+        }, {
+            token: "duration",
+            regex: "(t|T)\\( *(([0-9]+)?\\.?[0-9]+(d|h|m|s) *)+\\)"
         }, {
             token: "ritsu.amount",
             regex: "<-?([0-9]+)?\\.?[0-9]+>"
