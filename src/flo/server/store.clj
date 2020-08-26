@@ -18,16 +18,7 @@
            (java.util Date)
            (java.time.format DateTimeFormatter)))
 
-(def schema [{:db/ident       :user/email
-              :db/unique      :db.unique/identity
-              :db/valueType   :db.type/string
-              :db/cardinality :db.cardinality/one
-              :db/doc         "email"}
-             {:db/ident       :user/password
-              :db/valueType   :db.type/string
-              :db/cardinality :db.cardinality/one
-              :db/doc         "password hashed in PBKDF2 and serialized in base64"}
-             {:db/ident       :note/name
+(def schema [{:db/ident       :note/name
               :db/unique      :db.unique/identity
               :db/valueType   :db.type/string
               :db/cardinality :db.cardinality/one
@@ -39,15 +30,15 @@
 
 ; connections are long lived and cached by d/connect
 ; hence there is no need to store the connection
-(def started (atom #{}))
+(def started-dbs (atom #{})) ; set of names of databases that have been started
 (defn get-conn []
   (let [db-name @global/db-name
         db-uri (str "datomic:dev://localhost:4334/" db-name)]
     ; when this function is called for the first time
     ; check if the database has been created
-    (locking started
-      (when (not (@started db-name))
-        (swap! started #(conj % db-name))
+    (locking started-dbs
+      (when (not (@started-dbs db-name))
+        (swap! started-dbs #(conj % db-name))
         (when (d/create-database db-uri)
           ; the database has just been created
           ; initialize the schema
@@ -142,6 +133,3 @@
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
-
-(defn new-user [email password]
-  (d/transact-async (get-conn) [{:user/email email :user/password (hash-password password)}]))

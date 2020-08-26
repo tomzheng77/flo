@@ -47,6 +47,7 @@
    :key (. event -key)
    :ctrl-key (. event -ctrlKey)
    :shift-key (. event -shiftKey)
+   :repeat (. event -repeat)
    :original event
    :mouse-x (or (.-pageX event) (:x (touch-0 event)))
    :mouse-y (or (.-pageY event) (:y (touch-0 event)))})

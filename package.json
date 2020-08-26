@@ -3,6 +3,8 @@
     "@cljs-oss/module-deps": "^1.1.1",
     "diff": "^4.0.1",
     "quill-image-resize-module": "^3.0.0",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
     "sharedb": "^1.0.0-beta.23"
   }
 }

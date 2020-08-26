@@ -9,16 +9,17 @@
   :min-lein-version "2.7.1"
 
   :dependencies [[org.clojure/clojure "1.10.0"]
-                 [org.clojure/clojurescript "1.10.520"]
-                 [org.clojure/core.async  "0.4.474"]
+                 [org.clojure/clojurescript "1.10.597"]
+                 [org.clojure/core.async "1.0.567"]
                  [cljsjs/react "16.8.3-0"]
                  [cljsjs/react-dom "16.8.3-0"]
                  [cljsjs/moment "2.24.0-0"]
-                 [reagent "0.8.1"]
-                 [re-frame "0.10.6"]
+                 [reagent "0.10.0"]
+                 [re-frame "0.12.0"]
                  [clj-commons/cljss "1.6.4"]
                  [sablono "0.8.5"]
-                 [ring "1.7.1"]
+                 [joda-time/joda-time "2.10.5"]
+                 [ring "1.8.0"]
                  [ring/ring-defaults "0.3.2"]
                  [http-kit "2.3.0"]
                  [compojure "1.6.1"]
@@ -27,9 +28,9 @@
                  [hiccup "1.0.5"]
                  [garden "1.3.6"]
                  [com.taoensso/nippy "2.14.0"]
-                 [com.taoensso/encore "2.108.1"]
+                 [com.taoensso/encore "2.119.0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [com.taoensso/sente "1.14.0-RC2"]
+                 [com.taoensso/sente "1.15.0"]
                  [com.fzakaria/slf4j-timbre "0.3.12"]
                  [org.slf4j/log4j-over-slf4j "1.7.14"]
                  [org.slf4j/jul-to-slf4j "1.7.14"]
@@ -37,11 +38,14 @@
                  [com.google.guava/guava "27.1-jre"]
                  [org.clojure/data.avl "0.0.18"]
                  [commons-codec/commons-codec "1.12"]
+                 [prismatic/dommy "1.1.0"]
+                 [hipo "0.5.2"]
+                 [testdouble/clojurescript.csv "0.4.5"]
 
-                 ; requires datomic/bin/maven-install
+                 ; requires /flo/datomic/bin/maven-install
                  [com.datomic/datomic-pro "0.9.5786"]]
 
-  :plugins [[lein-figwheel "0.5.19-SNAPSHOT"]
+  :plugins [[lein-figwheel "0.5.19"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
 
   :uberjar-name "flo.jar"
@@ -59,12 +63,7 @@
                 ;; The presence of a :figwheel configuration here
                 ;; will cause figwheel to inject the figwheel client
                 ;; into your build
-                :figwheel {:on-jsload "flo.client.client/on-js-reload"
-                           ;; :open-urls will pop open your application
-                           ;; in the default browser once Figwheel has
-                           ;; started and compiled your application.
-                           ;; Comment this out once it no longer serves you.
-                           :open-urls ["http://localhost:3449/editor"]}
+                :figwheel true
 
                 :compiler {:main flo.client.client
                            :asset-path "js/compiled/out"
@@ -86,7 +85,6 @@
                            :optimizations :simple
                            :pretty-print false
                            :npm-deps {:diff "4.0.1"}
-                           :externs ["externs.js"]
                            :install-deps true}}]}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
@@ -128,19 +126,23 @@
              :server-logfile false
              }
 
+	:repl-options {
+	             ;; If nREPL takes too long to load it may timeout,
+	             ;; increase this to wait longer before timing out.
+	             ;; Defaults to 30000 (30 seconds)
+	             :timeout 120000 }
 
   ;; Setting up nREPL for Figwheel and ClojureScript dev
   ;; Please see:
   ;; https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl
   :profiles {:uberjar {:aot :all}
-             :dev {:dependencies [[binaryage/devtools "0.9.10"]
-                                  [figwheel-sidecar "0.5.19-SNAPSHOT"]
-                                  [cider/piggieback "0.4.0"]]
+             :dev {:dependencies [[binaryage/devtools "1.0.0"]
+                                  [figwheel-sidecar "0.5.19"]
+                                  [cider/piggieback "0.4.2"]]
                    ;; need to add dev source path here to get user.clj loaded
                    :source-paths ["src" "dev"]
                    ;; for CIDER
                    ;; :plugins [[cider/cider-nrepl "0.12.0"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    ;; need to add the compliled assets to the :clean-targets
-                   :clean-targets ^{:protect false} ["resources/public/js/compiled"
-                                                     :target-path]}})
+                   :clean-targets ^{:protect false} ["resources/public/js/compiled" :target-path]}})

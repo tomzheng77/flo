@@ -86,7 +86,7 @@
   (fn [_ [_ time {:keys [notes read-only]} href]]
     (let [active-note-name (or (re-find c/url-hash-regex href) "default")
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)]
-      {:dispatch [:open-note active-note-name]
+      {:dispatch [:request-open-note active-note-name]
        :db
        {:last-shift-press nil ; the time when the shift key was last pressed
         :search           nil ; the active label being searched, nil means no search
@@ -104,6 +104,21 @@
 
         ; amount of history to allow scroll back, in milliseconds
         :history-limit    (* 1000 60 60 24)
+        :status-text      "Welcome to FloNote"
+
+        ; when set, the client will prefer to open each note
+        ; using the table mode
+        ; the client may still show a table even if this is not set
+        :table-on        false
+
+        ; when set, a terminal window should be shown
+        :show-terminal   false
+
+        ; when set, history will not be shown smoothly
+        :fast-mode       false
+
+        ; when set, changes will be saved at regular intervals
+        :autosave        true
 
         ; global navigation query
         ; consists of a name and location part
@@ -154,6 +169,17 @@
 (rf/reg-sub :navigation-index (fn [db v] (:navigation-index db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
+(rf/reg-sub :status-text (fn [db v] (:status-text db)))
+
+(rf/reg-sub :table-on (fn [db v] (:table-on db)))
+(rf/reg-sub :show-terminal (fn [db v] (:show-terminal db)))
+(rf/reg-sub :autosave (fn [db v] (:autosave db)))
+
+(rf/reg-event-db :toggle-table-on (fn [db [_ search]] (update db :table-on not)))
+(rf/reg-event-db :set-table-on (fn [db [_ table-on?]] (assoc db :table-on table-on?)))
+
+(rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
+(rf/reg-event-db :toggle-autosave (fn [db [_ search]] (update db :autosave not)))
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
@@ -205,6 +231,8 @@
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ event]]
     (match event
+      [:chsk/recv [:flo/saved [name timestamp]]]
+      {:db (assoc db :status-text (str "saved " name " at " (.format (js/moment timestamp) "YYYY-MM-DD HH:mm:ss.SSS")))}
       [:chsk/recv [:flo/history note]]
       {:db (assoc-in db [:notes (:active-note-name db) :history (:time-updated note)] (:content note))}
       [:chsk/recv [:flo/refresh note]]
@@ -212,7 +240,7 @@
         {:db db}
         (conj {:db (let [existing-note (or (get-in db [:notes (:name note)]) (new-note (:name note) time))]
                      (-> db (assoc-in [:notes (:name note)] (set/union existing-note note))))}
-              (when (= (:name note) (:active-note-name db)) [:refresh-editor (:content note)])))
+              (when (= (:name note) (:active-note-name db)) [:accept-external-change note])))
       :else {:db db})))
 
 ; x-position of the history button
@@ -229,7 +257,7 @@
   (fn [{:keys [db]} [_ new-url]]
     (let [note-name (re-find c/url-hash-regex new-url)]
       (if note-name
-        {:db db :dispatch [:open-note note-name]}
+        {:db db :dispatch [:request-open-note note-name]}
         {:db db}))))
 
 (rf/reg-event-db :toggle-image-upload
@@ -291,7 +319,7 @@
         new-index (if-not index 0 (clamp 0 max-index (f index)))
         note (nth navs new-index)]
     {:db (assoc db :navigation-index new-index)
-     :reset-editor-ro [(:content note) (:search db) (:selection note)]}))
+     :preview-note [note (:search db)]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
@@ -325,7 +353,7 @@
           search (:search (parse-navigation-query (or navigation (:navigation db))))]
       (if-not note
         {:db (assoc db :search search)}
-        {:db (assoc db :search search) :dispatch [:open-note note false]}))))
+        {:db (assoc db :search search) :dispatch [:request-open-note note false]}))))
 
 ; either navigates to a result of the :navigation query based on :navigation-index
 ; or navigates based on name only
@@ -334,13 +362,13 @@
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
         ; must have already previewed, can copy from read-only editor
-        {:db db :dispatch [:open-note (nth navs (:navigation-index db)) true]}
+        {:db db :dispatch [:request-open-note (nth navs (:navigation-index db)) true]}
 
         ; otherwise navigate to name
         (let [{:keys [name]} (parse-navigation-query (:navigation db))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
-            {:db db :dispatch [:open-note name false]}))))))
+            {:db db :dispatch [:request-open-note name false]}))))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
@@ -352,7 +380,7 @@
 ; copy from the read-only editor whenever possible
 ; otherwise, if the copy-from-ro flag is not set to true
 ; then the editor state will be explicitly set
-(rf/reg-event-fx :open-note
+(rf/reg-event-fx :request-open-note
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ indicator copy-from-ro]]
     (cond
@@ -360,10 +388,10 @@
       (let [name indicator
             existing-note (get (:notes db) name)]
         (if existing-note
-          {:db db :dispatch [:open-note existing-note false]}
+          {:db db :dispatch [:request-open-note existing-note false]}
           (let [a-new-note (new-note name time)]
             {:db       (assoc-in db [:notes name] a-new-note)
-             :dispatch [:open-note a-new-note false]})))
+             :dispatch [:request-open-note a-new-note false]})))
 
       (and (map? indicator) (= :note (:type indicator)))
       (let [note indicator
@@ -377,11 +405,11 @@
                      (assoc :navigation nil)
                      (assoc :navigation-index nil))}]
         (if-not copy-from-ro
-          (assoc fx :reset-editor [(:name note) (:content note) (:search db) (:selection note)])
-          (assoc fx :reset-editor-from-ro (:name note)))))))
+          (assoc fx :open-note [note (:search db)])
+          (assoc fx :open-note-after-preview note))))))
 
 ; called with the editor's contents every second
-(rf/reg-event-fx :editor-tick
+(rf/reg-event-fx :editor-save
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ name content]]
     (if (or (empty? name) (= content (get-in db [:notes name :content])))
@@ -409,11 +437,7 @@
   (fn [{:keys [db]} [_ timestamp]]
     {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
 
-; whether the read-only editor should be shown
-(rf/reg-sub :read-only-visible
-  #(or (:history-cursor %1) (:navigation-index %1)))
-
-(rf/reg-event-fx :open-history
+(rf/reg-event-fx :open-history-page
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]}]
     (let [timestamp (or (:history-cursor db) time)

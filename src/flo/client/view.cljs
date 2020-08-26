@@ -19,7 +19,7 @@
                      :flex-direction "row"}
              :on-mouse-over #(reset! focus? true)
              :on-mouse-out #(reset! focus? false)
-             :on-click #(rf/dispatch [:open-note note false])}
+             :on-click #(rf/dispatch [:request-open-note note false])}
        (if (:ntag note) [:div {:style {:background-color "rgba(0,0,0,0.1)"
                                        :text-align "center"
                                        :font-family "Monospace"
@@ -47,6 +47,7 @@
     {:style {:width 600
              :margin-left "auto"
              :margin-right "auto"
+             :font-family "Monospace"
              :padding 4
              :background-color "#ebedef"}}
     [:div {:style {:height 30 :background-color "white"}}
@@ -91,6 +92,32 @@
              :on-click #(rf/dispatch [:set-history-limit limit-ms])} label])))
 
 
+(defn toggle-button [label event subscription]
+  (let [hover? (r/atom false)
+        press? (r/atom false)]
+    (fn []
+      [:div {:style {:height "24px"
+                     :font-size "11px"
+                     :line-height "24px"
+                     :text-align "center"
+                     :color "rgba(255, 255, 255, 0.5)"
+                     :user-select "none"
+                     :font-family "Monospace"
+                     :cursor "pointer"
+                     :border-right "1px solid rgba(255, 255, 255, 0.3)"
+                     :padding-left 8
+                     :padding-right 8
+                     :background-color
+                     (cond
+                       (or @press? @(rf/subscribe [subscription])) "rgba(0, 0, 0, 0.3)"
+                       @hover? "rgba(0, 0, 0, 0.1)")}
+             :on-mouse-over #(reset! hover? true)
+             :on-mouse-out #(do (reset! hover? false) (reset! press? false))
+             :on-mouse-down #(reset! press? true)
+             :on-mouse-up #(reset! press? false)
+             :on-click #(rf/dispatch [event])} label])))
+
+
 (defn on-drag-start [event drag-btn-x]
   (let [clj-event (to-clj-event event)]
     (rf/dispatch [:start-drag {:mouse-x (:mouse-x clj-event) :btn-x drag-btn-x}])))
@@ -116,8 +143,18 @@
                    :left             drag-btn-x}
            :on-touch-start #(on-drag-start % drag-btn-x)
            :on-mouse-down #(on-drag-start % drag-btn-x)}
-     (.format (js/moment timestamp) "YYYY-MM-DD h:mm:ss a")]))
+     (.format (js/moment timestamp) "YYYY-MM-DD") [:br]
+     (.format (js/moment timestamp) "h:mm:ss a")]))
 
+
+(defn status-display []
+  [:div {:style {:height           "24px"
+                 :text-indent      "10px"
+                 :font-size        "11px"
+                 :line-height      "24px"
+                 :color            "rgba(255, 255, 255, 0.5)"
+                 :font-family      "Monospace"}}
+   @(rf/subscribe [:status-text])])
 
 (defn history-bar []
   [:div {:style {:height           "24px"
@@ -127,12 +164,17 @@
                  :overflow         "hidden"
                  :display          "flex"
                  :align-items      "center"}}
+   [history-limit "5m" (* 1000 60 5)]
    [history-limit "H" (* 1000 60 60)]
    [history-limit "D" (* 1000 60 60 24)]
    [history-limit "W" (* 1000 60 60 24 7)]
    [history-limit "M" (* 1000 60 60 24 30)]
    [history-limit "Y" (* 1000 60 60 24 365)]
    [history-limit "A" (* 1000 60 60 24 10000)]
+   [toggle-button "Table" :toggle-table-on :table-on]
+   [toggle-button "Autosave" :toggle-autosave :autosave]
+   [status-display]
+   ; todo: add realtime switch
    [history-button]])
 
 
