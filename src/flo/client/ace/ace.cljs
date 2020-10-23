@@ -59,11 +59,12 @@
 
 ;; receives a selection configuration object which
 ;; can later be used in set-selection
-;; this may contain raw JS objects that cannot be serialized into EDN
 (defn get-selection [this]
   {:cursor (get-cursor this)
    :ranges (vec (map range-to-map (js->clj (.getAllRanges (.getSelection this)))))})
 
+;; uses the selection configuration object to both
+;; set the regions selected, and also scroll to the cursor
 (defn set-selection [this selection]
   (if selection
     (let [ranges (:ranges selection)

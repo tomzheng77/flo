@@ -4,6 +4,7 @@
     [flo.client.macros :refer [console-log]])
   (:require [clojure.data.avl :as avl]
             [flo.client.editor :as editor]
+            [flo.client.selection :as s]
             [reagent.core :as r]
             [re-frame.core :as rf]
             [re-frame.db :as db]
@@ -87,77 +88,80 @@
 (rf/reg-event-fx
   :initialize
   (fn [_ [_ time {:keys [notes read-only]} href]]
-    (let [active-note-name (or (re-find c/url-hash-regex href) "default")
+    (let [{:keys [note-name range]} (s/parse-url-hash href)
+          init-note-name (or note-name "default")
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)
           plugins-js 
           (:content
             (first
               (filter #(= (:name %) plugins-name) notes)))]
-      {:dispatch [:request-open-note active-note-name]
+      {:dispatch [:request-open-note init-note-name]
        :eval-plugins-js plugins-js
        :db
-       {:search           nil ; the active label being searched, nil means no search
-        :window-width     (.-innerWidth js/window)
+       (s/set-note-selection
+         {:search            nil ; the active label being searched, nil means no search
+          :window-width      (.-innerWidth js/window)
 
-        ; if this flag is set to true
-        ; changes [:flo/save [name content]] will not be sent
-        ; refreshes [:flo/refresh note] will not be handled
-        :read-only        read-only
+          ; if this flag is set to true
+          ; changes [:flo/save [name content]] will not be sent
+          ; refreshes [:flo/refresh note] will not be handled
+          :read-only         read-only
 
-        :drag-btn-width   80
-        :history-cursor   nil
-        :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
-        :drag-start       nil
+          :drag-btn-width    80
+          :history-cursor    nil
+          :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
+          :drag-start        nil
 
-        ; amount of history to allow scroll back, in milliseconds
-        :history-limit    (* 1000 60 60 24)
-        :status-text      "Welcome to FloNote"
+          ; amount of history to allow scroll back, in milliseconds
+          :history-limit     (* 1000 60 60 24)
+          :status-text       "Welcome to FloNote"
 
-        ; when set, the client will prefer to open each note
-        ; using the table mode
-        ; the client may still show a table even if this is not set
-        :table-on        false
+          ; when set, the client will prefer to open each note
+          ; using the table mode
+          ; the client may still show a table even if this is not set
+          :table-on          false
 
-        ; when set, a terminal window should be shown
-        :show-terminal   false
+          ; when set, a terminal window should be shown
+          :show-terminal     false
 
-        ; when set, history will not be shown smoothly
-        :fast-mode       false
+          ; when set, history will not be shown smoothly
+          :fast-mode         false
 
-        ; when set, changes will be saved at regular intervals
-        :autosave        true
+          ; when set, changes will be saved at regular intervals
+          :autosave          true
 
-        ; global navigation query
-        ; consists of a name and location part
-        ; e.g. "fl@fx" means
-        ;   go to the note with either ntag or name "FL"
-        ;   within it search for [FX] or [FX=]
-        ; e.g. "fl@fx=" means
-        ;   ...
-        ;   within it search for [FX=]
-        ; e.g. "fl:100" means
-        ;   ...
-        ;   within it go to line 100
-        :navigation       nil
-        :navigation-index nil ; selected item in navigation box
-        :image-upload     nil
+          ; global navigation query
+          ; consists of a name and location part
+          ; e.g. "fl@fx" means
+          ;   go to the note with either ntag or name "FL"
+          ;   within it search for [FX] or [FX=]
+          ; e.g. "fl@fx=" means
+          ;   ...
+          ;   within it search for [FX=]
+          ; e.g. "fl:100" means
+          ;   ...
+          ;   within it go to line 100
+          :navigation        nil
+          :navigation-index  nil ; selected item in navigation box
+          :image-upload      nil
 
-        ; all the notes organised into a map
-        ; including the current note being edited (stored in :active-note-name)
-        ; each notes has :name, :time-created, :time-updated
-        ; :content is provided by the server initially, then synced from the editor at a fixed interval
-        ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
-        :active-note-name active-note-name
-        :notes            (->> notes-valid
-                               (map #(assoc % :type :note))
-                               (map #(assoc % :selection nil))
-                               (map #(assoc % :ntag (find-ntag (:content %))))
-                               (map #(assoc % :history (avl/sorted-map)))
-                               (map (fn [n] [(:name n) n]))
-                               (into {})
-                               ((fn [m] (if (get m active-note-name) m
-                                 (assoc m active-note-name
-                                   (new-note active-note-name time))))))}})))
+          ; all the notes organised into a map
+          ; including the current note being edited (stored in :active-note-name)
+          ; each notes has :name, :time-created, :time-updated
+          ; :content is provided by the server initially, then synced from the editor at a fixed interval
+          ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
+          :active-note-name  init-note-name
+          :notes             (->> notes-valid
+                                  (map #(assoc % :type :note))
+                                  (map #(assoc % :selection nil))
+                                  (map #(assoc % :ntag (find-ntag (:content %))))
+                                  (map #(assoc % :history (avl/sorted-map)))
+                                  (map (fn [n] [(:name n) n]))
+                                  (into {})
+                                  ((fn [m] (if (get m init-note-name) m
+                                    (assoc m init-note-name
+                                       (new-note init-note-name time))))))}
+         init-note-name range)})))
 
 (defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
 (defn active-time-updated [db] (get-in db [:notes (:active-note-name db) :time-updated]))
@@ -428,7 +432,7 @@
       (and (map? indicator) (= :note (:type indicator)))
       (let [note indicator
             fx {:set-title (:name note)
-                :set-hash (:name note)
+                :set-hash (str (:name note) (s/note-selection-suffix note))
                 :db (-> db
                      (assoc :active-note-name (:name note))
                      (assoc :drag-start nil)
@@ -477,81 +481,14 @@
   (fn [{:keys [db]} [_ timestamp]]
     {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
 
-;; converts a selection range into an accurate
-;; coordinate-to-coordinate string format
-;; i.e. "${start-row},${start-column}-${end-row},${end-column}"
-(defn range-to-str [range]
-  (str (:start-row range) ","
-       (:start-column range) "-"
-       (:end-row range) ","
-       (:end-column range)))
-
-;; converts from five different types of string representations
-;; into a selection range, the formats are:
-;; "${start-and-end-row}" (single row)
-;; "${start-row}-${end-row}" (start row to end row)
-;; "${start-row},${start-column}-${end-row}" (start coordinate to end row)
-;; "${start-row}-${end-row},${end-column}" (start row to end coordinate)
-;; "${start-row},${start-column}-${end-row},${end-column}" (start coordinate to end coordinate)
-(def infinity 2147483647)
-(defn str-to-range [str]
-  (cond
-    (re-matches #"[0-9]+" str)
-    (let [start-and-end-row (js/parseInt str)]
-      {:start-row start-and-end-row
-       :start-column 0
-       :end-row start-and-end-row
-       :end-column infinity})
-
-    (re-matches #"[0-9]+-[0-9]+" str)
-    (let [[a b] (str/split str #"-")
-          start-row (js/parseInt a)
-          end-row (js/parseInt b)]
-      {:start-row start-row
-       :start-column 0
-       :end-row end-row
-       :end-column infinity})
-
-    (re-matches #"[0-9]+,[0-9]+-[0-9]+" str)
-    (let [[a b c] (str/split str #"[,-]")
-          start-row (js/parseInt a)
-          start-column (js/parseInt b)
-          end-row (js/parseInt c)]
-      {:start-row start-row
-       :start-column start-column
-       :end-row end-row
-       :end-column infinity})
-
-    (re-matches #"[0-9]+-[0-9]+,[0-9]+" str)
-    (let [[a b c] (str/split str #"[,-]")
-          start-row (js/parseInt a)
-          end-row (js/parseInt b)
-          end-column (js/parseInt c)]
-      {:start-row start-row
-       :start-column 0
-       :end-row end-row
-       :end-column end-column})
-
-    (re-matches #"[0-9]+,[0-9]+-[0-9]+,[0-9]+" str)
-    (let [[a b c d] (str/split str #"[,-]")
-          start-row (js/parseInt a)
-          start-column (js/parseInt b)
-          end-row (js/parseInt c)
-          end-column (js/parseInt d)]
-      {:start-row start-row
-       :start-column start-column
-       :end-row end-row
-       :end-column end-column})))
-
 ; event handler for whenever the hash part of the URL has been changed
 ; is also called upon application startup
 ; @new-url: the complete url that is currently open
 (rf/reg-event-fx :hash-change
   (fn [{:keys [db]} [_ new-url]]
-    (let [hash-text (re-find c/url-hash-regex new-url)]
-      (if hash-text
-        {:db db :dispatch [:request-open-note hash-text]}
-        {:db db}))))
+    (let [{:keys [note-name range]} (s/parse-url-hash new-url)]
+      (if-not note-name {:db db}
+        {:db (s/set-note-selection db note-name range) :dispatch [:request-open-note note-name]}))))
 
 ; opens up an archive page which displays the same content
 ; as is currently shown in the editor, while also preserving
@@ -562,7 +499,5 @@
     (let [timestamp (or (:history-cursor db) time)
           time-string (.format (js/moment timestamp) "YYYY-MM-DDTHH:mm:ss")
           note-name (:active-note-name db)
-          selected-range (first (:ranges (:selection (get (:notes db) note-name))))
-          selected-range-str (if selected-range (str ":" (range-to-str selected-range)))
-          path (str "/history?t=" time-string "#" note-name)]
+          path (str "/history?t=" time-string "#" note-name (s/note-selection-suffix (get (:notes db) note-name)))]
       {:db db :open-window path})))
