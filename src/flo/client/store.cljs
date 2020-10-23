@@ -73,6 +73,8 @@
    :selection nil
    :ntag nil})
 
+;; parses the text which the user entered into the navigation box
+;; into separate components, such as name and search keyword
 (defn parse-navigation-query [query]
   (if-not query
     {:name nil :search nil}
