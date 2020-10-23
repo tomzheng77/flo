@@ -133,8 +133,8 @@
    (swap! state #(assoc % :open-note-name (:name note)))
    (let [use-editor (:use-editor open-opts)]
      (case (or use-editor (active-instance-type))
-           :excel (do (editor-excel/open-note (get-instance :excel-editor) note (assoc open-opts :focus true)) (set-instance :excel-editor))
-           :ace (do (editor-ace/open-note (get-instance :ace-editor) note (assoc open-opts :focus true)) (set-instance :ace-editor))))))
+           :excel (do (editor-excel/open-note (get-instance :excel-editor) note (assoc open-opts :focus? true)) (set-instance :excel-editor))
+           :ace (do (editor-ace/open-note (get-instance :ace-editor) note (assoc open-opts :focus? true)) (set-instance :ace-editor))))))
 
 ; checks if the preview note name is
 ; the same as the open note name
