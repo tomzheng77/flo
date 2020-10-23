@@ -30,6 +30,9 @@
            (= (:end-row range) (:start-row range))
            (= (:end-column range) infinity))
       (str (:start-row range))
+      (and (= (:end-row range) (:start-row range))
+           (= (:end-column range) (:start-column range)))
+      (str (:start-row range) "," (:start-column range))
       (and (= (:start-column range) 0)
            (= (:end-column range) infinity))
       (str (:start-row range) "-" (:end-row range))
@@ -48,14 +51,21 @@
     (re-matches #"[0-9]+" str)
     (let [a (js/parseInt str)] {:start-row a})
 
+    (re-matches #"[0-9]+,[0-9]+" str)
+    (let [[a b] (str/split str #",")]
+      {:start-row a :start-column b :end-row a :end-column b})
+
     (re-matches #"[0-9]+-[0-9]+" str)
-    (let [[a b] (str/split str #"-")] {:start-row a :end-row b})
+    (let [[a b] (str/split str #"-")]
+      {:start-row a :end-row b})
 
     (re-matches #"[0-9]+,[0-9]+-[0-9]+" str)
-    (let [[a b c] (str/split str #"[,-]")] {:start-row a :start-column b :end-row c})
+    (let [[a b c] (str/split str #"[,-]")]
+      {:start-row a :start-column b :end-row c})
 
     (re-matches #"[0-9]+-[0-9]+,[0-9]+" str)
-    (let [[a b c] (str/split str #"[,-]")] {:start-row a :end-row b :end-column c})
+    (let [[a b c] (str/split str #"[,-]")]
+      {:start-row a :end-row b :end-column c})
 
     (re-matches #"[0-9]+,[0-9]+-[0-9]+,[0-9]+" str)
     (let [[a b c d] (str/split str #"[,-]")]
@@ -67,6 +77,7 @@
 ;; converts from five different types of string representations
 ;; into a selection range, the formats are:
 ;; "${start-and-end-row}" (single row)
+;; "${cursor-row}-${cursor-column}" (equal start and end coordinates)
 ;; "${start-row}-${end-row}" (start row to end row)
 ;; "${start-row},${start-column}-${end-row}" (start coordinate to end row)
 ;; "${start-row}-${end-row},${end-column}" (start row to end coordinate)
