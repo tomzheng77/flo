@@ -109,7 +109,6 @@
         (editor/preview-note note {:search search :use-editor :excel})
         (editor/preview-note note {:search search :use-editor :ace}))))
 
-
 (add-watches-db :open-history [[:active-note-name] [:history-cursor] active-history [:history-direction]]
   (fn [_ _ _ [name timestamp history direction]]
     (when-not timestamp
@@ -120,10 +119,6 @@
           (if (prefer-excel content)
             (editor/open-history name content {:search @(rf/subscribe [:search]) :use-editor :excel})
             (editor/open-history name content {:search @(rf/subscribe [:search]) :use-editor :ace})))))))
-
-; (add-watches-db :disable-edit [[:search] [:history-cursor] [:navigation]]
-;   (fn [_ _ _ [search drag-timestamp navigation]]
-;     (editor/set-editable (nil? (or search drag-timestamp navigation)))))
 
 (add-watch-db :goto-search [:search]
   (fn [_ _ _ search]

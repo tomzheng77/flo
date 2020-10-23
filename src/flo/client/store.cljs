@@ -69,7 +69,7 @@
    :time-changed time
    :content ""
    :history (avl/sorted-map)
-   :selection {:row 0 :column 0}
+   :selection nil
    :ntag nil})
 
 (defn parse-navigation-query [query]
@@ -150,7 +150,7 @@
         :active-note-name active-note-name
         :notes            (->> notes-valid
                                (map #(assoc % :type :note))
-                               (map #(assoc % :selection {:row 0 :column 0}))
+                               (map #(assoc % :selection nil))
                                (map #(assoc % :ntag (find-ntag (:content %))))
                                (map #(assoc % :history (avl/sorted-map)))
                                (map (fn [n] [(:name n) n]))
