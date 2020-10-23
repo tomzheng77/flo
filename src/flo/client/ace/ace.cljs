@@ -90,12 +90,6 @@
         (.-row (.-end range))
         "    "))))
 
-(defn apply-deltas [this deltas]
-  (set! (.-autoChange this) true)
-  (let [doc (.getDocument (.getSession this))]
-    (.applyDeltas doc (clj->js deltas)))
-  (set! (.-autoChange this) false))
-
 (defn show-clickables [this]
   (let [$clickable-layer (.-clickableLayer this)]
     (if $clickable-layer
@@ -105,7 +99,3 @@
   (let [$clickable-layer (.-clickableLayer this)]
     (if $clickable-layer
       (.hide $clickable-layer))))
-
-(defn focus-if-not-search [this]
-  (when (nil? (.-searchBox this))
-    (.focus this)))
