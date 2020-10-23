@@ -477,6 +477,72 @@
   (fn [{:keys [db]} [_ timestamp]]
     {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
 
+;; converts a selection range into an accurate
+;; coordinate-to-coordinate string format
+;; i.e. "${start-row},${start-column}-${end-row},${end-column}"
+(defn range-to-str [range]
+  (str (:start-row range) ","
+       (:start-column range) "-"
+       (:end-row range) ","
+       (:end-column range)))
+
+;; converts from five different types of string representations
+;; into a selection range, the formats are:
+;; "${start-and-end-row}" (single row)
+;; "${start-row}-${end-row}" (start row to end row)
+;; "${start-row},${start-column}-${end-row}" (start coordinate to end row)
+;; "${start-row}-${end-row},${end-column}" (start row to end coordinate)
+;; "${start-row},${start-column}-${end-row},${end-column}" (start coordinate to end coordinate)
+(def infinity 2147483647)
+(defn str-to-range [str]
+  (cond
+    (re-matches #"[0-9]+" str)
+    (let [start-and-end-row (js/parseInt str)]
+      {:start-row start-and-end-row
+       :start-column 0
+       :end-row start-and-end-row
+       :end-column infinity})
+
+    (re-matches #"[0-9]+-[0-9]+" str)
+    (let [[a b] (str/split str #"-")
+          start-row (js/parseInt a)
+          end-row (js/parseInt b)]
+      {:start-row start-row
+       :start-column 0
+       :end-row end-row
+       :end-column infinity})
+
+    (re-matches #"[0-9]+,[0-9]+-[0-9]+" str)
+    (let [[a b c] (str/split str #"[,-]")
+          start-row (js/parseInt a)
+          start-column (js/parseInt b)
+          end-row (js/parseInt c)]
+      {:start-row start-row
+       :start-column start-column
+       :end-row end-row
+       :end-column infinity})
+
+    (re-matches #"[0-9]+-[0-9]+,[0-9]+" str)
+    (let [[a b c] (str/split str #"[,-]")
+          start-row (js/parseInt a)
+          end-row (js/parseInt b)
+          end-column (js/parseInt c)]
+      {:start-row start-row
+       :start-column 0
+       :end-row end-row
+       :end-column end-column})
+
+    (re-matches #"[0-9]+,[0-9]+-[0-9]+,[0-9]+" str)
+    (let [[a b c d] (str/split str #"[,-]")
+          start-row (js/parseInt a)
+          start-column (js/parseInt b)
+          end-row (js/parseInt c)
+          end-column (js/parseInt d)]
+      {:start-row start-row
+       :start-column start-column
+       :end-row end-row
+       :end-column end-column})))
+
 ; event handler for whenever the hash part of the URL has been changed
 ; is also called upon application startup
 ; @new-url: the complete url that is currently open
@@ -496,5 +562,7 @@
     (let [timestamp (or (:history-cursor db) time)
           time-string (.format (js/moment timestamp) "YYYY-MM-DDTHH:mm:ss")
           note-name (:active-note-name db)
+          selected-range (first (:ranges (:selection (get (:notes db) note-name))))
+          selected-range-str (if selected-range (str ":" (range-to-str selected-range)))
           path (str "/history?t=" time-string "#" note-name)]
       {:db db :open-window path})))
