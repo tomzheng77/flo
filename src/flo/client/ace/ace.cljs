@@ -45,12 +45,24 @@
   (let [cursor (.getCursor (.getSelection this))]
     (.insert (.-session this) cursor text)))
 
-; receives a selection configuration object which
-; can later be used in set-selection
-; this may contain raw JS objects that cannot be serialized into EDN
+;; converts a cljs map into an ace.Range
+(defn map-to-range [m]
+  (let [{:keys [start-row start-column end-row end-column]} m]
+    (new js/ace.Range start-row start-column end-row end-column)))
+
+;; converts an ace.Range into a cljs map
+(defn range-to-map [r]
+  {:start-row (.. r -start -row)
+   :start-column (.. r -start -column)
+   :end-row (.. r -end -row)
+   :end-column (.. r -end -column)})
+
+;; receives a selection configuration object which
+;; can later be used in set-selection
+;; this may contain raw JS objects that cannot be serialized into EDN
 (defn get-selection [this]
   {:cursor (get-cursor this)
-   :ranges (map #(.clone %) (js->clj (.getAllRanges (.getSelection this))))})
+   :ranges (vec (map range-to-map (js->clj (.getAllRanges (.getSelection this)))))})
 
 (defn set-selection [this selection]
   (if selection
@@ -66,7 +78,7 @@
       (.gotoLine this (+ row 1) col true)
       (if cursor (.moveCursorToPosition (.getSelection this) (clj->js cursor)))
       (doseq [range ranges]
-        (.addRange (.getSelection this) (.clone range) false))
+        (.addRange (.getSelection this) (map-to-range range) false))
       (set! (.-autoChangeSelection this) false))))
 
 ; [TAG-SYNTAX]
