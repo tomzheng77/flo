@@ -156,7 +156,7 @@
            (open-note note open-opts)
            (do (editor-ace/copy-state (get-instance :ace-editor) (get-instance :ace-editor-preview))
                (set-instance :ace-editor)))
-         (do (console-log "open after preview") (open-note note open-opts)))))))
+         (do (console-log "cannot open after preview") (open-note note open-opts)))))))
 
 ; opens the content in the appropriate instance
 ; sets the active instance
@@ -199,17 +199,23 @@
        :ace (do (editor-ace/open-note (get-instance :ace-editor-preview) note open-opts)
                 (set-instance :ace-editor-preview))))))
 
-; passed down to the active instance
+; delegate goto-search to the active instance
 (defn goto-search 
   ([keyword] (goto-search keyword false))
   ([keyword reverse?]
    (case (:active-instance @state)
-     :excel-editor (editor-ace/goto-search (active-instance) keyword reverse?)
-     :excel-editor-history (editor-ace/goto-search (active-instance) keyword reverse?)
-     :excel-editor-preview (editor-ace/goto-search (active-instance) keyword reverse?)
+     :excel-editor (editor-excel/goto-search (active-instance) keyword reverse?)
+     :excel-editor-history (editor-excel/goto-search (active-instance) keyword reverse?)
+     :excel-editor-preview (editor-excel/goto-search (active-instance) keyword reverse?)
      :ace-editor (editor-ace/goto-search (active-instance) keyword reverse?)
      :ace-editor-history (editor-ace/goto-search (active-instance) keyword reverse?)
      :ace-editor-preview (editor-ace/goto-search (active-instance) keyword reverse?))))
+
+; delegate goto-selection to the active instance only if it is
+; the ace editor preview mode
+(defn preview-goto-selection [selection]
+  (case (:active-instance @state)
+    :ace-editor-preview (editor-ace/goto-selection (active-instance) selection) nil))
 
 ; inserts an image with the specified id
 (defn insert-image [image-id]

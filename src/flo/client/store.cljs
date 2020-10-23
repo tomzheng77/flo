@@ -75,16 +75,27 @@
 
 ;; parses the text which the user entered into the navigation box
 ;; into separate components, such as name and search keyword
+;; by default, the query is the name (or abbreviation) of a note
+;; if it contains a '@', then the part after the '@' will be treated as a search
+;; if it contains a ':', then the part after the ':' will be treated as a selection range
 (defn parse-navigation-query [query]
   (if-not query
-    {:name nil :search nil}
-    (let [[name search] (str/split query #"@" 2)]
-      {:name name
-       :search
-       (if (not-empty search)
+    {:name nil :search nil :range nil}
+    (cond
+      (re-find #"@" query)
+      (let [[name search] (str/split query #"@" 2)]
+        {:name name
+         :search
          (if (str/starts-with? search "!")
-           (str/upper-case search)
-           (str (str/upper-case search) "=")))})))
+             (str/upper-case search)
+             (str (str/upper-case (rest search)) "="))})
+
+      (re-find #":" query)
+      (let [[name range-str] (str/split query #":" 2)]
+        {:name name
+         :range (s/str-to-range range-str)})
+
+      :else {:name query})))
 
 (def name-length-limit 100)
 (rf/reg-event-fx
@@ -102,6 +113,7 @@
        :db
        (s/set-note-selection
          {:search            nil ; the active label being searched, nil means no search
+          :preview-selection nil
           :window-width      (.-innerWidth js/window)
 
           ; if this flag is set to true
@@ -173,6 +185,7 @@
     (clamp (- updated (:history-limit db)) updated (active-time-created db))))
 
 (rf/reg-sub :search (fn [db v] (:search db)))
+(rf/reg-sub :preview-selection (fn [db v] (:preview-selection db)))
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
 (rf/reg-sub :drag-btn-width (fn [db v] (:drag-btn-width db)))
 (rf/reg-sub :history-cursor (fn [db v] (:history-cursor db)))
@@ -320,6 +333,7 @@
 (rf/reg-event-fx :navigation-input
   (fn [{:keys [db]} [_ new-input]]
     (let [search-subquery (:search (parse-navigation-query new-input))
+          range-subquery (:range (parse-navigation-query new-input))
           old-input (:navigation db)
           old-name (:name (parse-navigation-query old-input))
           new-name (:name (parse-navigation-query new-input))
@@ -334,7 +348,8 @@
           new-db (assoc db :navigation new-input
                            ; if navigation is turned off or the name has been changed, reset the index
                            :navigation-index (if (= old-name new-name) old-index new-index)
-                           :search (or (and search-subquery (str/upper-case search-subquery))
+                           :preview-selection (s/range-to-selection range-subquery)
+                           :search (or (if search-subquery (str/upper-case search-subquery))
                                        (:search db)))]
       (if (:navigation new-db)
         {:db new-db}

@@ -101,8 +101,11 @@
             range (str-to-range range-str)]
         {:note-name note-name :range range}))))
 
+(defn range-to-selection [in-range]
+  (let [range (fix-range in-range)]
+    {:cursor {:row (:start-row range) :column (:start-column range)}
+     :ranges [range]}))
+
 (defn set-note-selection [db note-name range]
   (if-not range db
-    (-> db
-        (assoc-in [:notes note-name :selection :cursor] {:row (:start-row range) :column (:start-column range)})
-        (assoc-in [:notes note-name :selection :ranges] [range]))))
+     (assoc-in db [:notes note-name :selection] (range-to-selection range))))

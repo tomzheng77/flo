@@ -103,6 +103,10 @@
       (editor/open-note note {:search search :use-editor :excel})
       (editor/open-note note {:search search :use-editor :ace}))))
 
+(add-watch-db :preview-goto-selection [:preview-selection]
+  (fn [_ _ _ selection]
+    (editor/preview-goto-selection selection)))
+
 (rf/reg-fx :preview-note
   (fn [[note search]]
     (if (prefer-excel (:content note))
@@ -129,10 +133,13 @@
     (let [use-editor (if table-on? :excel :ace)]
       (editor/change-editor use-editor))))
 
+; HACK(tomz): if the preview is closed here before
+; editor/open-note-after-preview is called, then the
+; preview window state won't be copied
 (add-watch-db :preview-closed [:navigation-index]
   (fn [_ _ _ navigation-index]
     (when (nil? navigation-index)
-      (editor/close-preview))))
+      (js/setTimeout editor/close-preview 10))))
 
 (def shift-interval 100)
 (defn on-hit-shift []
