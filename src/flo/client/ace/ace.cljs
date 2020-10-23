@@ -1,7 +1,8 @@
 (ns flo.client.ace.ace
   (:require [clojure.set :as set]
             [clojure.string :as str]
-            [re-frame.core :as rf]))
+            [re-frame.core :as rf]
+            [flo.client.selection :as s]))
 
 (defn $ [& args] (apply js/$ args))
 
@@ -47,21 +48,24 @@
 
 ;; converts a cljs map into an ace.Range
 (defn map-to-range [m]
-  (let [{:keys [start-row start-column end-row end-column]} m]
+  (let [{:keys [start-row start-column end-row end-column]} (s/fix-range m)]
     (new js/ace.Range start-row start-column end-row end-column)))
 
 ;; converts an ace.Range into a cljs map
-(defn range-to-map [r]
+(defn range-to-map [r edit-session]
   {:start-row (.. r -start -row)
    :start-column (.. r -start -column)
    :end-row (.. r -end -row)
-   :end-column (.. r -end -column)})
+   :end-column
+   (let [cval (.. r -end -column)]
+     (if (= cval (count (.getLine edit-session (.. r -end -row))))
+       s/infinity cval))})
 
 ;; receives a selection configuration object which
 ;; can later be used in set-selection
 (defn get-selection [this]
   {:cursor (get-cursor this)
-   :ranges (vec (map range-to-map (js->clj (.getAllRanges (.getSelection this)))))})
+   :ranges (vec (map #(range-to-map % (.getSession this)) (js->clj (.getAllRanges (.getSelection this)))))})
 
 ;; uses the selection configuration object to both
 ;; set the regions selected, and also scroll to the cursor
