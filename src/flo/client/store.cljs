@@ -15,10 +15,6 @@
 
 (def plugins-name "plugins.js")
 
-(defn remove-nils [record]
-  (apply dissoc record
-    (for [[k v] record :when (nil? v)] k)))
-
 ; determines a tag for the note
 (defn find-ntag [content]
   (let [search (re-find #"\[&[A-Z0-9]+=\]" content)]
@@ -193,6 +189,10 @@
     {:db (assoc db :table-on table-on?) :change-editor table-on?}
     {:db (assoc db :table-on table-on?)})))
 
+(rf/reg-event-db :toggle-image-upload
+  (fn [db _]
+    (update db :image-upload not)))
+
 (rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
 (rf/reg-event-db :toggle-autosave (fn [db [_ search]] (update db :autosave not)))
 
@@ -214,7 +214,7 @@
 (rf/reg-event-db :window-resize (fn [db [_ width _]] (assoc db :window-width width)))
 (rf/reg-event-db :start-drag (fn [db [_ item]] (assoc db :drag-start item)))
 
-; whenever the mouse has been moved
+; event handler called whenever the user has moved the mouse
 (rf/reg-event-db :mouse-move
   (fn [db [_ event]]
     (let [drag-start (:drag-start db)]
@@ -259,7 +259,7 @@
       (or (> (:time-updated existing-note) time)
           (> (:time-changed existing-note) time)))))
 
-; whenever a message has been received from sente
+; whenever a message has been received from the backend via sente
 (rf/reg-event-fx
   :chsk-event
   [(rf/inject-cofx :time)]
@@ -286,17 +286,6 @@
       (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-history-start db))
         (- (:window-width db) (:drag-btn-width db)))
           (inc (- (active-time-updated db) (active-time-history-start db)))))))
-
-(rf/reg-event-fx :hash-change
-  (fn [{:keys [db]} [_ new-url]]
-    (let [note-name (re-find c/url-hash-regex new-url)]
-      (if note-name
-        {:db db :dispatch [:request-open-note note-name]}
-        {:db db}))))
-
-(rf/reg-event-db :toggle-image-upload
-  (fn [db _]
-    (update db :image-upload not)))
 
 ; turns navigation on/off
 (rf/reg-event-fx :toggle-navigation
@@ -359,6 +348,7 @@
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
 (rf/reg-event-fx :navigate-down (fn [{:keys [db]} _] (update-navigation-index-fx db inc)))
 
+; produces the current time in milliseconds since epoch
 (rf/reg-cofx :time
   (fn [coeffects _]
     (assoc coeffects :time (+ (.getTime (js.Date.)) (js/Math.random)))))
@@ -373,6 +363,7 @@
       (types "reference") {:dispatch [:navigate-direct (-> text c/remove-brackets)]}
       (types "link") {:open-window text})))
 
+; opens up a new window with the URL provided
 (rf/reg-fx :open-window
   (fn [url]
     (js/window.open url "_blank")))
@@ -395,7 +386,9 @@
   (fn [{:keys [db]} [_ time]]
     (let [navs (navigation-list db)]
       (if (:navigation-index db)
-        ; must have already previewed, can copy from read-only editor
+        ; since a navigation index is stored, the user must have pressed
+        ; the down button in order to render a preview, therefore the note can be
+        ; displayed by copying from the preview editor
         {:db db :dispatch [:request-open-note (nth navs (:navigation-index db)) true]}
 
         ; otherwise navigate to name
@@ -411,12 +404,17 @@
       (for [[index note] (map-indexed vector (navigation-list db))]
         (assoc note :focus (= index at))))))
 
-; copy from the read-only editor whenever possible
-; otherwise, if the copy-from-ro flag is not set to true
-; then the editor state will be explicitly set
+;; prepares a note to be opened in the client
+;; the indicator can be either the name of a note or a note object itself
+;; such that :open-note is called at the end
+;;
+;; if enable-copy-preview is set to true, then it will ask
+;; the client to directly copy the state from the preview editor
+;; into the actual editor, if it is possible ot open the aforementioned
+;; note this way. (this will preserve information such as scroll pos)
 (rf/reg-event-fx :request-open-note
   [(rf/inject-cofx :time)]
-  (fn [{:keys [db time]} [_ indicator copy-from-ro]]
+  (fn [{:keys [db time]} [_ indicator enable-copy-preview]]
     (cond
       (string? indicator)
       (let [name indicator
@@ -438,11 +436,11 @@
                      (assoc :history-direction nil)
                      (assoc :navigation nil)
                      (assoc :navigation-index nil))}]
-        (if-not copy-from-ro
+        (if-not enable-copy-preview
           (assoc fx :open-note [note (:search db)])
           (assoc fx :open-note-after-preview note))))))
 
-; called with the editor's contents every second
+; saves the content of a note if it has been changed
 (rf/reg-event-fx :editor-save
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ name content]]
@@ -461,6 +459,8 @@
   (fn [{:keys [db]} [_ plugin-name]]
     {:db db :run-plugin plugin-name}))
 
+; updates the time-changed attribute of the active not
+; to become the current time
 (rf/reg-event-fx :change
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]}]
@@ -471,12 +471,25 @@
   (fn [db [_ selection]]
     (assoc-in db [:notes (:active-note-name db) :selection] selection)))
 
-; used only to trigger sending the :flo/seek event to server
+; upon the :history-cursor is changed, send a :flo/seek event to server
 (add-watch-db :drag-changed-internal [:history-cursor] #(rf/dispatch [:drag-changed %4]))
 (rf/reg-event-fx :drag-changed
   (fn [{:keys [db]} [_ timestamp]]
     {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
 
+; event handler for whenever the hash part of the URL has been changed
+; is also called upon application startup
+; @new-url: the complete url that is currently open
+(rf/reg-event-fx :hash-change
+  (fn [{:keys [db]} [_ new-url]]
+    (let [hash-text (re-find c/url-hash-regex new-url)]
+      (if hash-text
+        {:db db :dispatch [:request-open-note hash-text]}
+        {:db db}))))
+
+; opens up an archive page which displays the same content
+; as is currently shown in the editor, while also preserving
+; the selection area
 (rf/reg-event-fx :open-history-page
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]}]
