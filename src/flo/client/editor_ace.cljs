@@ -95,14 +95,23 @@
   ([{:keys [ace-editor]} {:keys [name content selection]} {:keys [search focus?]}]
    (set! (.-autoChangeSelection @ace-editor) true)
    (if (str/ends-with? name ".js")
-     (do (console-log "change to JS mode") (.setMode (.-session @ace-editor) "ace/mode/javascript"))
-     (do (console-log "change to MD mode") (.setMode (.-session @ace-editor) "ace/mode/markdown")))
+     (do (.setMode (.-session @ace-editor) "ace/mode/javascript"))
+     (do (.setMode (.-session @ace-editor) "ace/mode/markdown")))
+   ; HACK(tom): spamming resizes and adding a delay seems to fix the issue of
+   ; the editor size not changing
+   ; the assumption is that somewhere else also uses a setTimeout to set
+   ; the size of the container of the editor, which may or may not occur
+   ; before this call to setTimeout. hence the associated 5ms delay
+   (.resize @ace-editor true)
    (ace/set-text @ace-editor (or content ""))
+   (.resize @ace-editor true)
    (js/setTimeout
-     #(do (ace/set-selection @ace-editor selection)
+     #(do (.resize @ace-editor true)
+          (ace/set-selection @ace-editor selection)
           (if search (ace/navigate @ace-editor search))
           (if focus? (.focus @ace-editor))
-          (set! (.-autoChangeSelection @ace-editor) false)) 0)))
+          (set! (.-autoChangeSelection @ace-editor) false)
+          (.resize @ace-editor true)) 5)))
 
 (defn copy-state [this another]
   (let [{:keys [ace-editor]} this another-ace-editor (another :ace-editor)]
