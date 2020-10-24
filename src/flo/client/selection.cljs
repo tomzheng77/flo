@@ -88,11 +88,22 @@
       (update :start-row dec)
       (update :end-row dec)))
 
+;; checks if the specified range is valid, that is,
+;; if its start-row is non-negative and
+;; its end coordinates are not before its start coordinates
+(defn is-valid [range-in]
+  (let [range (fix-range range-in)]
+    (and (>= (:start-row range) 0)
+         (or (> (:end-row range) (:start-row range))
+             (and (= (:end-row range) (:start-row range))
+                  (>= (:end-column range) (:start-column range)))))))
+
 ;; produces a suffix which represents the selected area of the note
 ;; or nil if a selection range does not exist
 (defn note-selection-suffix [note]
   (let [selected-range (first (:ranges (:selection note)))]
-    (if selected-range (str ":" (range-to-str selected-range)))))
+    (if (is-valid selected-range)
+      (str ":" (range-to-str selected-range)))))
 
 (defn parse-url-hash [url]
   (let [hash-text (re-find c/url-hash-regex url)]
