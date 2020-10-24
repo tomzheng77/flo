@@ -1,6 +1,6 @@
 (ns flo.client.editor.ace.ace
   (:require [clojure.set :as set]
-            [flo.client.selection :as s]))
+            [flo.client.model.selection :as s]))
 
 ;; helper function for using jQuery
 (defn $ [& args] (apply js/$ args))

@@ -4,7 +4,7 @@
     [flo.client.macros :refer [console-log]])
   (:require [clojure.data.avl :as avl]
             [flo.client.editor.editor :as editor]
-            [flo.client.selection :as s]
+            [flo.client.model.selection :as s]
             [reagent.core :as r]
             [re-frame.core :as rf]
             [re-frame.db :as db]

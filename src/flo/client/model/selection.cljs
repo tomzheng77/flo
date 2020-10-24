@@ -1,4 +1,4 @@
-(ns flo.client.selection
+(ns flo.client.model.selection
   (:require [clojure.string :as str]
             [flo.client.constants :as c]))
 
@@ -14,6 +14,7 @@
 ;;;; a selection object is a tuple of cursor and range
 ;;;; the cursor is a row-col coordinate
 ;;;; the range is a pair of row-col coordinates for start and end
+(comment {:cursor {:row 3 :column 2} :ranges [{:start-row 1 :start-column 3 :end-row 3 :end-column 5}]})
 
 ;;;; example of a cursor at line 4, column 2
 ;;;; note that rows are stored as 0-indexed, but should be
