@@ -53,13 +53,24 @@
    :mouse-y (or (.-pageY event) (:y (touch-0 event)))})
 
 ; https://stackoverflow.com/questions/18735665/how-can-i-get-the-positions-of-regex-matches-in-clojurescript
-(defn re-pos [re s]
+; matches a regex pattern to the string provided and
+; produces a list of pairs, each contains the starting index and the matched substring
+(defn- re-pos [re s]
   (let [re (js/RegExp. (.-source re) "gms")]
     (loop [res {}]
       (if-let [m (.exec re s)]
-        (recur (assoc res (.-index m) (first m)))
-        res))))
+        (recur (assoc res (.-index m) (first m))) res))))
 
+;; matches a pattern against the text
+;; and returns a list of comprehensive match objects
+;; representing all of the occurrences inside text
+;;
+;; each object contains:
+;; :index, the position of the start of the match
+;; :length, the length of the match within the text
+;; :start, same as :index
+;; :end, equal to :index + :length
+;; :substr, text[:start..:end]
 (defn find-all [text match]
   (cond
     (string? match)
