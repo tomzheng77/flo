@@ -349,8 +349,7 @@
                            ; if navigation is turned off or the name has been changed, reset the index
                            :navigation-index (if (= old-name new-name) old-index new-index)
                            :preview-selection (s/range-to-selection range-subquery)
-                           :search (or (if search-subquery (str/upper-case search-subquery))
-                                       (:search db)))]
+                           :search (or (if search-subquery (str/upper-case search-subquery)) (:search db)))]
       (if (:navigation new-db)
         {:db new-db}
         {:db new-db :focus-editor true}))))
@@ -361,9 +360,10 @@
         navs (navigation-list db)
         max-index (dec (count navs))
         new-index (if-not index 0 (clamp 0 max-index (f index)))
-        note (nth navs new-index)]
+        note (nth navs new-index)
+        note-with-selection (assoc note :selection (or (:preview-selection db) (:selection note)))]
     {:db (assoc db :navigation-index new-index)
-     :preview-note [note (:search db)]}))
+     :preview-note [note-with-selection (:search db)]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
@@ -447,17 +447,20 @@
              :dispatch [:request-open-note a-new-note]})))
 
       (and (map? name-or-note) (= :note (:type name-or-note)))
-      (let [note name-or-note]
+      (let [note name-or-note
+            note-with-selection (assoc note :selection (or (:preview-selection db) (:selection note)))]
         {:set-title (:name note)
          :set-hash (str (:name note) (s/note-selection-suffix note))
-         :open-note [note (:search db)]
+         :open-note [note-with-selection (:search db)]
          :db (-> db
                  (assoc :active-note-name (:name note))
                  (assoc :drag-start nil)
                  (assoc :history-cursor nil)
                  (assoc :history-direction nil)
                  (assoc :navigation nil)
-                 (assoc :navigation-index nil))}))))
+                 (assoc :navigation-index nil)
+                 (assoc :preview-selection nil)
+                 (assoc-in [:notes (:name note)] note-with-selection))}))))
 
 ; saves the content of a note if it has been changed
 (rf/reg-event-fx :editor-save
