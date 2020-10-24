@@ -11,14 +11,9 @@
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
-    [clojure.string :as str]
-    [clojure.data.avl :as avl]
     [cljsjs.moment]
-    [goog.crypt.base64 :as b64]
     [reagent.core :as r]
-    [reagent.dom :as rd]
-    [re-frame.core :as rf]
-    [clojure.set :as set]))
+    [re-frame.core :as rf]))
 
 ; the editor is a facade for
 ; editing, previewing and viewing the history of individual notes
