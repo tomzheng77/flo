@@ -9,6 +9,13 @@
             [flo.client.functions :refer [json->clj current-time-millis]]
             [cljs.core.match :refer-macros [match]]))
 
+;; creates the sente connection for two-way communication
+;; between this client and the server
+;;
+;; once the socket is established, a list of global objects are declared, notably:
+;; - ch-chsk: channel for receiving events from the server
+;; - chsk-send!: sends a packet to the server
+;; - chsk-state: stores whether the connection is open or not
 (let [{:keys [chsk ch-recv send-fn state]}
   (sente/make-channel-socket! "/chsk" nil {:type :auto :packer (transit/get-transit-packer)})]
   (def chsk chsk)
@@ -20,6 +27,13 @@
       (rf/dispatch [:chsk-event (:event item)]))
     (recur)))
 
+;; sends an arbitrary message to the backend via sente
+;; event should be [${type}, ${contents}] where ${type} should
+;; be a tag and ${contents} should be a list of arguments
+;;
+;; currently the supported messages are:
+;; [:flo/save [name time content]]
+;; [:flo/seek [name time]]
 (rf/reg-fx :chsk-send
   (fn [event]
     (when-not (:open? @chsk-state)
