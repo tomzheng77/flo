@@ -1,6 +1,9 @@
 (ns flo.client.ace.ace-colors
   (:require [clojure.string :as str]))
 
+;;;; sets the text color of hex literals to the color they specify
+;;;; e.g. #FF0000 would appear red and #006699 would appear blue
+
 (defn $ [& args] (apply js/$ args))
 
 (defn on-after-render [_ renderer]

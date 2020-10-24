@@ -4,6 +4,10 @@
             [clojure.string :as str]
             [re-frame.core :as rf]))
 
+;;;; allows the user to click on links directly within the editor
+;;;; while a key is currently pressed (typically the ctrl key)
+;;;; enabling them to navigate directly to hrefs and tag declarations
+
 (defn $ [& args] (apply js/$ args))
 
 (def clickable-css

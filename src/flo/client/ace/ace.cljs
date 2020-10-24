@@ -1,11 +1,12 @@
 (ns flo.client.ace.ace
   (:require [clojure.set :as set]
-            [clojure.string :as str]
-            [re-frame.core :as rf]
             [flo.client.selection :as s]))
 
+;; helper function for using jQuery
 (defn $ [& args] (apply js/$ args))
 
+;; creates a new ace.Editor instance
+;; which uses the element specified as its container
 (defn new-instance [element-or-id]
   (js/ace.config.set "basePath" "ace")
   (let [instance (js/ace.edit element-or-id)]
