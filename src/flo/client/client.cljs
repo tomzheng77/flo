@@ -161,7 +161,7 @@
           (editor/goto-search @(rf/subscribe [:search]) shift-key))
         (when (= "Backspace" key)
           (rf/dispatch [:swap-search splice-last]))
-        (when (re-matches c/alphanumerical-regex key)
+        (when (re-matches c/regex-alphanumeric key)
           (rf/dispatch [:swap-search #(str % (str/upper-case key))]))
         (when (= "=" key)
           (rf/dispatch [:swap-search #(str % "=")])))

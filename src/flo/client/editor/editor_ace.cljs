@@ -20,8 +20,8 @@
 
 (defn next-tag [editor direction]
   (if (= :up direction)
-    (ace/navigate editor c/any-navigation-inner {:backwards true})
-    (ace/navigate editor c/any-navigation-inner)))
+    (ace/navigate editor c/regex-navigable {:backwards true})
+    (ace/navigate editor c/regex-navigable)))
 
 (defn command-toggle-nav [editor event-handler]
   {:name "toggle-navigation"
