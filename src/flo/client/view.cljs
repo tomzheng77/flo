@@ -1,6 +1,6 @@
 (ns flo.client.view
   (:require
-    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
+    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all to-clj-event]]
     [re-frame.core :as rf]
     [reagent.core :as r]))
 
