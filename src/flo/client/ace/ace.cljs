@@ -103,8 +103,8 @@
     (doseq [range (:ranges selection)]
       (.indentRows
         session
-        (.-row (.-start range))
-        (.-row (.-end range))
+        (:start-row range)
+        (:end-row range)
         "    "))))
 
 (defn show-clickables [this]

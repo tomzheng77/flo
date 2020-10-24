@@ -450,7 +450,7 @@
       (let [note name-or-note
             note-with-selection (assoc note :selection (or (:preview-selection db) (:selection note)))]
         {:set-title (:name note)
-         :set-hash (str (:name note) (s/note-selection-suffix note))
+         :set-hash (str (:name note) (s/note-selection-suffix note-with-selection))
          :open-note [note-with-selection (:search db)]
          :db (-> db
                  (assoc :active-note-name (:name note))
