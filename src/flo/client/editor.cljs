@@ -131,28 +131,6 @@
            :excel (do (editor-excel/open-note (get-instance :excel-editor) note (assoc open-opts :focus? true)) (set-instance :excel-editor))
            :ace (do (editor-ace/open-note (get-instance :ace-editor) note (assoc open-opts :focus? true)) (set-instance :ace-editor))))))
 
-; checks if the preview note name is
-; the same as the open note name
-; if so, copies state from preview instance to regular instance
-(defn open-note-after-preview
-  ([note] (open-note-after-preview note {}))
-  ([note open-opts]
-   (if-not (= (:name note) (:preview-note-name @state))
-     (open-note note open-opts)
-     (let [use-editor (:use-editor open-opts)]
-       (case (:active-instance @state)
-         :excel-editor-preview
-         (if (= use-editor :ace)
-           (open-note note open-opts)
-           (do (editor-excel/copy-state (get-instance :excel-editor) (get-instance :excel-editor-preview)) 
-               (set-instance :excel-editor)))
-         :ace-editor-preview
-         (if (= use-editor :excel)
-           (open-note note open-opts)
-           (do (editor-ace/copy-state (get-instance :ace-editor) (get-instance :ace-editor-preview))
-               (set-instance :ace-editor)))
-         (do (console-log "cannot open after preview") (open-note note open-opts)))))))
-
 ; opens the content in the appropriate instance
 ; sets the active instance
 (defn open-history

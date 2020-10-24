@@ -113,16 +113,6 @@
           (set! (.-autoChangeSelection @ace-editor) false)
           (.resize @ace-editor true)) 5)))
 
-(defn copy-state [this another]
-  (let [{:keys [ace-editor]} this another-ace-editor (another :ace-editor)]
-    (set! (.-autoChangeSelection @ace-editor) true)
-    (.setMode (.-session @ace-editor) (.getMode (.-session @another-ace-editor)))
-    (ace/set-text @ace-editor (ace/get-text @another-ace-editor))
-    (js/setTimeout
-      #(do (ace/set-selection @ace-editor (ace/get-selection @another-ace-editor))
-           (.focus @ace-editor)
-           (set! (.-autoChangeSelection @ace-editor) false)) 0)))
-
 (defn goto-search [this search backwards]
   (let [{:keys [active? ace-editor]} this]
     (ace/navigate @ace-editor search {:backwards backwards})))

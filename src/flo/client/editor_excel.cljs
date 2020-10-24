@@ -237,9 +237,6 @@
   ([this note] (open-note this note nil))
   ([this {:keys [content]} open-opts] (set-content this content)))
 
-(defn copy-state [this another]
-  (set-content this (get-content another)))
-
 (defn goto-search [this search backwards])
 (defn insert-image [this image-id])
 (defn focus [this])

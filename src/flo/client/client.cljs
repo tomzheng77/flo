@@ -87,14 +87,6 @@
   (fn [note]
     (editor/accept-external-change note)))
 
-; copies all the contents of ace-editor-ro and displays them to ace-editor
-(rf/reg-fx :open-note-after-preview
-  (fn [note]
-    (save-editor-content)
-    (if (prefer-excel (:content note))
-      (editor/open-note-after-preview note {:use-editor :excel})
-      (editor/open-note-after-preview note {:use-editor :ace}))))
-
 (rf/reg-fx :open-note
   (fn [[note search]]
     (save-editor-content)

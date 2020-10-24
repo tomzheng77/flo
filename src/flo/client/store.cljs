@@ -399,7 +399,7 @@
           search (:search (parse-navigation-query (or navigation (:navigation db))))]
       (if-not note
         {:db (assoc db :search search)}
-        {:db (assoc db :search search) :dispatch [:request-open-note note false]}))))
+        {:db (assoc db :search search) :dispatch [:request-open-note note]}))))
 
 ; either navigates to a result of the :navigation query based on :navigation-index
 ; or navigates based on name only
@@ -410,13 +410,13 @@
         ; since a navigation index is stored, the user must have pressed
         ; the down button in order to render a preview, therefore the note can be
         ; displayed by copying from the preview editor
-        {:db db :dispatch [:request-open-note (nth navs (:navigation-index db)) true]}
+        {:db db :dispatch [:request-open-note (nth navs (:navigation-index db))]}
 
         ; otherwise navigate to name
         (let [{:keys [name]} (parse-navigation-query (:navigation db))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
-            {:db db :dispatch [:request-open-note name false]}))))))
+            {:db db :dispatch [:request-open-note name]}))))))
 
 ; list of notes to display after passing through the navigation filter
 (rf/reg-sub :navigation-list
@@ -435,31 +435,29 @@
 ;; note this way. (this will preserve information such as scroll pos)
 (rf/reg-event-fx :request-open-note
   [(rf/inject-cofx :time)]
-  (fn [{:keys [db time]} [_ indicator enable-copy-preview]]
+  (fn [{:keys [db time]} [_ name-or-note]]
     (cond
-      (string? indicator)
-      (let [name indicator
+      (string? name-or-note)
+      (let [name name-or-note
             existing-note (get (:notes db) name)]
         (if existing-note
-          {:db db :dispatch [:request-open-note existing-note false]}
+          {:db db :dispatch [:request-open-note existing-note]}
           (let [a-new-note (new-note name time)]
             {:db       (assoc-in db [:notes name] a-new-note)
-             :dispatch [:request-open-note a-new-note false]})))
+             :dispatch [:request-open-note a-new-note]})))
 
-      (and (map? indicator) (= :note (:type indicator)))
-      (let [note indicator
-            fx {:set-title (:name note)
-                :set-hash (str (:name note) (s/note-selection-suffix note))
-                :db (-> db
-                     (assoc :active-note-name (:name note))
-                     (assoc :drag-start nil)
-                     (assoc :history-cursor nil)
-                     (assoc :history-direction nil)
-                     (assoc :navigation nil)
-                     (assoc :navigation-index nil))}]
-        (if-not enable-copy-preview
-          (assoc fx :open-note [note (:search db)])
-          (assoc fx :open-note-after-preview note))))))
+      (and (map? name-or-note) (= :note (:type name-or-note)))
+      (let [note name-or-note]
+        {:set-title (:name note)
+         :set-hash (str (:name note) (s/note-selection-suffix note))
+         :open-note [note (:search db)]
+         :db (-> db
+                 (assoc :active-note-name (:name note))
+                 (assoc :drag-start nil)
+                 (assoc :history-cursor nil)
+                 (assoc :history-direction nil)
+                 (assoc :navigation nil)
+                 (assoc :navigation-index nil))}))))
 
 ; saves the content of a note if it has been changed
 (rf/reg-event-fx :editor-save

@@ -19,7 +19,7 @@
                      :flex-direction "row"}
              :on-mouse-over #(reset! focus? true)
              :on-mouse-out #(reset! focus? false)
-             :on-click #(rf/dispatch [:request-open-note note false])}
+             :on-click #(rf/dispatch [:request-open-note note])}
        (if (:ntag note) [:div {:style {:background-color "rgba(0,0,0,0.1)"
                                        :text-align "center"
                                        :font-family "Monospace"
