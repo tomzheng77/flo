@@ -6,7 +6,6 @@
     [flo.client.editor.editor-ace :as editor-ace]
     [flo.client.editor.editor-excel :as editor-excel]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all to-clj-event]]
-    [flo.client.view :refer [navigation search-bar history-bar]]
     [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]

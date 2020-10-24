@@ -7,7 +7,9 @@
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all to-clj-event]]
     [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]
-    [flo.client.view :refer [navigation search-bar history-bar]]
+    [flo.client.view :refer [search-bar]]
+    [flo.client.ui.navigation :as navigation]
+    [flo.client.ui.history-bar :as history-bar]
     [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -64,10 +66,10 @@
 (defn app []
   [:div#app-inner
    [file-form]
-   (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation])
+   (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation/component])
    [editor/view]
    (if @(rf/subscribe [:search]) [search-bar])
-   [history-bar]])
+   [history-bar/component]])
 
 (rd/render [app] (js/document.getElementById "app"))
 
