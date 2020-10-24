@@ -18,8 +18,7 @@
     [goog.crypt.base64 :as b64]
     [reagent.core :as r]
     [reagent.dom :as rd]
-    [re-frame.core :as rf]
-    [clojure.set :as set]))
+    [re-frame.core :as rf]))
 
 (defn prefer-excel [s]
   (or (str/starts-with? s "\"<TBL>")
@@ -140,12 +139,6 @@
   (fn [_ _ _ navigation-index]
     (when (nil? navigation-index)
       (js/setTimeout editor/close-preview 10))))
-
-(def shift-interval 100)
-(defn on-hit-shift []
-  (if-not @(rf/subscribe [:search])
-    (rf/dispatch [:set-search ""])
-    (rf/dispatch [:set-search nil])))
 
 (defn on-press-key [event]
   (let [{:keys [code key ctrl-key shift-key original repeat]} event time (current-time-millis)]
