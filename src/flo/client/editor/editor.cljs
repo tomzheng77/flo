@@ -1,10 +1,10 @@
-(ns flo.client.editor
+(ns flo.client.editor.editor
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require
-    [flo.client.editor-ace :as editor-ace]
-    [flo.client.editor-excel :as editor-excel]
+    [flo.client.editor.editor-ace :as editor-ace]
+    [flo.client.editor.editor-excel :as editor-excel]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [flo.client.view :refer [navigation search-bar history-bar]]
     [flo.client.constants :as c]

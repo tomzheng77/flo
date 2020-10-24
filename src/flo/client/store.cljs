@@ -3,7 +3,7 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require [clojure.data.avl :as avl]
-            [flo.client.editor :as editor]
+            [flo.client.editor.editor :as editor]
             [flo.client.selection :as s]
             [reagent.core :as r]
             [re-frame.core :as rf]

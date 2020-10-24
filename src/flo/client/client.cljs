@@ -3,7 +3,7 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require
-    [flo.client.editor :as editor]
+    [flo.client.editor.editor :as editor]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]

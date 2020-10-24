@@ -1,11 +1,11 @@
-(ns flo.client.editor-ace
+(ns flo.client.editor.editor-ace
   (:require-macros
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require
-    [flo.client.ace.ace :as ace]
-    [flo.client.ace.ace-clickables]
-    [flo.client.ace.ace-colors]
+    [flo.client.editor.ace.ace :as ace]
+    [flo.client.editor.ace.ace-clickables]
+    [flo.client.editor.ace.ace-colors]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all intersects remove-overlaps to-clj-event]]
     [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]

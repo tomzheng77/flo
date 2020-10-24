@@ -1,4 +1,4 @@
-(ns flo.client.ace.ace-colors
+(ns flo.client.editor.ace.ace-colors
   (:require [clojure.string :as str]))
 
 ;;;; sets the text color of hex literals to the color they specify

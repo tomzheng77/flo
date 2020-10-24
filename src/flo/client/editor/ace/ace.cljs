@@ -1,4 +1,4 @@
-(ns flo.client.ace.ace
+(ns flo.client.editor.ace.ace
   (:require [clojure.set :as set]
             [flo.client.selection :as s]))
 

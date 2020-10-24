@@ -1,5 +1,5 @@
-(ns flo.client.ace.ace-clickables
-  (:require [flo.client.ace.ace :as ace]
+(ns flo.client.editor.ace.ace-clickables
+  (:require [flo.client.editor.ace.ace :as ace]
             [clojure.set :as set]
             [clojure.string :as str]
             [re-frame.core :as rf]))
