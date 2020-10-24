@@ -449,6 +449,7 @@
       (and (map? name-or-note) (= :note (:type name-or-note)))
       (let [note name-or-note
             note-with-selection (assoc note :selection (or (:preview-selection db) (:selection note)))]
+        (print (s/note-selection-suffix note))
         {:set-title (:name note)
          :set-hash (str (:name note) (s/note-selection-suffix note))
          :open-note [note-with-selection (:search db)]
