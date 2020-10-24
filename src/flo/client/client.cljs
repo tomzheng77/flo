@@ -123,13 +123,10 @@
     (let [use-editor (if table-on? :excel :ace)]
       (editor/change-editor use-editor))))
 
-; HACK(tomz): if the preview is closed here before
-; editor/open-note-after-preview is called, then the
-; preview window state won't be copied
 (add-watch-db :preview-closed [:navigation-index]
   (fn [_ _ _ navigation-index]
     (when (nil? navigation-index)
-      (js/setTimeout editor/close-preview 10))))
+      (editor/close-preview))))
 
 (defn on-press-key [event]
   (let [{:keys [code key ctrl-key shift-key original repeat]} event time (current-time-millis)]
