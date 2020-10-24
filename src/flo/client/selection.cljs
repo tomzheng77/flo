@@ -106,6 +106,9 @@
     {:cursor {:row (:start-row range) :column (:start-column range)}
      :ranges [range]}))
 
+;; sets the note with the specified note-name inside the db
+;; to have the corresponding range as its selection
+;; if the note does not exist or the range is nil, then no changes are made
 (defn set-note-selection [db note-name range]
-  (if-not range db
+  (if (or (nil? (get-in db [:notes note-name])) (nil? range)) db
      (assoc-in db [:notes note-name :selection] (range-to-selection range))))
