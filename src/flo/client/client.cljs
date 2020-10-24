@@ -60,9 +60,6 @@
   (let [href js/window.location.href]
     (rf/dispatch-sync [:initialize (current-time-millis) init href])))
 
-(rf/reg-fx :set-hash (fn [hash] (set! (.. js/window -location -hash) hash)))
-(rf/reg-fx :set-title (fn [title] (set! (.-title js/document) title)))
-
 ; https://coolors.co/3da1d2-dcf8fe-6da6cc-3aa0d5-bde7f3
 (defn app []
   [:div#app-inner
@@ -176,6 +173,12 @@
     (when-not repeat
       (editor/on-release-key event))))
 
+(def skip-next-hash-change (r/atom false))
+(rf/reg-fx :set-title (fn [title] (set! (.-title js/document) title)))
+(rf/reg-fx :set-hash
+  (fn [hash] (reset! skip-next-hash-change true)
+    (set! (.. js/window -location -hash) hash)))
+
 (set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
 (set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))
 (set! (.-onmousemove js/window) #(rf/dispatch [:mouse-move (to-clj-event %)]))
@@ -183,8 +186,11 @@
 (set! (.-onmouseup js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-ontouchend js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-onresize js/window) #(rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
-(set! (.-onhashchange js/window) #(rf/dispatch [:hash-change (.-newURL %)]))
 (set! (.-onblur js/window) #(editor/on-window-blur (to-clj-event %)))
+(set! (.-onhashchange js/window)
+  #(do (if-not @skip-next-hash-change
+         (rf/dispatch [:hash-change (.-newURL %)]))
+       (reset! skip-next-hash-change false)))
 
 (rf/dispatch-sync [:hash-change js/window.location.href])
 (js/setInterval (fn [] (when @(rf/subscribe [:autosave]) (save-editor-content))) 1000)
