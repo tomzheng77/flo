@@ -2,14 +2,43 @@
   (:require [clojure.string :as str]
             [flo.client.constants :as c]))
 
+;;;; quiz: what are the selection, cursor and range objects?
+;;;; quiz: when is each kind of object invalid?
+
+;;;; this file defines the semantics of the selection and the range data structures
+;;;; the selection object is designed to accurately represent all the regions which the
+;;;; users have selected in a plaintext editor
+;;;; its only shortcoming is the inability to address, when having multiple selection
+;;;; regions, whether the cursor of each should be at the start or at the end
+
+;;;; a selection object is a tuple of cursor and range
+;;;; the cursor is a row-col coordinate
+;;;; the range is a pair of row-col coordinates for start and end
+
+;;;; example of a cursor at line 4, column 2
+;;;; note that rows are stored as 0-indexed, but should be
+;;;; interpreted as 1-indexed
+;;;; row and column numbers must be non-negative integers
+(comment {:row 3 :column 2})
+
+;;;; in relation to the text editor,
+;;;; a row value that is out of bounds should put the cursor after the last character of the document
+;;;; a column value that is outside the line should put the cursor at the end of that line
+
+;;;; example of a range from row 2, column 3 to row 4, column 5
+;;;; the end coordinate must occur after the start coordinate
+;;;; that is, either the end row is after the start row, or the
+;;;; start and end rows are the same and the end column is after the start column
+(comment {:start-row 1 :start-column 3 :end-row 3 :end-column 5})
+
 ;; maps the values of the map m using a function f
-(defn map-values [m f]
+(defn- map-values [m f]
   (into {} (for [[k v] m] [k (f v)])))
 
 ;; converts each value of a selection range object into int
 ;; and fills in empty fields with default values
 (def infinity 2147483647)
-(defn fix-range [range]
+(defn- fix-range [range]
   (if (nil? range) nil
     (let [r (map-values range #(if (string? %) (js/parseInt %) %))]
       {:start-row (:start-row r)
@@ -20,7 +49,7 @@
 ;; checks if the specified range is valid, that is,
 ;; if its start-row is non-negative and
 ;; its end coordinates are not before its start coordinates
-(defn is-valid [range-in]
+(defn- is-valid [range-in]
   (let [range (fix-range range-in)]
     (if (nil? range) false
       (and (>= (:start-row range) 0)
@@ -28,7 +57,7 @@
                (and (= (:end-row range) (:start-row range))
                     (>= (:end-column range) (:start-column range))))))))
 
-(defn valid-range-to-str [range]
+(defn- valid-range-to-str [range]
   (let [range-inc (-> range (update :start-row inc) (update :end-row inc))]
     (cond (and (= (:start-column range-inc) 0)
                (= (:end-row range-inc) (:start-row range-inc))
@@ -58,7 +87,7 @@
     (if (not (is-valid range)) nil
       (valid-range-to-str range))))
 
-(defn str-to-range-internal [str]
+(defn- str-to-range-internal [str]
   (cond (nil? str) nil
     (re-matches #"[0-9]+" str)
     (let [a (js/parseInt str)] {:start-row a})
@@ -90,6 +119,7 @@
 ;; into a selection range, the formats are:
 ;; "${start-and-end-row}" (single row)
 ;; "${cursor-row}-${cursor-column}" (equal start and end coordinates)
+;; "${start-row},${start column}" (end coordinate equal to start coordinate)
 ;; "${start-row}-${end-row}" (start row to end row)
 ;; "${start-row},${start-column}-${end-row}" (start coordinate to end row)
 ;; "${start-row}-${end-row},${end-column}" (start row to end coordinate)

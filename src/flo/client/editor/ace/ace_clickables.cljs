@@ -33,6 +33,7 @@
     pointer-events: auto;
   }")
 
+;; finds the position of a jQuery result element
 (defn element-position [$el]
   (let [rect (.getBoundingClientRect (aget $el 0))]
     {:x (.-left rect) :y (.-top rect)}))

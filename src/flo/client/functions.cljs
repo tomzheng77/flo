@@ -21,7 +21,7 @@
 ;      (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
 ;      (doc && doc.clientTop  || body && body.clientTop  || 0 );
 ;}
-(defn assign-document-scroll [event]
+(defn- assign-document-scroll [event]
   (if (and (nil? (.-pageX event)) (not (nil? (.-clientX event))))
     (let [event-doc (or (and (.-target event) (.. event -target -ownerDocument)) js/document)
           doc (.-documentElement event-doc)
@@ -35,7 +35,7 @@
                    (or (and doc (.-scrollTop doc)) (and body (.-scrollTop body)) 0))
                (or (and doc (.-clientTop doc)) (and body (.-clientTop body)) 0))))))
 
-(defn touch-0 [event]
+(defn- touch-0 [event]
   (and
     (.-touches event) (< 0 (.-length (.-touches event)))
     {:x (.-clientX (aget (.-touches event) 0))

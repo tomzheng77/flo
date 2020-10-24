@@ -49,7 +49,7 @@
 
 ;; converts a cljs map into an ace.Range
 (defn map-to-range [m]
-  (let [{:keys [start-row start-column end-row end-column]} (s/fix-range m)]
+  (let [{:keys [start-row start-column end-row end-column]} m]
     (new js/ace.Range start-row start-column end-row end-column)))
 
 ;; converts an ace.Range into a cljs map
