@@ -17,34 +17,46 @@
        :end-row (or (:end-row r) (:start-row r))
        :end-column (or (:end-column r) infinity)})))
 
+;; checks if the specified range is valid, that is,
+;; if its start-row is non-negative and
+;; its end coordinates are not before its start coordinates
+(defn is-valid [range-in]
+  (let [range (fix-range range-in)]
+    (if (nil? range) false
+      (and (>= (:start-row range) 0)
+           (or (> (:end-row range) (:start-row range))
+               (and (= (:end-row range) (:start-row range))
+                    (>= (:end-column range) (:start-column range))))))))
+
+(defn valid-range-to-str [range]
+  (let [range-inc (-> range (update :start-row inc) (update :end-row inc))]
+    (cond (and (= (:start-column range-inc) 0)
+               (= (:end-row range-inc) (:start-row range-inc))
+               (= (:end-column range-inc) infinity))
+          (str (:start-row range-inc))
+          (and (= (:end-row range-inc) (:start-row range-inc))
+               (= (:end-column range-inc) (:start-column range-inc)))
+          (str (:start-row range-inc) "," (:start-column range-inc))
+          (and (= (:start-column range-inc) 0)
+               (= (:end-column range-inc) infinity))
+          (str (:start-row range-inc) "-" (:end-row range-inc))
+          (= (:start-column range-inc) 0)
+          (str (:start-row range-inc) "-" (:end-row range-inc) "," (:end-column range-inc))
+          (= (:end-column range-inc) infinity)
+          (str (:start-row range-inc) "," (:start-column range-inc) "-" (:end-row range-inc))
+          :else
+          (str (:start-row range-inc) ","
+               (:start-column range-inc) "-"
+               (:end-row range-inc) ","
+               (:end-column range-inc)))))
+
 ;; converts a selection range into an accurate
 ;; coordinate-to-coordinate string format
 ;; i.e. "${start-row},${start-column}-${end-row},${end-column}"
 (defn range-to-str [range-in]
-  (let [range
-        (-> (fix-range range-in)
-            (update :start-row inc)
-            (update :end-row inc))]
-    (cond (nil? range) nil
-      (and (= (:start-column range) 0)
-           (= (:end-row range) (:start-row range))
-           (= (:end-column range) infinity))
-      (str (:start-row range))
-      (and (= (:end-row range) (:start-row range))
-           (= (:end-column range) (:start-column range)))
-      (str (:start-row range) "," (:start-column range))
-      (and (= (:start-column range) 0)
-           (= (:end-column range) infinity))
-      (str (:start-row range) "-" (:end-row range))
-      (= (:start-column range) 0)
-      (str (:start-row range) "-" (:end-row range) "," (:end-column range))
-      (= (:end-column range) infinity)
-      (str (:start-row range) "," (:start-column range) "-" (:end-row range))
-      :else
-      (str (:start-row range) ","
-           (:start-column range) "-"
-           (:end-row range) ","
-           (:end-column range)))))
+  (let [range (fix-range range-in)]
+    (if (not (is-valid range)) nil
+      (valid-range-to-str range))))
 
 (defn str-to-range-internal [str]
   (cond (nil? str) nil
@@ -86,25 +98,17 @@
   (-> (str-to-range-internal str)
       (fix-range)
       (update :start-row dec)
-      (update :end-row dec)))
-
-;; checks if the specified range is valid, that is,
-;; if its start-row is non-negative and
-;; its end coordinates are not before its start coordinates
-(defn is-valid [range-in]
-  (let [range (fix-range range-in)]
-    (and (>= (:start-row range) 0)
-         (or (> (:end-row range) (:start-row range))
-             (and (= (:end-row range) (:start-row range))
-                  (>= (:end-column range) (:start-column range)))))))
+      (update :end-row dec)
+      (#(if (is-valid %) %))))
 
 ;; produces a suffix which represents the selected area of the note
 ;; or nil if a selection range does not exist
 (defn note-selection-suffix [note]
-  (let [selected-range (first (:ranges (:selection note)))]
+  (let [selected-range (first (sort-by #(vector (:start-row %) (:start-column %)) (:ranges (:selection note))))]
     (if (is-valid selected-range)
       (str ":" (range-to-str selected-range)))))
 
+;; determines the note name and selection range from the url specified
 (defn parse-url-hash [url]
   (let [hash-text (re-find c/url-hash-regex url)]
     (if hash-text
@@ -112,10 +116,12 @@
             range (str-to-range range-str)]
         {:note-name note-name :range range}))))
 
-(defn range-to-selection [in-range]
-  (let [range (fix-range in-range)]
-    {:cursor {:row (:start-row range) :column (:start-column range)}
-     :ranges [range]}))
+;; converts the specified range into a possibly nil selection
+(defn range-to-selection [range-in]
+  (if (not (is-valid range-in)) nil
+    (let [range (fix-range range-in)]
+      {:cursor {:row (:start-row range) :column (:start-column range)}
+       :ranges [range]})))
 
 ;; sets the note with the specified note-name inside the db
 ;; to have the corresponding range as its selection
