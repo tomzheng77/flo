@@ -87,8 +87,8 @@
         {:name name
          :search
          (if (str/starts-with? search "!")
-             (str/upper-case search)
-             (str (str/upper-case (rest search)) "="))})
+             (str/upper-case (subs search 1))
+             (str (str/upper-case search) "="))})
 
       (re-find #":" query)
       (let [[name range-str] (str/split query #":" 2)]
