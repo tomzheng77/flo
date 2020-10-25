@@ -132,13 +132,6 @@
       (update :end-row dec)
       (#(if (is-valid %) %))))
 
-;; produces a suffix which represents the selected area of the note
-;; or nil if a selection range does not exist
-(defn note-selection-suffix [note]
-  (let [selected-range (first (sort-by #(vector (:start-row %) (:start-column %)) (:ranges (:selection note))))]
-    (if (is-valid selected-range)
-      (str ":" (range-to-str selected-range)))))
-
 ;; determines the note name and selection range from the url specified
 (defn parse-url-hash [url]
   (let [hash-text (re-find c/regex-url-hash-part url)]

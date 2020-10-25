@@ -4,6 +4,7 @@
     [flo.client.macros :refer [console-log]])
   (:require [clojure.data.avl :as avl]
             [flo.client.editor.editor :as editor]
+            [flo.client.model.note :as n]
             [flo.client.model.selection :as s]
             [reagent.core :as r]
             [re-frame.core :as rf]
@@ -62,16 +63,6 @@
       (listener db/app-db ident value value))))
 
 (def db db/app-db)
-(defn new-note [name time]
-  {:type :note
-   :name name
-   :time-created time
-   :time-updated time
-   :time-changed time
-   :content ""
-   :history (avl/sorted-map)
-   :selection nil
-   :ntag nil})
 
 ;; parses the text which the user entered into the navigation box
 ;; into separate components, such as name and search keyword
@@ -160,10 +151,8 @@
           :image-upload      nil
 
           ; all the notes organised into a map
-          ; including the current note being edited (stored in :active-note-name)
-          ; each notes has :name, :time-created, :time-updated
-          ; :content is provided by the server initially, then synced from the editor at a fixed interval
-          ; :selection {:row :column} contains the location of the cursor, initially set to 0, 0
+          ; including the current note being edited (associated with (:active-note-name db))
+          ; see flo.client.model.note
           :active-note-name  init-note-name
           :notes             (->> notes-valid
                                   (map #(assoc % :type :note))
@@ -174,7 +163,7 @@
                                   (into {})
                                   ((fn [m] (if (get m init-note-name) m
                                     (assoc m init-note-name
-                                       (new-note init-note-name time))))))}
+                                       (n/new-note init-note-name time))))))}
          init-note-name range)})))
 
 (defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
@@ -291,7 +280,7 @@
       [:chsk/recv [:flo/refresh note]]
       (if (or (:read-only db) (exists-newer-note db note))
         {:db db}
-        (conj {:db (let [existing-note (or (get-in db [:notes (:name note)]) (new-note (:name note) time))]
+        (conj {:db (let [existing-note (or (get-in db [:notes (:name note)]) (n/new-note (:name note) time))]
                      (-> db (assoc-in [:notes (:name note)] (set/union existing-note note))))}
               (when (= (:name note) (:active-note-name db)) [:accept-external-change note])))
       :else {:db db})))
@@ -374,6 +363,7 @@
   (fn [coeffects _]
     (assoc coeffects :time (+ (.getTime (js.Date.)) (js/Math.random)))))
 
+; triggered whenever the user clicks on a link from the editor
 ; [TAG-SYNTAX]
 (rf/reg-event-fx :click-link
   [(rf/inject-cofx :time)]
@@ -425,9 +415,8 @@
       (for [[index note] (map-indexed vector (navigation-list db))]
         (assoc note :focus (= index at))))))
 
-;; prepares a note to be opened in the client
-;; the indicator can be either the name of a note or a note object itself
-;; such that :open-note is called at the end
+;; finds the appropriate note and then calls :open-note for it to be
+;; opened inside the client.
 ;;
 ;; if enable-copy-preview is set to true, then it will ask
 ;; the client to directly copy the state from the preview editor
@@ -442,7 +431,7 @@
             existing-note (get (:notes db) name)]
         (if existing-note
           {:db db :dispatch [:request-open-note existing-note]}
-          (let [a-new-note (new-note name time)]
+          (let [a-new-note (n/new-note name time)]
             {:db       (assoc-in db [:notes name] a-new-note)
              :dispatch [:request-open-note a-new-note]})))
 
@@ -450,7 +439,7 @@
       (let [note name-or-note
             note-with-selection (assoc note :selection (or (:preview-selection db) (:selection note)))]
         {:set-title (:name note)
-         :set-hash (str (:name note) (s/note-selection-suffix note-with-selection))
+         :set-hash (str (:name note) (n/note-selection-suffix note-with-selection))
          :open-note [note-with-selection (:search db)]
          :db (-> db
                  (assoc :active-note-name (:name note))
@@ -481,7 +470,7 @@
   (fn [{:keys [db]} [_ plugin-name]]
     {:db db :run-plugin plugin-name}))
 
-; updates the time-changed attribute of the active not
+; updates the :time-changed attribute of the active note
 ; to become the current time
 (rf/reg-event-fx :change
   [(rf/inject-cofx :time)]
@@ -517,5 +506,5 @@
     (let [timestamp (or (:history-cursor db) time)
           time-string (.format (js/moment timestamp) "YYYY-MM-DDTHH:mm:ss")
           note-name (:active-note-name db)
-          path (str "/history?t=" time-string "#" note-name (s/note-selection-suffix (get (:notes db) note-name)))]
+          path (str "/history?t=" time-string "#" note-name (n/note-selection-suffix (get (:notes db) note-name)))]
       {:db db :open-window path})))
