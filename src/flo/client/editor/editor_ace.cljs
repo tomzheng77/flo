@@ -62,10 +62,10 @@
     (reset! ace-editor (ace/new-instance element))
     (ace/set-read-only @ace-editor read-only?)
 
-    (.on @ace-editor "change" #(if-not (.-autoChange @ace-editor) (event-handler [:change %])))
+    (.on @ace-editor "change" #(if-not (.-autoChange @ace-editor) (event-handler [:on-change %])))
     (.on @ace-editor "changeSelection"
       #(if-not (.-autoChangeSelection @ace-editor)
-         (event-handler [:change-selection (ace/get-selection @ace-editor)])))
+         (event-handler [:on-change-selection (ace/get-selection @ace-editor)])))
 
     (.addCommand (.-commands @ace-editor) (clj->js (command-toggle-nav @ace-editor event-handler)))
     (.addCommand (.-commands @ace-editor) (clj->js (command-tab @ace-editor)))

@@ -79,7 +79,7 @@
 (defn save-editor-content []
   (let [{:keys [name content]} (editor/get-name-and-content)]
     (when name
-      (rf/dispatch [:editor-save name content]))))
+      (rf/dispatch [:save-if-changed name content]))))
 
 (rf/reg-fx :focus-editor
   (fn [_]
@@ -191,10 +191,10 @@
 (set! (.-onblur js/window) #(editor/on-window-blur (e/from-dom-event %)))
 (set! (.-onhashchange js/window)
   #(do (if-not @skip-next-hash-change
-         (rf/dispatch [:hash-change (.-newURL %)]))
+         (rf/dispatch [:on-hash-change (.-newURL %)]))
        (reset! skip-next-hash-change false)))
 
-(rf/dispatch-sync [:hash-change js/window.location.href])
+(rf/dispatch-sync [:on-hash-change js/window.location.href])
 (js/setInterval (fn [] (when @(rf/subscribe [:autosave]) (save-editor-content))) 1000)
 
 (defn on-js-reload [])

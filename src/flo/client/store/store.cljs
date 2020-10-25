@@ -231,7 +231,7 @@
                  (assoc-in [:notes (:name note)] note-with-selection))}))))
 
 ; saves the content of a note if it has been changed
-(rf/reg-event-fx :editor-save
+(rf/reg-event-fx :save-if-changed
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ name content]]
     (if (or (empty? name) (= content (get-in db [:notes name :content])))
@@ -251,20 +251,20 @@
 
 ; updates the :time-changed attribute of the active note
 ; to become the current time
-(rf/reg-event-fx :change
+(rf/reg-event-fx :on-change
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]}]
     {:db (assoc-in db [:notes (:active-note-name db) :time-changed] time)}))
 
 ; called whenever the selection of the active note has been changed
-(rf/reg-event-db :change-selection
+(rf/reg-event-db :on-change-selection
   (fn [db [_ selection]]
     (assoc-in db [:notes (:active-note-name db) :selection] selection)))
 
 ; event handler for whenever the hash part of the URL has been changed
 ; is also called upon application startup
 ; @new-url: the complete url that is currently open
-(rf/reg-event-fx :hash-change
+(rf/reg-event-fx :on-hash-change
   (fn [{:keys [db]} [_ new-url]]
     (let [{:keys [note-name range]} (s/parse-url-hash new-url)]
       (if-not note-name {:db db}
