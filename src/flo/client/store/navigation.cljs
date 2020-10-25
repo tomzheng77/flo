@@ -2,33 +2,10 @@
   (:require [clojure.string :as str]
             [re-frame.core :as rf]
             [flo.client.model.selection :as s]
+            [flo.client.model.query :as q]
             [flo.client.functions :refer [clamp]]))
 
 ;;;; contains the backend for the navigation UI component and its related actions
-
-;; parses the text which the user entered into the navigation box
-;; into separate components, such as name and search keyword
-;; by default, the query is the name (or abbreviation) of a note
-;; if it contains a '@', then the part after the '@' will be treated as a search
-;; if it contains a ':', then the part after the ':' will be treated as a selection range
-(defn parse-navigation-query [query]
-  (if-not query
-    {:name nil :search nil :range nil}
-    (cond
-      (re-find #"@" query)
-      (let [[name search] (str/split query #"@" 2)]
-        {:name name
-         :search
-         (if (str/starts-with? search "!")
-             (str/upper-case (subs search 1))
-             (str (str/upper-case search) "="))})
-
-      (re-find #":" query)
-      (let [[name range-str] (str/split query #":" 2)]
-        {:name name
-         :range (s/str-to-range range-str)})
-
-      :else {:name query})))
 
 ; turns navigation on/off
 (rf/reg-event-fx :toggle-navigation
@@ -38,7 +15,7 @@
       {:db db :dispatch [:navigation-input nil]})))
 
 (defn navigation-list [db]
-  (let [{:keys [name]} (parse-navigation-query (:navigation db))
+  (let [{:keys [name]} (q/parse (:navigation db))
         ntag (if name (str/upper-case name))]
     (->> (map val (:notes db))
          (filter
@@ -66,11 +43,11 @@
 ; or when navigation is turned on/off
 (rf/reg-event-fx :navigation-input
   (fn [{:keys [db]} [_ new-input]]
-    (let [search-subquery (:search (parse-navigation-query new-input))
-          range-subquery (:range (parse-navigation-query new-input))
+    (let [search-subquery (:search (q/parse new-input))
+          range-subquery (:range (q/parse new-input))
           old-input (:navigation db)
-          old-name (:name (parse-navigation-query old-input))
-          new-name (:name (parse-navigation-query new-input))
+          old-name (:name (q/parse old-input))
+          new-name (:name (q/parse new-input))
           old-index (:navigation-index db)
 
           ; attempt to find the index of the note which has been selected
@@ -110,7 +87,7 @@
   (fn [{:keys [db time]} [_ navigation]]
     (let [navs (navigation-list (update db :navigation #(or navigation %)))
           note (first navs)
-          search (:search (parse-navigation-query (or navigation (:navigation db))))]
+          search (:search (q/parse (or navigation (:navigation db))))]
       (if-not note
         {:db (assoc db :search search)}
         {:db (assoc db :search search) :dispatch [:request-open-note note]}))))
@@ -127,7 +104,7 @@
         {:db db :dispatch [:request-open-note (nth navs (:navigation-index db))]}
 
         ; otherwise navigate to name
-        (let [{:keys [name]} (parse-navigation-query (:navigation db))]
+        (let [{:keys [name]} (q/parse (:navigation db))]
           (if (or (nil? name) (empty? name))
             {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
             {:db db :dispatch [:request-open-note name]}))))))
