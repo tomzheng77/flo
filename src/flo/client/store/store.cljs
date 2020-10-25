@@ -16,6 +16,15 @@
             [flo.client.store.navigation]
             [flo.client.store.history]))
 
+; TODO: remove the old :search related stuff
+; TODO: and replace it with either changing the :selection
+; TODO: before entering a different note
+; TODO: or in-editor actions, such as navigating
+; TODO: to the next tag of the same type (ctrl+shift+up/down)
+
+; TODO: add "query" model (navigation query)
+; TODO: that can be used for both navigation and hash change
+
 (def plugin-note-name "plugins.js")
 
 ; determines a tag for the note
