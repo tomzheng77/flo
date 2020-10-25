@@ -1,8 +1,8 @@
 (ns flo.client.ui.history-bar
   (:require
-    [flo.client.functions :refer [dom-to-clj-event]]
     [re-frame.core :as rf]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [flo.client.model.event :as e]))
 
 (defn- history-limit [label limit-ms]
   (let [hover? (r/atom false)
@@ -82,7 +82,7 @@
 
 
 (defn- on-drag-start [event drag-btn-x]
-  (let [clj-event (dom-to-clj-event event)]
+  (let [clj-event (e/from-dom-event event)]
     (rf/dispatch [:start-drag {:mouse-x (:mouse-x clj-event) :btn-x drag-btn-x}])))
 
 

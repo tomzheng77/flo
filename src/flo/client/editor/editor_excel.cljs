@@ -3,8 +3,6 @@
     [cljs.core.async.macros :as asyncm :refer [go go-loop]]
     [flo.client.macros :refer [console-log]])
   (:require
-    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all dom-to-clj-event]]
-    [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]

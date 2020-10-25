@@ -6,7 +6,6 @@
     [flo.client.editor.ace.ace :as ace]
     [flo.client.editor.ace.ace-clickables]
     [flo.client.editor.ace.ace-colors]
-    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all dom-to-clj-event]]
     [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]

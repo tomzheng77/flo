@@ -1,8 +1,6 @@
 (ns flo.client.view
   (:require
-    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all dom-to-clj-event]]
-    [re-frame.core :as rf]
-    [reagent.core :as r]))
+    [re-frame.core :as rf]))
 
 (defn search-bar []
   [:div {:style {:height           "24px"
