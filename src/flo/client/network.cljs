@@ -5,8 +5,6 @@
   (:require [taoensso.sente :as sente]
             [taoensso.sente.packers.transit :as transit]
             [re-frame.core :as rf]
-            [flo.client.store :refer [add-watches-db add-watch-db db]]
-            [flo.client.functions :refer [json->clj current-time-millis]]
             [cljs.core.match :refer-macros [match]]))
 
 ;; creates the sente connection for two-way communication

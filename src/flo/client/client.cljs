@@ -5,7 +5,7 @@
   (:require
     [flo.client.editor.editor :as editor]
     [flo.client.functions :refer [json->clj current-time-millis splice-last find-all to-clj-event]]
-    [flo.client.store :refer [add-watches-db add-watch-db db active-history]]
+    [flo.client.store.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]
     [flo.client.view :refer [search-bar]]
     [flo.client.ui.navigation :as navigation]
