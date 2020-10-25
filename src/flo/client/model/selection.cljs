@@ -53,7 +53,7 @@
 (defn- is-valid [range-in]
   (let [range (fix-range range-in)]
     (if (nil? range) false
-      (and (>= (:start-row range) 0)
+      (and (>= (:start-row range) 0) (>= (:start-column range) 0)
            (or (> (:end-row range) (:start-row range))
                (and (= (:end-row range) (:start-row range))
                     (>= (:end-column range) (:start-column range))))))))
