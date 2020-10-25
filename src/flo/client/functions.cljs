@@ -1,6 +1,11 @@
 (ns flo.client.functions
   (:require [clojure.string :as str]))
 
+(defn clamp [min max x]
+  (if (< x min)
+    min
+    (if (> x max) max x)))
+
 (defn json->clj [x & opts]
   (apply js->clj (concat [(.parse js/JSON (.stringify js/JSON x))] opts)))
 
