@@ -13,49 +13,15 @@
             [flo.client.functions :refer [find-all clamp]]
             [clojure.set :as set]
             [flo.client.constants :as c]
-            [flo.client.store.navigation]))
+            [flo.client.store.navigation]
+            [flo.client.store.history]))
 
-(def plugins-name "plugins.js")
+(def plugin-note-name "plugins.js")
 
 ; determines a tag for the note
 (defn find-ntag [content]
   (let [search (re-find #"\[&[A-Z0-9]+=\]" content)]
     (if search (subs search 2 (dec (dec (count search)))))))
-
-(defn get-x [db fn-or-vec]
-  (if (fn? fn-or-vec)
-    (fn-or-vec db)
-    (get-in db fn-or-vec)))
-
-(def watches-on-db (r/atom {}))
-(defn add-watch-db [ident v listener]
-  (swap! watches-on-db #(assoc % ident {:path v :listener listener }))
-  (add-watch db/app-db ident
-    (fn [a b c d]
-      (let [old (get-x c v) new (get-x d v)]
-        (when-not (= old new)
-          (listener a b old new))))))
-
-; accepts an identity, a vector of paths
-; as opposed to a single path in add-watch-db
-; and a listener function
-; where old and new will be vectors
-(defn add-watches-db [ident vs listener]
-  (swap! watches-on-db #(assoc % ident {:paths vs :listener listener}))
-  (add-watch db/app-db ident
-    (fn [a b c d]
-      (let [old (map #(get-x c %) vs) new (map #(get-x d %) vs)]
-        (when-not (= old new)
-          (listener a b old new))))))
-
-(defn trigger-watch-db [ident]
-  (when (@watches-on-db ident)
-    (let [{:keys [path paths listener]} (@watches-on-db ident)
-          value (or (and path (get-x @db/app-db path))
-                    (and paths (map #(get-x @db/app-db %) paths)))]
-      (listener db/app-db ident value value))))
-
-(def db db/app-db)
 
 (def name-length-limit 100)
 (rf/reg-event-fx
@@ -65,9 +31,7 @@
           init-note-name (or note-name "default")
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)
           plugins-js 
-          (:content
-            (first
-              (filter #(= (:name %) plugins-name) notes)))]
+          (:content (first (filter #(= (:name %) plugin-note-name) notes)))]
       {:dispatch [:request-open-note init-note-name]
        :eval-plugins-js plugins-js
        :db
@@ -135,21 +99,10 @@
                                        (n/new-note init-note-name time))))))}
          init-note-name range)})))
 
-(defn active-history [db] (get-in db [:notes (:active-note-name db) :history]))
-(defn active-time-updated [db] (get-in db [:notes (:active-note-name db) :time-updated]))
-(defn active-time-created [db] (get-in db [:notes (:active-note-name db) :time-created]))
-(defn active-time-history-start [db]
-  (let [updated (active-time-updated db)]
-    (clamp (- updated (:history-limit db)) updated (active-time-created db))))
-
 (rf/reg-sub :search (fn [db v] (:search db)))
 (rf/reg-sub :preview-selection (fn [db v] (:preview-selection db)))
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
-(rf/reg-sub :drag-btn-width (fn [db v] (:drag-btn-width db)))
-(rf/reg-sub :history-cursor (fn [db v] (:history-cursor db)))
-(rf/reg-sub :drag-start (fn [db v] (:drag-start db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
-(rf/reg-sub :history-limit (fn [db v] (:history-limit db)))
 (rf/reg-sub :status-text (fn [db v] (:status-text db)))
 
 (rf/reg-sub :table-on (fn [db v] (:table-on db)))
@@ -164,50 +117,18 @@
     {:db (assoc db :table-on table-on?) :change-editor table-on?}
     {:db (assoc db :table-on table-on?)})))
 
-(rf/reg-event-db :toggle-image-upload
-  (fn [db _]
-    (update db :image-upload not)))
-
+(rf/reg-event-db :toggle-image-upload (fn [db _] (update db :image-upload not)))
 (rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
 (rf/reg-event-db :toggle-autosave (fn [db [_ search]] (update db :autosave not)))
 
 (rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
 (rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
-(rf/reg-event-db :set-history-limit
-  (fn [db [_ limit]]
-    (-> db
-        (assoc :history-limit limit)
-        (update :history-cursor
-          #(if % (clamp
-             (- (active-time-updated db) limit)
-             (active-time-updated db) %))))))
 
 (rf/reg-sub :active-note-name (fn [db v] (:active-note-name db)))
 (rf/reg-sub :active-time-updated (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
 (rf/reg-sub :initial-content (fn [db v] (get-in db [:notes (:active-note-name db) :content])))
 
 (rf/reg-event-db :window-resize (fn [db [_ width _]] (assoc db :window-width width)))
-(rf/reg-event-db :start-drag (fn [db [_ item]] (assoc db :drag-start item)))
-
-; event handler called whenever the user has moved the mouse
-(rf/reg-event-db :mouse-move
-  (fn [db [_ event]]
-    (let [drag-start (:drag-start db)]
-      (if-not drag-start db
-        (let [dx (- (:mouse-x event) (:mouse-x drag-start))
-              start-position (:btn-x drag-start)
-              width (:window-width db)
-              drag-position (min (max 0 (+ dx start-position)) (- width 80))
-              max-drag-position (- (:window-width db) (:drag-btn-width db))
-              new-history-cursor (+ (active-time-history-start db)
-                                    (/ (* (- (active-time-updated db) (active-time-history-start db)) drag-position)
-                                       max-drag-position))]
-            (if (= drag-position max-drag-position)
-              (assoc db :history-cursor nil :history-direction nil)
-              (let [old-history-cursor (:history-cursor db)
-                    new-direction (if (or (nil? old-history-cursor) (< new-history-cursor old-history-cursor)) :bkwd :fwd)]
-                (if (= new-history-cursor old-history-cursor) db
-                  (assoc db :history-cursor new-history-cursor :history-direction new-direction)))))))))
 
 ; runs the contents of plugins.js
 ; should add functions to the window.plugins object
@@ -251,16 +172,6 @@
                      (-> db (assoc-in [:notes (:name note)] (set/union existing-note note))))}
               (when (= (:name note) (:active-note-name db)) [:accept-external-change note])))
       :else {:db db})))
-
-; x-position of the history button
-(rf/reg-sub :history-button-x
-  (fn [db _]
-    ; use inc to deal with zeros
-    (clamp
-      0 (- (:window-width db) (:drag-btn-width db))
-      (/ (* (- (inc (or (:history-cursor db) (active-time-updated db))) (active-time-history-start db))
-        (- (:window-width db) (:drag-btn-width db)))
-          (inc (- (active-time-updated db) (active-time-history-start db)))))))
 
 ; produces the current time in milliseconds since epoch
 (rf/reg-cofx :time
@@ -332,7 +243,7 @@
        :chsk-send
        (if-not (:read-only db) [:flo/save [name time content]])
        :eval-plugins-js
-       (if (= name plugins-name) content)})))
+       (if (= name plugin-note-name) content)})))
 
 (rf/reg-event-fx :run-plugin
   (fn [{:keys [db]} [_ plugin-name]]
@@ -349,12 +260,6 @@
 (rf/reg-event-db :change-selection
   (fn [db [_ selection]]
     (assoc-in db [:notes (:active-note-name db) :selection] selection)))
-
-; upon the :history-cursor is changed, send a :flo/seek event to server
-(add-watch-db :drag-changed-internal [:history-cursor] #(rf/dispatch [:drag-changed %4]))
-(rf/reg-event-fx :drag-changed
-  (fn [{:keys [db]} [_ timestamp]]
-    {:chsk-send [:flo/seek [(:active-note-name db) (js/Math.round timestamp)]]}))
 
 ; event handler for whenever the hash part of the URL has been changed
 ; is also called upon application startup

@@ -5,7 +5,9 @@
   (:require
     [flo.client.editor.editor :as editor]
     [flo.client.functions :refer [current-time-millis splice-last]]
-    [flo.client.store.store :refer [add-watches-db add-watch-db db active-history]]
+    [flo.client.store.store]
+    [flo.client.store.watch :as w]
+    [flo.client.store.history :as h]
     [flo.client.network]
     [flo.client.view :refer [search-bar]]
     [flo.client.ui.navigation :as navigation]
@@ -94,7 +96,7 @@
       (editor/open-note note {:search search :use-editor :excel})
       (editor/open-note note {:search search :use-editor :ace}))))
 
-(add-watch-db :preview-goto-selection [:preview-selection]
+(w/add-watch-db :preview-goto-selection [:preview-selection]
   (fn [_ _ _ selection]
     (editor/preview-goto-selection selection)))
 
@@ -104,7 +106,7 @@
         (editor/preview-note note {:search search :use-editor :excel})
         (editor/preview-note note {:search search :use-editor :ace}))))
 
-(add-watches-db :open-history [[:active-note-name] [:history-cursor] active-history [:history-direction]]
+(w/add-watches-db :open-history [[:active-note-name] [:history-cursor] h/active-history [:history-direction]]
   (fn [_ _ _ [name timestamp history direction]]
     (when-not timestamp
       (editor/close-history))
@@ -115,7 +117,7 @@
             (editor/open-history name content {:search @(rf/subscribe [:search]) :use-editor :excel})
             (editor/open-history name content {:search @(rf/subscribe [:search]) :use-editor :ace})))))))
 
-(add-watch-db :goto-search [:search]
+(w/add-watch-db :goto-search [:search]
   (fn [_ _ _ search]
     (editor/goto-search search false)))
 
@@ -124,7 +126,7 @@
     (let [use-editor (if table-on? :excel :ace)]
       (editor/change-editor use-editor))))
 
-(add-watch-db :preview-closed [:navigation-index]
+(w/add-watch-db :preview-closed [:navigation-index]
   (fn [_ _ _ navigation-index]
     (when (nil? navigation-index)
       (editor/close-preview))))
