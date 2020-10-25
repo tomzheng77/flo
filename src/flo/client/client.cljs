@@ -4,7 +4,7 @@
     [flo.client.macros :refer [console-log]])
   (:require
     [flo.client.editor.editor :as editor]
-    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all to-clj-event]]
+    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all dom-to-clj-event]]
     [flo.client.store.store :refer [add-watches-db add-watch-db db active-history]]
     [flo.client.network]
     [flo.client.view :refer [search-bar]]
@@ -178,14 +178,14 @@
   (fn [hash] (reset! skip-next-hash-change true)
     (set! (.. js/window -location -hash) hash)))
 
-(set! (.-onkeydown js/window) #(on-press-key (to-clj-event %)))
-(set! (.-onkeyup js/window) #(on-release-key (to-clj-event %)))
-(set! (.-onmousemove js/window) #(rf/dispatch [:mouse-move (to-clj-event %)]))
-(set! (.-ontouchmove js/window) #(rf/dispatch [:mouse-move (to-clj-event %)]))
+(set! (.-onkeydown js/window) #(on-press-key (dom-to-clj-event %)))
+(set! (.-onkeyup js/window) #(on-release-key (dom-to-clj-event %)))
+(set! (.-onmousemove js/window) #(rf/dispatch [:mouse-move (dom-to-clj-event %)]))
+(set! (.-ontouchmove js/window) #(rf/dispatch [:mouse-move (dom-to-clj-event %)]))
 (set! (.-onmouseup js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-ontouchend js/window) #(rf/dispatch [:start-drag nil]))
 (set! (.-onresize js/window) #(rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
-(set! (.-onblur js/window) #(editor/on-window-blur (to-clj-event %)))
+(set! (.-onblur js/window) #(editor/on-window-blur (dom-to-clj-event %)))
 (set! (.-onhashchange js/window)
   #(do (if-not @skip-next-hash-change
          (rf/dispatch [:hash-change (.-newURL %)]))

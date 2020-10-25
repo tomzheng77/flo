@@ -1,6 +1,6 @@
 (ns flo.client.ui.history-bar
   (:require
-    [flo.client.functions :refer [to-clj-event]]
+    [flo.client.functions :refer [dom-to-clj-event]]
     [re-frame.core :as rf]
     [reagent.core :as r]))
 
@@ -82,7 +82,7 @@
 
 
 (defn- on-drag-start [event drag-btn-x]
-  (let [clj-event (to-clj-event event)]
+  (let [clj-event (dom-to-clj-event event)]
     (rf/dispatch [:start-drag {:mouse-x (:mouse-x clj-event) :btn-x drag-btn-x}])))
 
 

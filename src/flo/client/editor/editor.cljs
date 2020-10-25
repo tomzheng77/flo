@@ -5,7 +5,7 @@
   (:require
     [flo.client.editor.editor-ace :as editor-ace]
     [flo.client.editor.editor-excel :as editor-excel]
-    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all to-clj-event]]
+    [flo.client.functions :refer [json->clj current-time-millis splice-last find-all dom-to-clj-event]]
     [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]

@@ -26,17 +26,17 @@
 ;      (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
 ;      (doc && doc.clientTop  || body && body.clientTop  || 0 );
 ;}
-(defn- assign-document-scroll [event]
-  (if (and (nil? (.-pageX event)) (not (nil? (.-clientX event))))
-    (let [event-doc (or (and (.-target event) (.. event -target -ownerDocument)) js/document)
+(defn- assign-document-scroll [dom-event]
+  (if (and (nil? (.-pageX dom-event)) (not (nil? (.-clientX dom-event))))
+    (let [event-doc (or (and (.-target dom-event) (.. dom-event -target -ownerDocument)) js/document)
           doc (.-documentElement event-doc)
           body (.-body event-doc)]
-      (set! (.-pageX event)
-            (- (+ (.-clientX event)
+      (set! (.-pageX dom-event)
+            (- (+ (.-clientX dom-event)
                    (or (and doc (.-scrollLeft doc)) (and body (.-scrollLeft body)) 0))
                (or (and doc (.-clientLeft doc)) (and body (.-clientLeft body)) 0)))
-      (set! (.-pageY event)
-            (- (+ (.-clientY event)
+      (set! (.-pageY dom-event)
+            (- (+ (.-clientY dom-event)
                    (or (and doc (.-scrollTop doc)) (and body (.-scrollTop body)) 0))
                (or (and doc (.-clientTop doc)) (and body (.-clientTop body)) 0))))))
 
@@ -46,16 +46,16 @@
     {:x (.-clientX (aget (.-touches event) 0))
      :y (.-clientY (aget (.-touches event) 0))}))
 
-(defn to-clj-event [event]
-  (assign-document-scroll event)
-  {:code (. event -code)
-   :key (. event -key)
-   :ctrl-key (. event -ctrlKey)
-   :shift-key (. event -shiftKey)
-   :repeat (. event -repeat)
-   :original event
-   :mouse-x (or (.-pageX event) (:x (touch-0 event)))
-   :mouse-y (or (.-pageY event) (:y (touch-0 event)))})
+(defn dom-to-clj-event [dom-event]
+  (assign-document-scroll dom-event)
+  {:code (. dom-event -code)
+   :key (. dom-event -key)
+   :ctrl-key (. dom-event -ctrlKey)
+   :shift-key (. dom-event -shiftKey)
+   :repeat (. dom-event -repeat)
+   :original dom-event
+   :mouse-x (or (.-pageX dom-event) (:x (touch-0 dom-event)))
+   :mouse-y (or (.-pageY dom-event) (:y (touch-0 dom-event)))})
 
 ; https://stackoverflow.com/questions/18735665/how-can-i-get-the-positions-of-regex-matches-in-clojurescript
 ; matches a regex pattern to the string provided and
