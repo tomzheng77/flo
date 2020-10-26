@@ -72,3 +72,9 @@
     (if (nil? selection)
       note
       (update note :selection #(or selection %)))))
+
+;; creates a query which will not only select this note
+;; but also the text which is currently selected inside this note
+;; NOTE: name may collide with ntag
+(defn note-to-query [note]
+  {:keyword (:name note) :selection (:selection note)})

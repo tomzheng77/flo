@@ -6,6 +6,7 @@
             [flo.client.editor.editor :as editor]
             [flo.client.model.note :as n]
             [flo.client.model.selection :as s]
+            [flo.client.model.query :as q]
             [reagent.core :as r]
             [re-frame.core :as rf]
             [re-frame.db :as db]
@@ -22,9 +23,6 @@
 ; TODO: or in-editor actions, such as navigating
 ; TODO: to the next tag of the same type (ctrl+shift+up/down)
 
-; TODO: add "query" model (navigation query)
-; TODO: that can be used for both navigation and hash change
-
 (def plugin-note-name "plugins.js")
 
 ;; scans through the note for the first occurrence of
@@ -37,75 +35,73 @@
 (rf/reg-event-fx
   :initialize
   (fn [_ [_ time {:keys [notes read-only]} href]]
-    (let [{:keys [note-name range]} (s/parse-url-hash href)
-          init-note-name (or note-name "default")
+    (let [hash-text (re-find c/regex-url-hash-part href)
+          init-note-name "default"
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)
           plugins-js 
           (:content (first (filter #(= (:name %) plugin-note-name) notes)))]
-      {:dispatch [:request-open-note init-note-name]
+      {:dispatch [:navigate-direct hash-text true]
        :eval-plugins-js plugins-js
        :db
-       (s/set-note-selection
-         {:window-width      (.-innerWidth js/window)
+       {:window-width      (.-innerWidth js/window)
 
-          ; if this flag is set to true
-          ; changes [:flo/save [name content]] will not be sent
-          ; refreshes [:flo/refresh note] will not be handled
-          :read-only         read-only
+        ; if this flag is set to true
+        ; changes [:flo/save [name content]] will not be sent
+        ; refreshes [:flo/refresh note] will not be handled
+        :read-only         read-only
 
-          :drag-btn-width    80
-          :history-cursor    nil
-          :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
-          :drag-start        nil
+        :drag-btn-width    80
+        :history-cursor    nil
+        :history-direction nil ; last direction the history cursor was moved in #{nil :bkwd :fwd}
+        :drag-start        nil
 
-          ; amount of history to allow scroll back, in milliseconds
-          :history-limit     (* 1000 60 60 24)
-          :status-text       "Welcome to FloNote"
+        ; amount of history to allow scroll back, in milliseconds
+        :history-limit     (* 1000 60 60 24)
+        :status-text       "Welcome to FloNote"
 
-          ; when set, the client will prefer to open each note
-          ; using the table mode
-          ; the client may still show a table even if this is not set
-          :table-on          false
+        ; when set, the client will prefer to open each note
+        ; using the table mode
+        ; the client may still show a table even if this is not set
+        :table-on          false
 
-          ; when set, a terminal window should be shown
-          :show-terminal     false
+        ; when set, a terminal window should be shown
+        :show-terminal     false
 
-          ; when set, history will not be shown smoothly
-          :fast-mode         false
+        ; when set, history will not be shown smoothly
+        :fast-mode         false
 
-          ; when set, changes will be saved at regular intervals
-          :autosave          true
+        ; when set, changes will be saved at regular intervals
+        :autosave          true
 
-          ; global navigation query
-          ; consists of a name and location part
-          ; e.g. "fl@fx" means
-          ;   go to the note with either ntag or name "FL"
-          ;   within it search for [FX] or [FX=]
-          ; e.g. "fl@fx=" means
-          ;   ...
-          ;   within it search for [FX=]
-          ; e.g. "fl:100" means
-          ;   ...
-          ;   within it go to line 100
-          :navigation        nil
-          :navigation-index  nil ; selected item in navigation box
-          :image-upload      nil
+        ; global navigation query
+        ; consists of a name and location part
+        ; e.g. "fl@fx" means
+        ;   go to the note with either ntag or name "FL"
+        ;   within it search for [FX] or [FX=]
+        ; e.g. "fl@fx=" means
+        ;   ...
+        ;   within it search for [FX=]
+        ; e.g. "fl:100" means
+        ;   ...
+        ;   within it go to line 100
+        :navigation        nil
+        :navigation-index  nil ; selected item in navigation box
+        :image-upload      nil
 
-          ; all the notes organised into a map
-          ; including the current note being edited (associated with (:active-note-name db))
-          ; see flo.client.model.note
-          :active-note-name  init-note-name
-          :notes             (->> notes-valid
-                                  (map #(assoc % :type :note))
-                                  (map #(assoc % :selection nil))
-                                  (map #(assoc % :ntag (find-ntag (:content %))))
-                                  (map #(assoc % :history (avl/sorted-map)))
-                                  (map (fn [n] [(:name n) n]))
-                                  (into {})
-                                  ((fn [m] (if (get m init-note-name) m
-                                    (assoc m init-note-name
-                                       (n/new-note init-note-name time))))))}
-         init-note-name range)})))
+        ; all the notes organised into a map
+        ; including the current note being edited (associated with (:active-note-name db))
+        ; see flo.client.model.note
+        :active-note-name  init-note-name
+        :notes             (->> notes-valid
+                                (map #(assoc % :type :note))
+                                (map #(assoc % :selection nil))
+                                (map #(assoc % :ntag (find-ntag (:content %))))
+                                (map #(assoc % :history (avl/sorted-map)))
+                                (map (fn [n] [(:name n) n]))
+                                (into {})
+                                ((fn [m] (if (get m init-note-name) m
+                                  (assoc m init-note-name
+                                     (n/new-note init-note-name time))))))}})))
 
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
@@ -220,7 +216,7 @@
       (and (map? name-or-note) (= :note (:type name-or-note)))
       (let [note name-or-note]
         {:set-title (:name note)
-         :set-hash (str (:name note) (n/note-selection-suffix note))
+         :set-hash (q/to-string (n/note-to-query note))
          :open-note [note]
          :db (-> db
                  (assoc :active-note-name (:name note))
@@ -267,9 +263,9 @@
 ; @new-url: the complete url that is currently open
 (rf/reg-event-fx :on-hash-change
   (fn [{:keys [db]} [_ new-url]]
-    (let [{:keys [note-name range]} (s/parse-url-hash new-url)]
-      (if-not note-name {:db db}
-        {:db (s/set-note-selection db note-name range) :dispatch [:request-open-note note-name]}))))
+    (let [hash-text (re-find c/regex-url-hash-part new-url)]
+      (if-not hash-text {:db db}
+        {:db db :dispatch [:navigate-direct hash-text true]}))))
 
 ; opens up an archive page which displays the same content
 ; as is currently shown in the editor, while also preserving

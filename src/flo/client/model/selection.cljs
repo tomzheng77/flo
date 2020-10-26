@@ -134,14 +134,6 @@
       (update :end-row dec)
       (#(if (is-valid-range %) %))))
 
-;; determines the note name and selection range from the url specified
-(defn parse-url-hash [url]
-  (let [hash-text (re-find c/regex-url-hash-part url)]
-    (if hash-text
-      (let [[note-name range-str] (str/split hash-text #":" 2)
-            range (str-to-range range-str)]
-        {:note-name note-name :range range}))))
-
 ;; converts the specified range into a possibly nil selection
 (defn range-to-selection [range-in]
   (if (not (is-valid-range range-in)) nil

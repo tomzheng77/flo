@@ -90,7 +90,7 @@
 ; regardless of :navigation-index
 (rf/reg-event-fx :navigate-direct
   [(rf/inject-cofx :time)]
-  (fn [{:keys [db time]} [_ navigation]]
+  (fn [{:keys [db time]} [_ navigation create-if-not-exist?]]
     (let [db-set-nav (update db :navigation #(or navigation %))
           {:keys [keyword search selection]} (q/parse (:navigation db-set-nav))]
       (let [navs (navigation-list db-set-nav)
@@ -100,7 +100,8 @@
                 (n/note-select-first-occurrence search)
                 (n/note-set-selection selection))]
         (if-not note
-          {:db db}
+          (if-not create-if-not-exist? {:db db}
+            {:db db :dispatch [:request-open-note keyword]})
           {:db (-> db (assoc-in [:notes (:name note)] note-with-selection))
            :dispatch [:request-open-note note-with-selection]})))))
 
