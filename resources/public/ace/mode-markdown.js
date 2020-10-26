@@ -2688,7 +2688,7 @@ var MarkdownHighlightRules = function() {
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "tag.reference.clickable",
-            regex: "\\[[A-Z0-9]+@[A-Z0-9]*=?\\]",
+            regex: "\\[[A-Z0-9]*(@[A-Z0-9]*=?|:[0-9]+(,[0-9]+)?(-[0-9]+(,[0-9]+)?)?)\\]",
             caseInsensitive: false
         }, { // ---------- [CUSTOM] ----------
             token: "ntag.definition",
