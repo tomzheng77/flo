@@ -154,10 +154,11 @@
     (when-not repeat
       (editor/on-release-key event))))
 
-(def skip-next-hash-change (r/atom false))
+(def skip-hash-change-to (r/atom nil))
 (rf/reg-fx :set-title (fn [title] (set! (.-title js/document) title)))
 (rf/reg-fx :set-hash
-  (fn [hash] (reset! skip-next-hash-change true)
+  (fn [hash]
+    (reset! skip-hash-change-to hash)
     (set! (.. js/window -location -hash) hash)))
 
 (set! (.-onkeydown js/window) #(on-press-key (e/from-dom-event %)))
@@ -169,9 +170,9 @@
 (set! (.-onresize js/window) #(rf/dispatch [:window-resize (.-innerWidth js/window) (.-innerHeight js/window)]))
 (set! (.-onblur js/window) #(editor/on-window-blur (e/from-dom-event %)))
 (set! (.-onhashchange js/window)
-  #(do (if-not @skip-next-hash-change
+  #(do (if-not (= (.-newURL %) @skip-hash-change-to)
          (rf/dispatch [:on-hash-change (.-newURL %)]))
-       (reset! skip-next-hash-change false)))
+       (reset! skip-hash-change-to nil)))
 
 (rf/dispatch-sync [:on-hash-change js/window.location.href])
 (js/setInterval (fn [] (when @(rf/subscribe [:autosave]) (save-editor-content))) 1000)
