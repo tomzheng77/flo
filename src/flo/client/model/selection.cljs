@@ -50,7 +50,9 @@
 ;; checks if the specified range is valid, that is,
 ;; if its start-row is non-negative and
 ;; its end coordinates are not before its start coordinates
-(defn- is-valid [range-in]
+;; there is no need for this function to be called outside of this file
+;; since all non-nil ranges should be valid
+(defn- is-valid-range [range-in]
   (let [range (fix-range range-in)]
     (if (nil? range) false
       (and (>= (:start-row range) 0) (>= (:start-column range) 0)
@@ -85,8 +87,8 @@
 ;; i.e. "${start-row},${start-column}-${end-row},${end-column}"
 (defn range-to-str [range-in]
   (let [range (fix-range range-in)]
-    (if (not (is-valid range)) nil
-      (valid-range-to-str range))))
+    (if (not (is-valid-range range)) nil
+       (valid-range-to-str range))))
 
 (defn- str-to-range-internal [str]
   (cond (nil? str) nil
@@ -130,7 +132,7 @@
       (fix-range)
       (update :start-row dec)
       (update :end-row dec)
-      (#(if (is-valid %) %))))
+      (#(if (is-valid-range %) %))))
 
 ;; determines the note name and selection range from the url specified
 (defn parse-url-hash [url]
@@ -142,7 +144,7 @@
 
 ;; converts the specified range into a possibly nil selection
 (defn range-to-selection [range-in]
-  (if (not (is-valid range-in)) nil
+  (if (not (is-valid-range range-in)) nil
     (let [range (fix-range range-in)]
       {:cursor {:row (:start-row range) :column (:start-column range)}
        :ranges [range]})))

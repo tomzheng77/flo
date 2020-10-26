@@ -96,10 +96,6 @@
       (editor/open-note note {:search search :use-editor :excel})
       (editor/open-note note {:search search :use-editor :ace}))))
 
-(w/add-watch-db :preview-goto-selection [:preview-selection]
-  (fn [_ _ _ selection]
-    (editor/preview-goto-selection selection)))
-
 (rf/reg-fx :preview-note
   (fn [[note search]]
     (if (prefer-excel (:content note))
@@ -132,7 +128,7 @@
       (editor/close-preview))))
 
 (defn on-press-key [event]
-  (let [{:keys [code key ctrl-key shift-key original repeat]} event time (current-time-millis)]
+  (let [{:keys [code key ctrl-key shift-key original repeat]} event]
     (when-not repeat
       (when @(rf/subscribe [:navigation])
         (when (and (#{"ArrowUp"} code))
@@ -140,7 +136,7 @@
         (when (and (#{"ArrowDown"} code))
           (rf/dispatch [:navigate-down]))
         (when (and (#{"Enter"} code))
-          (rf/dispatch [:navigate-enter time]))
+          (rf/dispatch [:navigate-enter]))
         (when (and (#{"Tab"} code))
           (rf/dispatch [:navigate-direct])))
       (when (= "Escape" code)

@@ -116,14 +116,6 @@
   (let [{:keys [active? ace-editor]} this]
     (ace/navigate @ace-editor search {:backwards backwards})))
 
-(defn goto-selection [this selection]
-  (let [{:keys [active? ace-editor]} this]
-    (js/setTimeout
-     #(do (.resize @ace-editor true)
-          (ace/set-selection @ace-editor selection)
-          (set! (.-autoChangeSelection @ace-editor) false)
-          (.resize @ace-editor true)) 5)))
-
 (defn insert-image [this image-id]
   (let [{:keys [ace-editor]} this]
     (ace/insert-at-cursor @ace-editor (str "[*" image-id "]\n"))))

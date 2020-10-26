@@ -181,12 +181,6 @@
      :ace-editor-history (editor-ace/goto-search (active-instance) keyword reverse?)
      :ace-editor-preview (editor-ace/goto-search (active-instance) keyword reverse?))))
 
-; delegate goto-selection to the active instance only if it is
-; the ace editor preview mode
-(defn preview-goto-selection [selection]
-  (case (:active-instance @state)
-    :ace-editor-preview (editor-ace/goto-selection (active-instance) selection) nil))
-
 ; inserts an image with the specified id
 (defn insert-image [image-id]
   (case (:active-instance @state)

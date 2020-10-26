@@ -9,7 +9,7 @@
 ;; if it contains a ':', then the part after the ':' will be treated as a selection range
 (defn parse [s]
   (if-not s
-    {:name nil :search nil :range nil}
+    {:name nil :search nil :selection nil}
     (cond
       (re-find #"@" s)
       (let [[name search] (str/split s #"@" 2)]
@@ -22,6 +22,6 @@
       (re-find #":" s)
       (let [[name range-str] (str/split s #":" 2)]
         {:name  name
-         :range (s/str-to-range range-str)})
+         :selection (-> range-str s/str-to-range s/range-to-selection)})
 
       :else {:name s})))

@@ -46,7 +46,6 @@
        :db
        (s/set-note-selection
          {:search            nil ; the active label being searched, nil means no search
-          :preview-selection nil
           :window-width      (.-innerWidth js/window)
 
           ; if this flag is set to true
@@ -109,7 +108,6 @@
          init-note-name range)})))
 
 (rf/reg-sub :search (fn [db v] (:search db)))
-(rf/reg-sub :preview-selection (fn [db v] (:preview-selection db)))
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :status-text (fn [db v] (:status-text db)))
@@ -224,11 +222,10 @@
              :dispatch [:request-open-note a-new-note]})))
 
       (and (map? name-or-note) (= :note (:type name-or-note)))
-      (let [note name-or-note
-            note-with-selection (assoc note :selection (or (:preview-selection db) (:selection note)))]
+      (let [note name-or-note]
         {:set-title (:name note)
-         :set-hash (str (:name note) (n/note-selection-suffix note-with-selection))
-         :open-note [note-with-selection (:search db)]
+         :set-hash (str (:name note) (n/note-selection-suffix note))
+         :open-note [note (:search db)]
          :db (-> db
                  (assoc :active-note-name (:name note))
                  (assoc :drag-start nil)
@@ -236,8 +233,7 @@
                  (assoc :history-direction nil)
                  (assoc :navigation nil)
                  (assoc :navigation-index nil)
-                 (assoc :preview-selection nil)
-                 (assoc-in [:notes (:name note)] note-with-selection))}))))
+                 (assoc-in [:notes (:name note)] note))}))))
 
 ; saves the content of a note if it has been changed
 (rf/reg-event-fx :save-if-changed

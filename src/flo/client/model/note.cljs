@@ -41,5 +41,21 @@
 ;; or nil if a selection range does not exist
 (defn note-selection-suffix [note]
   (let [selected-range (first (sort-by #(vector (:start-row %) (:start-column %)) (:ranges (:selection note))))]
-    (if (s/is-valid selected-range)
+    (if (not (nil? selected-range))
       (str ":" (s/range-to-str selected-range)))))
+
+;; changes the :selection of the note to select the first
+;; occurrence of text that matches the provided pattern. pattern
+;; can span multiple lines.
+;; if pattern does not occur in note, :selection is not changed
+(defn note-select-first-occurrence [note regex])
+
+;; changes the selection of the note to become that specified
+;; if note is nil, then nil is returned
+;; if selection is nil, then the note is unchanged
+(defn note-set-selection [note selection]
+  (if (nil? note)
+    nil
+    (if (nil? selection)
+      note
+      (update note :selection #(or selection %)))))
