@@ -40,7 +40,7 @@
           notes-valid (filter #(> name-length-limit (count (:name %))) notes)
           plugins-js 
           (:content (first (filter #(= (:name %) plugin-note-name) notes)))]
-      {:dispatch [:navigate-direct hash-text true]
+      {:dispatch [:navigate-direct hash-text {:create-if-not-exist? true :precise-match? true}]
        :eval-plugins-js plugins-js
        :db
        {:window-width      (.-innerWidth js/window)
@@ -265,7 +265,7 @@
   (fn [{:keys [db]} [_ new-url]]
     (let [hash-text (re-find c/regex-url-hash-part new-url)]
       (if-not hash-text {:db db}
-        {:db db :dispatch [:navigate-direct hash-text true]}))))
+        {:db db :dispatch [:navigate-direct hash-text {:create-if-not-exist? true :precise-match? true}]}))))
 
 ; opens up an archive page which displays the same content
 ; as is currently shown in the editor, while also preserving
