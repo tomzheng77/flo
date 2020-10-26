@@ -56,10 +56,10 @@
                           "px; top: " (:y pos) "px'>" text "</div>"))]
           (.appendTo $added $clickables)
           (.click $added
-                  (fn [event]
-                    (.stopPropagation event)
-                    (.preventDefault event)
-                    (rf/dispatch [:click-link types text]))))))))
+            (fn [event]
+              (.stopPropagation event)
+              (.preventDefault event)
+              (rf/dispatch [:click-link types text]))))))))
 
 (defn enable-clickables [this]
   (js/console.log "Clickables: Enabled")

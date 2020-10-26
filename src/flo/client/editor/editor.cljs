@@ -169,18 +169,6 @@
        :ace (do (editor-ace/open-note (get-instance :ace-editor-preview) note open-opts)
                 (set-instance :ace-editor-preview))))))
 
-; delegate goto-search to the active instance
-(defn goto-search 
-  ([keyword] (goto-search keyword false))
-  ([keyword reverse?]
-   (case (:active-instance @state)
-     :excel-editor (editor-excel/goto-search (active-instance) keyword reverse?)
-     :excel-editor-history (editor-excel/goto-search (active-instance) keyword reverse?)
-     :excel-editor-preview (editor-excel/goto-search (active-instance) keyword reverse?)
-     :ace-editor (editor-ace/goto-search (active-instance) keyword reverse?)
-     :ace-editor-history (editor-ace/goto-search (active-instance) keyword reverse?)
-     :ace-editor-preview (editor-ace/goto-search (active-instance) keyword reverse?))))
-
 ; inserts an image with the specified id
 (defn insert-image [image-id]
   (case (:active-instance @state)

@@ -12,4 +12,4 @@
 (defn definition-to-declaration [text] (subs text 0 (dec (count text))))
 
 ; removes the first and last characters of a string
-(defn remove-brackets [text] (subs text 1 (dec (count text))))
+(defn remove-brackets [text] (if (< (count text) 2) text (subs text 1 (dec (count text)))))

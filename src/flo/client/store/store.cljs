@@ -27,10 +27,11 @@
 
 (def plugin-note-name "plugins.js")
 
-; determines a tag for the note
+;; scans through the note for the first occurrence of
+;; an ntag e.g. [&A=] (navigation/note tag)
 (defn find-ntag [content]
-  (let [search (re-find #"\[&[A-Z0-9]+=\]" content)]
-    (if search (subs search 2 (dec (dec (count search)))))))
+  (let [ntag-raw (re-find #"\[&[A-Z0-9]+=\]" content)]
+    (if ntag-raw (subs ntag-raw 2 (dec (dec (count ntag-raw)))))))
 
 (def name-length-limit 100)
 (rf/reg-event-fx
@@ -45,8 +46,7 @@
        :eval-plugins-js plugins-js
        :db
        (s/set-note-selection
-         {:search            nil ; the active label being searched, nil means no search
-          :window-width      (.-innerWidth js/window)
+         {:window-width      (.-innerWidth js/window)
 
           ; if this flag is set to true
           ; changes [:flo/save [name content]] will not be sent
@@ -107,7 +107,6 @@
                                        (n/new-note init-note-name time))))))}
          init-note-name range)})))
 
-(rf/reg-sub :search (fn [db v] (:search db)))
 (rf/reg-sub :window-width (fn [db v] (:window-width db)))
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :status-text (fn [db v] (:status-text db)))
@@ -125,11 +124,8 @@
     {:db (assoc db :table-on table-on?)})))
 
 (rf/reg-event-db :toggle-image-upload (fn [db _] (update db :image-upload not)))
-(rf/reg-event-db :toggle-show-terminal (fn [db [_ search]] (update db :show-terminal not)))
-(rf/reg-event-db :toggle-autosave (fn [db [_ search]] (update db :autosave not)))
-
-(rf/reg-event-db :set-search (fn [db [_ search]] (assoc db :search search)))
-(rf/reg-event-db :swap-search (fn [db [_ f]] (update db :search f)))
+(rf/reg-event-db :toggle-show-terminal (fn [db [_]] (update db :show-terminal not)))
+(rf/reg-event-db :toggle-autosave (fn [db [_]] (update db :autosave not)))
 
 (rf/reg-sub :active-note-name (fn [db v] (:active-note-name db)))
 (rf/reg-sub :active-time-updated (fn [db v] (get-in db [:notes (:active-note-name db) :time-updated])))
@@ -191,8 +187,8 @@
   [(rf/inject-cofx :time)]
   (fn [{:keys [time]} [_ types text]]
     (cond
-      (types "declaration") {:dispatch [:set-search (-> text c/remove-brackets c/declaration-to-definition)]}
-      (types "definition") {:dispatch [:set-search (-> text c/remove-brackets c/definition-to-declaration)]}
+      (types "definition") {:dispatch [:navigate-direct (str "@" (-> text c/remove-brackets c/definition-to-declaration))]}
+      (types "declaration") {:dispatch [:navigate-direct (str "@" (-> text c/remove-brackets c/declaration-to-definition))]}
       (types "reference") {:dispatch [:navigate-direct (-> text c/remove-brackets)]}
       (types "link") {:open-window text})))
 
@@ -225,7 +221,7 @@
       (let [note name-or-note]
         {:set-title (:name note)
          :set-hash (str (:name note) (n/note-selection-suffix note))
-         :open-note [note (:search db)]
+         :open-note [note]
          :db (-> db
                  (assoc :active-note-name (:name note))
                  (assoc :drag-start nil)

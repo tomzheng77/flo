@@ -1,5 +1,6 @@
 (ns flo.client.model.note
   (:require [clojure.data.avl :as avl]
+            [flo.client.functions :refer [find-all]]
             [flo.client.model.selection :as s]))
 
 ;; creates a note object. notes are the central data structure
@@ -48,7 +49,19 @@
 ;; occurrence of text that matches the provided pattern. pattern
 ;; can span multiple lines.
 ;; if pattern does not occur in note, :selection is not changed
-(defn note-select-first-occurrence [note regex])
+(defn note-select-first-occurrence [note match]
+  (if-not note nil
+     (let [content (or (:content note) "")
+           first-match (first (find-all content match))]
+       (if-not first-match note
+         (let [before-start (subs content 0 (:start first-match))
+               before-end (subs content 0 (:end first-match))
+               start-row (count (filter #(= \newline %) before-start))
+               start-column (count (take-while #(not= \newline %) (reverse before-start)))
+               end-row (count (filter #(= \newline %) before-end))
+               end-column (count (take-while #(not= \newline %) (reverse before-end)))
+               range {:start-row start-row :start-column start-column :end-row end-row :end-column end-column}]
+           (assoc note :selection (s/range-to-selection range)))))))
 
 ;; changes the selection of the note to become that specified
 ;; if note is nil, then nil is returned

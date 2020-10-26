@@ -16,12 +16,12 @@
       {:db db :dispatch [:navigation-input nil]})))
 
 (defn navigation-list [db]
-  (let [{:keys [name]} (q/parse (:navigation db))
-        ntag (if name (str/upper-case name))]
+  (let [{:keys [keyword]} (q/parse (:navigation db))
+        ntag (if keyword (str/upper-case keyword))]
     (->> (map val (:notes db))
          (filter
            #(or
-             (str/includes? (:name %) (or name ""))
+             (str/includes? (:name %) (or keyword ""))
              (= (:ntag %) (or ntag ""))))
          (sort-by
            #(vector
@@ -47,24 +47,26 @@
     (let [search-subquery (:search (q/parse new-input))
           selection-subquery (:selection (q/parse new-input))
           old-input (:navigation db)
-          old-name (:name (q/parse old-input))
-          new-name (:name (q/parse new-input))
+          old-name (:keyword (q/parse old-input))
+          new-name (:keyword (q/parse new-input))
           old-index (:navigation-index db)
 
           ; attempt to find the index of the note which has been selected
           ; inside the new list
           old-navs (if old-input (navigation-list db))
           new-navs (if new-input (navigation-list (assoc db :navigation new-input)))
-          old-nav (if old-index (nth old-navs old-index))
-          nav-name (:name old-nav)
+          old-note (if old-index (nth old-navs old-index))
+          nav-name (:name old-note)
           new-index (if (and new-navs nav-name) (ffirst (filter (fn [[_ nav]] (= nav-name (:name nav))) (map-indexed vector new-navs))))
           new-db (assoc db :navigation new-input
                            ; if navigation is turned off or the name has been changed, reset the index
-                           :navigation-index (if (= old-name new-name) old-index new-index)
-                           :search (or (if search-subquery (str/upper-case search-subquery)) (:search db)))]
+                           :navigation-index (if (= old-name new-name) old-index new-index))]
       (if (:navigation new-db)
-        (if old-nav
-          {:db new-db :preview-note [(n/note-set-selection old-nav selection-subquery)]}
+        (if old-note
+          {:db new-db :preview-note
+           [(-> old-note
+                (n/note-select-first-occurrence search-subquery)
+                (n/note-set-selection selection-subquery))]}
           {:db new-db})
         {:db new-db :focus-editor true}))))
 
@@ -78,7 +80,7 @@
         selection (:selection (q/parse (:navigation db)))
         note-with-selection (n/note-set-selection note selection)]
     {:db (assoc db :navigation-index new-index)
-     :preview-note [note-with-selection (:search db)]}))
+     :preview-note [note-with-selection]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
@@ -89,15 +91,18 @@
 (rf/reg-event-fx :navigate-direct
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]} [_ navigation]]
-    (let [navs (navigation-list (update db :navigation #(or navigation %)))
-          note (first navs)
-          search (:search (q/parse (or navigation (:navigation db))))
-          selection (:selection (q/parse (:navigation db)))
-          note-with-selection (n/note-set-selection note selection)]
-      (if-not note
-        {:db (assoc db :search search)}
-        {:db (-> db (assoc :search search) (assoc-in [:notes (:name note)] note))
-         :dispatch [:request-open-note note-with-selection]}))))
+    (let [db-set-nav (update db :navigation #(or navigation %))
+          {:keys [keyword search selection]} (q/parse (:navigation db-set-nav))]
+      (let [navs (navigation-list db-set-nav)
+            note (if keyword (first navs) (get-in db [:notes (:active-note-name db)]))
+            note-with-selection
+            (-> note
+                (n/note-select-first-occurrence search)
+                (n/note-set-selection selection))]
+        (if-not note
+          {:db db}
+          {:db (-> db (assoc-in [:notes (:name note)] note-with-selection))
+           :dispatch [:request-open-note note-with-selection]})))))
 
 ; either navigates to a result of the :navigation query based on :navigation-index
 ; or navigates based on name only
@@ -109,14 +114,21 @@
         ; the down button in order to render a preview, therefore the note can be
         ; displayed by copying from the preview editor
         (let [note (nth navs (:navigation-index db))
-              selection (:selection (q/parse (:navigation db)))
-              note-with-selection (n/note-set-selection note selection)]
+              {:keys [search selection]} (q/parse (:navigation db))
+              note-with-selection
+              (-> note
+                  (n/note-select-first-occurrence search)
+                  (n/note-set-selection selection))]
           {:db (assoc-in db [:notes (:name note)] note-with-selection)
            :dispatch [:request-open-note note-with-selection]})
 
         ; otherwise navigate to name
-        (let [{:keys [name selection]} (q/parse (:navigation db))]
-          (if (or (nil? name) (empty? name))
+        (let [{:keys [keyword search selection]} (q/parse (:navigation db))]
+          (if (or (nil? keyword) (empty? keyword))
             {:db (assoc db :navigation nil :navigation-index nil) :focus-editor true}
-            {:db (update-in db [:notes name] #(n/note-set-selection % selection))
-             :dispatch [:request-open-note name]}))))))
+            (if (get-in db [:notes keyword])
+              {:db (update-in db [:notes keyword]
+                    #(-> % (n/note-select-first-occurrence search)
+                           (n/note-set-selection selection)))
+               :dispatch [:request-open-note keyword]}
+              {:db db :dispatch [:request-open-note keyword]})))))))

@@ -9,7 +9,6 @@
     [flo.client.store.watch :as w]
     [flo.client.store.history :as h]
     [flo.client.network]
-    [flo.client.view :refer [search-bar]]
     [flo.client.ui.navigation :as navigation]
     [flo.client.ui.history-bar :as history-bar]
     [flo.client.constants :as c]
@@ -71,7 +70,6 @@
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation/component])
    [editor/view]
-   (if @(rf/subscribe [:search]) [search-bar])
    [history-bar/component]])
 
 (rd/render [app] (js/document.getElementById "app"))
@@ -90,17 +88,17 @@
     (editor/accept-external-change note)))
 
 (rf/reg-fx :open-note
-  (fn [[note search]]
+  (fn [[note]]
     (save-editor-content)
     (if (prefer-excel (:content note))
-      (editor/open-note note {:search search :use-editor :excel})
-      (editor/open-note note {:search search :use-editor :ace}))))
+      (editor/open-note note {:use-editor :excel})
+      (editor/open-note note {:use-editor :ace}))))
 
 (rf/reg-fx :preview-note
-  (fn [[note search]]
+  (fn [[note]]
     (if (prefer-excel (:content note))
-        (editor/preview-note note {:search search :use-editor :excel})
-        (editor/preview-note note {:search search :use-editor :ace}))))
+        (editor/preview-note note {:use-editor :excel})
+        (editor/preview-note note {:use-editor :ace}))))
 
 (w/add-watches-db :open-history [[:active-note-name] [:history-cursor] h/active-history [:history-direction]]
   (fn [_ _ _ [name timestamp history direction]]
@@ -110,12 +108,8 @@
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
           (if (prefer-excel content)
-            (editor/open-history name content {:search @(rf/subscribe [:search]) :use-editor :excel})
-            (editor/open-history name content {:search @(rf/subscribe [:search]) :use-editor :ace})))))))
-
-(w/add-watch-db :goto-search [:search]
-  (fn [_ _ _ search]
-    (editor/goto-search search false)))
+            (editor/open-history name content {:use-editor :excel})
+            (editor/open-history name content {:use-editor :ace})))))))
 
 (rf/reg-fx :change-editor
   (fn [table-on?]
@@ -140,7 +134,6 @@
         (when (and (#{"Tab"} code))
           (rf/dispatch [:navigate-direct])))
       (when (= "Escape" code)
-        (rf/dispatch [:set-search nil])
         (rf/dispatch [:navigation-input nil]))
       (when (and ctrl-key (= "p" key))
         (.preventDefault original)
@@ -151,16 +144,6 @@
       (when (and ctrl-key (= "i" key))
         (.preventDefault original)
         (.click (js/document.getElementById "file-input")))
-      (when @(rf/subscribe [:search])
-        (when (or (= "Tab" key) (and (= "Enter" key) (nil? @(rf/subscribe [:navigation]))))
-          (.preventDefault original)
-          (editor/goto-search @(rf/subscribe [:search]) shift-key))
-        (when (= "Backspace" key)
-          (rf/dispatch [:swap-search splice-last]))
-        (when (re-matches c/regex-alphanumeric key)
-          (rf/dispatch [:swap-search #(str % (str/upper-case key))]))
-        (when (= "=" key)
-          (rf/dispatch [:swap-search #(str % "=")])))
       (when (and ctrl-key (= "s" key))
         (.preventDefault original)
         (save-editor-content))

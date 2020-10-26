@@ -91,7 +91,7 @@
 
 (defn open-note
   ([this note] (open-note this note nil))
-  ([{:keys [ace-editor]} {:keys [name content selection]} {:keys [search focus?]}]
+  ([{:keys [ace-editor]} {:keys [name content selection]} {:keys [focus?]}]
    (set! (.-autoChangeSelection @ace-editor) true)
    (if (str/ends-with? name ".js")
      (do (.setMode (.-session @ace-editor) "ace/mode/javascript"))
@@ -107,14 +107,9 @@
    (js/setTimeout
      #(do (.resize @ace-editor true)
           (ace/set-selection @ace-editor selection)
-          (if search (ace/navigate @ace-editor search))
           (if focus? (.focus @ace-editor))
           (set! (.-autoChangeSelection @ace-editor) false)
           (.resize @ace-editor true)) 5)))
-
-(defn goto-search [this search backwards]
-  (let [{:keys [active? ace-editor]} this]
-    (ace/navigate @ace-editor search {:backwards backwards})))
 
 (defn insert-image [this image-id]
   (let [{:keys [ace-editor]} this]
