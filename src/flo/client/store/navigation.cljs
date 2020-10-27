@@ -97,7 +97,7 @@
             note (if keyword
                    (if-not precise-match?
                      (first navs)
-                     (some #(= keyword (:name %)) (:notes db)))
+                     (get-in db [:notes keyword]))
                    (get-in db [:notes (:active-note-name db)]))
             note-with-selection
             (-> note
