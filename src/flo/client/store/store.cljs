@@ -217,7 +217,7 @@
       (let [note name-or-note]
         {:set-title (:name note)
          :set-hash (q/to-string (n/note-to-query note))
-         :open-note [note]
+         :open-note [(update note :selection #(or % s/default))]
          :db (-> db
                  (assoc :active-note-name (:name note))
                  (assoc :drag-start nil)

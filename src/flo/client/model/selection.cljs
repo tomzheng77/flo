@@ -36,6 +36,9 @@
 (defn- map-values [m f]
   (into {} (for [[k v] m] [k (f v)])))
 
+;; default selection
+(def default {:cursor {:row 0 :column 0}})
+
 ;; converts each value of a selection range object into int
 ;; and fills in empty fields with default values
 (def infinity 2147483647)
