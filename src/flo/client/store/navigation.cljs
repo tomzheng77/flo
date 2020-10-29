@@ -77,10 +77,9 @@
         max-index (dec (count navs))
         new-index (if-not index 0 (clamp 0 max-index (f index)))
         note (nth navs new-index)
-        selection (:selection (q/parse (:navigation db)))
-        note-with-selection (n/note-set-selection note selection)]
+        selection (:selection (q/parse (:navigation db)))]
     {:db (assoc db :navigation-index new-index)
-     :preview-note [note-with-selection]}))
+     :preview-note [(update note :selection #(or selection % s/default))]}))
 
 ; navigates to the item above/below
 (rf/reg-event-fx :navigate-up (fn [{:keys [db]} _] (update-navigation-index-fx db dec)))
