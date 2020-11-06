@@ -273,7 +273,8 @@
 (rf/reg-event-fx :open-history-page
   [(rf/inject-cofx :time)]
   (fn [{:keys [db time]}]
-    (let [timestamp (or (:history-cursor db) time)
+    (let [note-timestamp (get-in db [:notes (:active-note-name db) :time-updated])
+          timestamp (or (:history-cursor db) (if note-timestamp (+ note-timestamp 1000)) time)
           time-string (.format (js/moment timestamp) "YYYY-MM-DDTHH:mm:ss")
           note-name (:active-note-name db)
           path (str "/history?t=" time-string "#" note-name (n/note-selection-suffix (get (:notes db) note-name)))]
