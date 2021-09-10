@@ -41,6 +41,8 @@
                  [prismatic/dommy "1.1.0"]
                  [hipo "0.5.2"]
                  [testdouble/clojurescript.csv "0.4.5"]
+                 [byte-streams "0.2.4"]
+                 [digest "1.4.10"]
 
                  ; requires /flo/datomic/bin/maven-install
                  [com.datomic/datomic-pro "0.9.5786"]]

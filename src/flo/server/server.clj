@@ -2,6 +2,8 @@
   (:gen-class)
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
+            [byte-streams]
+            [digest]
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
@@ -21,15 +23,14 @@
             [clojure.data :refer [diff]]
             [taoensso.timbre :as timbre :refer [trace debug info error]]
             [taoensso.timbre.appenders.core :as appenders]
-            [flo.server.store :refer [get-note get-note-at set-note get-all-notes]]
+            [flo.server.store :refer [get-note get-note-at set-note get-all-notes get-blob set-blob]]
             [flo.server.static :refer [editor-html login-html]]
             [flo.server.global :as global]
             [clojure.java.io :as io]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [clojure.string :as str])
-  (:import (java.util UUID Date)
-           (java.io FileInputStream ByteArrayOutputStream)
-           (org.httpkit BytesInputStream)))
+  (:import (java.util UUID)
+           (java.io FileInputStream)))
 
 (timbre/set-config!
   {:level      :info
@@ -117,28 +118,52 @@
       {:status 302 :headers {"Location" "/login"} :body ""}
       (ring-ajax-post request)))
   (GET "/file" request
-    (let [id (get (:query-params request) "id")
-          file (io/file @global/upload-dir id)
-          edn (try (read-string (slurp (io/file @global/upload-dir (str id ".edn")))) (catch Exception _ {}))
-          content-type (or (:content-type edn) "text/plain")]
-      (if (and (.exists file) (.isFile file) (.canRead file))
-        {:status 200 :headers {"Content-Type" content-type} :body (new FileInputStream file)}
-        {:status 404 :headers {"Content-Type" "text/plain"} :body (str (pr-str id) " Not Found")})))
-  (POST "/file-upload" req
-    (let [response
-          (let [files (:files (:params req))]
-            (for [file (if (vector? files) files [files])]
-              (let [uuid (UUID/randomUUID)]
-                (store-file file uuid)
-                {:name (:filename file) :id (.toString uuid)})))]
-      {:status 200
-       :headers {"Content-Type" "text/plain"}
-       :body (pr-str (vec response))}))
+    (if-not (:login (:session request))
+      {:status 302 :headers {"Location" "/login"} :body ""}
+      (let [id (get (:query-params request) "id")
+            file (io/file @global/upload-dir id)
+            edn (try (read-string (slurp (io/file @global/upload-dir (str id ".edn")))) (catch Exception _ {}))
+            content-type (or (:content-type edn) "text/plain")]
+        (if (and (.exists file) (.isFile file) (.canRead file))
+          {:status 200 :headers {"Content-Type" content-type} :body (new FileInputStream file)}
+          {:status 404 :headers {"Content-Type" "text/plain"} :body (str (pr-str id) " Not Found")}))))
+  (POST "/file-upload" request
+    (if-not (:login (:session request))
+      {:status 302 :headers {"Location" "/login"} :body ""}
+      (let [response
+            (let [files (:files (:params request))]
+              (for [file (if (vector? files) files [files])]
+                (let [uuid (UUID/randomUUID)]
+                  (store-file file uuid)
+                  {:name (:filename file) :id (.toString uuid)})))]
+        {:status 200
+         :headers {"Content-Type" "text/plain"}
+         :body (pr-str (vec response))})))
+  (GET "/blob" request
+    (if-not (:login (:session request))
+      {:status 302 :headers {"Location" "/login"} :body ""}
+      (let [hash (get (:query-params request) "hash")
+            buffer (:buffer (get-blob hash))]
+        (if buffer
+          {:status 200 :headers {"Content-Type" "application/octet-stream"} :body buffer}
+          {:status 404 :headers {"Content-Type" "text/plain"} :body (str (pr-str hash) " Not Found")}))))
+  (POST "/blob-upload" request
+    (if-not (:login (:session request))
+      {:status 302 :headers {"Location" "/login"} :body ""}
+      (let [response
+        (let [files (:files (:params request))]
+          (for [file (if (vector? files) files [files])]
+            (let [buffer (byte-streams/to-byte-array file)
+                  hash (digest/sha1 buffer)]
+              (set-blob hash buffer)
+              {:hash hash})))]
+        {:status 200
+         :headers {"Content-Type" "text/plain"}
+         :body (pr-str (vec response))})))
   (POST "/login" request
     (if (:login (:session request))
-      {:status  302 :headers {"Location" "/editor"} :session (:session request) :body ""}
-      (let [password (:password (:params request))
-            session (:session request)]
+      {:status 302 :headers {"Location" "/editor"} :session (:session request) :body ""}
+      (let [password (:password (:params request)) session (:session request)]
         (if (or (empty? @global/password) (= @global/password password))
           {:status 302 :headers {"Location" "/editor"} :body "" :session (assoc session :login true)}
           {:status 302 :headers {"Location" "/login"} :body "" :session session}))))

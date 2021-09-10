@@ -26,7 +26,16 @@
              {:db/ident       :note/content
               :db/valueType   :db.type/bytes
               :db/cardinality :db.cardinality/one
-              :db/doc         "nippy serialized content"}])
+              :db/doc         "nippy serialized content"}
+             {:db/ident       :blob/hash
+              :db/unique      :db.unique/identity
+              :db/valueType   :db.type/string
+              :db/cardinality :db.cardinality/one
+              :db/doc         "unique hash of a blob"}
+             {:db/ident       :blob/buffer
+              :db/valueType   :db.type/bytes
+              :db/cardinality :db.cardinality/one
+              :db/doc         "byte buffer of the its content"}])
 
 ; connections are long lived and cached by d/connect
 ; hence there is no need to store the connection
@@ -60,6 +69,13 @@
     [?e :note/content ?content ?tx2]
     [?tx1 :db/txInstant ?new-time]
     [?tx2 :db/txInstant ?upd-time]])
+
+(defn blob-q [hash]
+  `[:find ?new-time ?buffer
+    :where
+    [?e :blob/hash ~hash ?tx1]
+    [?e :blob/buffer ?buffer ?tx2]
+    [?tx1 :db/txInstant ?new-time]])
 
 (def date-regex (re-pattern #"[0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4}"))
 (def date-range-regex (re-pattern #"[0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4} to [0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4}"))
@@ -133,3 +149,14 @@
 
 (defn set-note [name content]
   (d/transact-async (get-conn) [{:note/name name :note/content (nippy/freeze content)}]))
+
+(defn set-blob [hash buffer]
+  (d/transact-async (get-conn) [{:blob/hash hash :blob/buffer buffer}]))
+
+(defn get-blob
+  ([hash] (get-blob hash (d/db (get-conn))))
+  ([hash db]
+   (let [[time-created buffer] (first (d/q (blob-q hash) db))]
+     {:hash hash
+      :time-created (if time-created (.getTime time-created))
+      :buffer buffer})))
