@@ -80,8 +80,7 @@
 (def date-regex (re-pattern #"[0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4}"))
 (def date-range-regex (re-pattern #"[0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4} to [0-9]{1,2} (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec) [0-9]{4}"))
 
-; parse date function here so that when the "history" feature is used
-; it can handle whichever format the user passes in
+; converts a string to a `LocalDateTime` or `LocalDate`
 (defn parse-date [in]
   (let [date-format-1 (DateTimeFormatter/ofPattern "yyyy-MM-dd")
         date-format-2 (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss")

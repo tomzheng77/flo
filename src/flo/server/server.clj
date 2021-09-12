@@ -107,6 +107,8 @@
     (io/copy tempfile out-file)
     (spit edn-file (pr-str {:name filename :content-type content-type :size size}))))
 
+(def redirect-login {:status 302 :headers {"Location" "/login"} :body ""})
+
 (defroutes app-routes
   (route/resources "/" {:root "public"})
   (GET "/chsk" request
@@ -129,19 +131,19 @@
           {:status 404 :headers {"Content-Type" "text/plain"} :body (str (pr-str id) " Not Found")}))))
   (POST "/file-upload" request
     (if-not (:login (:session request))
-      {:status 302 :headers {"Location" "/login"} :body ""}
+      redirect-login
       (let [response
-            (let [files (:files (:params request))]
-              (for [file (if (vector? files) files [files])]
-                (let [uuid (UUID/randomUUID)]
-                  (store-file file uuid)
-                  {:name (:filename file) :id (.toString uuid)})))]
+        (let [files (:files (:params request))]
+          (for [file (if (vector? files) files [files])]
+            (let [uuid (UUID/randomUUID)]
+              (store-file file uuid)
+              {:name (:filename file) :id (.toString uuid)})))]
         {:status 200
          :headers {"Content-Type" "text/plain"}
          :body (pr-str (vec response))})))
   (GET "/blob" request
     (if-not (:login (:session request))
-      {:status 302 :headers {"Location" "/login"} :body ""}
+      redirect-login
       (let [hash (get (:query-params request) "hash")
             buffer (:buffer (get-blob hash))]
         (if buffer
@@ -149,7 +151,7 @@
           {:status 404 :headers {"Content-Type" "text/plain"} :body (str (pr-str hash) " Not Found")}))))
   (POST "/blob-upload" request
     (if-not (:login (:session request))
-      {:status 302 :headers {"Location" "/login"} :body ""}
+      redirect-login
       (let [response
         (let [files (:files (:params request))]
           (for [file (if (vector? files) files [files])]
@@ -179,10 +181,10 @@
          :headers {"Content-Type" "text/html"}
          :session (:session request)
          :body (login-html)})))
-  (GET "/" [] {:status 302 :headers {"Location" "/login"} :body ""})
+  (GET "/" [] redirect-login)
   (GET "/history" request
     (if-not (:login (:session request))
-      {:status 302 :headers {"Location" "/login"} :body ""}
+      redirect-login
       (let [time (get (:query-params request) "t" "2019-05-06T12:00:00")
             notes (get-all-notes time)
             session (assoc (:session request) :uid (.toString (UUID/randomUUID)))
@@ -196,7 +198,7 @@
                      :read-only true})})))
   (GET "/editor" request
     (if-not (:login (:session request))
-      {:status 302 :headers {"Location" "/login"} :body ""}
+      redirect-login
       (let [notes (get-all-notes)
             session (assoc (:session request) :uid (.toString (UUID/randomUUID)))
             field (anti-forgery-field)]
