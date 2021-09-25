@@ -5,7 +5,8 @@
   (:require
     [flo.client.editor.editor-ace :as editor-ace]
     [flo.client.editor.editor-excel :as editor-excel]
-    [flo.client.editor.editor-excel :as editor-graph]
+    [flo.client.editor.editor-graph :as editor-graph]
+    [clojure.string :as str]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
     [cljs.pprint :refer [pprint]]
@@ -66,20 +67,27 @@
    #(event-handler :excel-editor-history %)})
 
   ; mock wiring of the graph editor
-  :graph-editor (editor-graph/new-instance {:event-handler #(event-handler :ace-editor %)})
+  :graph-editor (editor-graph/new-instance {:event-handler #(event-handler :graph-editor %)})
   :graph-editor-preview
   (editor-graph/new-instance {
    :read-only? true
    :init-active? false
    :event-handler
-   #(event-handler :ace-editor-preview %)})
+   #(event-handler :graph-editor-preview %)})
 
   :graph-editor-history
   (editor-graph/new-instance {
    :read-only? true
    :init-active? false
    :event-handler
-   #(event-handler :ace-editor-history %)})}})
+   #(event-handler :graph-editor-history %)})}})
+
+(defn preferred-editor-type [content]
+  (let [s content]
+    (if (or (str/starts-with? s "\"<TBL>") (str/starts-with? s "<TBL>"))
+     :excel
+     (if (str/starts-with? s "{")
+       :graph :ace))))
 
 (defn active-instance []
   ((:active-instance @state) (:instances @state)))
@@ -116,6 +124,7 @@
 
 (defn set-instance [instance-label]  
   ; set the active instance
+  (print instance-label)
   (swap! state #(assoc % :active-instance instance-label))
 
   ; set the known last instance before activating a preview or history instance

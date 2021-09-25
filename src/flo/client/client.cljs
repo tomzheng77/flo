@@ -90,15 +90,13 @@
 (rf/reg-fx :open-note
   (fn [[note]]
     (save-editor-content)
-    (if (prefer-excel (:content note))
-      (editor/open-note note {:use-editor :excel})
-      (editor/open-note note {:use-editor :ace}))))
+    (let [editor-type (editor/preferred-editor-type (:content note))]
+      (editor/open-note note {:use-editor editor-type}))))
 
 (rf/reg-fx :preview-note
   (fn [[note]]
-    (if (prefer-excel (:content note))
-        (editor/preview-note note {:use-editor :excel})
-        (editor/preview-note note {:use-editor :ace}))))
+    (let [editor-type (editor/preferred-editor-type (:content note))]
+      (editor/preview-note note {:use-editor editor-type}))))
 
 (w/add-watches-db :open-history [[:active-note-name] [:history-cursor] h/active-history [:history-direction]]
   (fn [_ _ _ [name timestamp history direction]]
@@ -107,9 +105,8 @@
     (when timestamp
       (let [[_ content] (avl/nearest history <= timestamp)]
         (when content
-          (if (prefer-excel content)
-            (editor/open-history name content {:use-editor :excel})
-            (editor/open-history name content {:use-editor :ace})))))))
+          (let [editor-type (editor/preferred-editor-type content)]
+            (editor/open-history name content {:use-editor editor-type})))))))
 
 (rf/reg-fx :change-editor
   (fn [editor-type]

@@ -47,6 +47,7 @@
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
       [:link {:rel "icon" :href "cljs-logo-icon-32.png"}]
       [:link {:href "css/style.css" :rel "stylesheet"}]
+      [:link {:href "mxgraph/styles/grapheditor.css" :rel "stylesheet"}]
       [:style
        (css [:#app-inner
              {:margin "0" :display "flex" :flex-direction "column" :justify-content "center"}]
@@ -73,6 +74,7 @@
       [:script {:src "mxgraph/js/Menus.js" :type "text/javascript"}]
       [:script {:src "mxgraph/js/Toolbar.js" :type "text/javascript"}]
       [:script {:src "mxgraph/js/Dialogs.js" :type "text/javascript"}]
+      [:script {:src "mxgraph/js/mxInterface.js" :type "text/javascript"}]
 
       [:script {:src "ace/ace.js" :type "text/javascript"}]
       [:script {:src "ace/ext-emmet.js" :type "text/javascript"}]
