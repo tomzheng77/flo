@@ -62,7 +62,8 @@
         ; when set, the client will prefer to open each note
         ; using the table mode
         ; the client may still show a table even if this is not set
-        :table-on          false
+        ; :ace, :excel or :graph
+        :editor-type       :ace
 
         ; when set, a terminal window should be shown
         :show-terminal     false
@@ -107,17 +108,14 @@
 (rf/reg-sub :image-upload (fn [db v] (:image-upload db)))
 (rf/reg-sub :status-text (fn [db v] (:status-text db)))
 
-(rf/reg-sub :table-on (fn [db v] (:table-on db)))
+(rf/reg-sub :editor-type (fn [db v] (:editor-type db)))
 (rf/reg-sub :show-terminal (fn [db v] (:show-terminal db)))
 (rf/reg-sub :autosave (fn [db v] (:autosave db)))
 
-(rf/reg-event-fx :toggle-table-on (fn [{:keys [db]} [_]]
-  {:db (update db :table-on not) :change-editor (not (:table-on db))}))
-
-(rf/reg-event-fx :set-table-on (fn [{:keys [db]} [_ table-on? cascade?]]
-  (if cascade?
-    {:db (assoc db :table-on table-on?) :change-editor table-on?}
-    {:db (assoc db :table-on table-on?)})))
+(rf/reg-event-fx :set-editor-type (fn [{:keys [db]} [_ editor-type trigger-change-editor-fx?]]
+  (if trigger-change-editor-fx?
+    {:db (assoc db :editor-type editor-type) :change-editor editor-type}
+    {:db (assoc db :editor-type editor-type)})))
 
 (rf/reg-event-db :toggle-image-upload (fn [db _] (update db :image-upload not)))
 (rf/reg-event-db :toggle-show-terminal (fn [db [_]] (update db :show-terminal not)))

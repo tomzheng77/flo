@@ -10,7 +10,7 @@
     [flo.client.store.history :as h]
     [flo.client.network]
     [flo.client.ui.navigation :as navigation]
-    [flo.client.ui.history-bar :as history-bar]
+    [flo.client.ui.bottom-bar :as bottom-bar]
     [flo.client.constants :as c]
     [cljs.core.match :refer-macros [match]]
     [cljs.reader :refer [read-string]]
@@ -70,7 +70,7 @@
    [file-form]
    (if @(rf/subscribe [:navigation]) ^{:key "nav"} [navigation/component])
    [editor/view]
-   [history-bar/component]])
+   [bottom-bar/component]])
 
 (rd/render [app] (js/document.getElementById "app"))
 
@@ -112,9 +112,8 @@
             (editor/open-history name content {:use-editor :ace})))))))
 
 (rf/reg-fx :change-editor
-  (fn [table-on?]
-    (let [use-editor (if table-on? :excel :ace)]
-      (editor/change-editor use-editor))))
+  (fn [editor-type]
+    (editor/change-editor editor-type)))
 
 (w/add-watch-db :preview-closed [:navigation-index]
   (fn [_ _ _ navigation-index]

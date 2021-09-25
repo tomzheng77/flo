@@ -1,10 +1,10 @@
-(ns flo.client.ui.history-bar
+(ns flo.client.ui.bottom-bar
   (:require
     [re-frame.core :as rf]
     [reagent.core :as r]
     [flo.client.model.event :as e]))
 
-(defn- history-limit [label limit-ms]
+(defn- history-limit-button [label limit-ms]
   (let [hover? (r/atom false)
         press? (r/atom false)]
     (fn []
@@ -28,6 +28,30 @@
              :on-mouse-up #(reset! press? false)
              :on-click #(rf/dispatch [:set-history-limit limit-ms])} label])))
 
+(defn- editor-type-button [label editor-type]
+  (let [hover? (r/atom false)
+        press? (r/atom false)]
+    (fn []
+      [:div {:style {:height "24px"
+                     :font-size "11px"
+                     :line-height "24px"
+                     :text-align "center"
+                     :color "rgba(255, 255, 255, 0.5)"
+                     :user-select "none"
+                     :font-family "Monospace"
+                     :cursor "pointer"
+                     :border-right "1px solid rgba(255, 255, 255, 0.3)"
+                     :padding-left 8
+                     :padding-right 8
+                     :background-color
+                     (cond
+                       (or @press? (= editor-type @(rf/subscribe [:editor-type]))) "rgba(0, 0, 0, 0.3)"
+                       @hover? "rgba(0, 0, 0, 0.1)")}
+             :on-mouse-over #(reset! hover? true)
+             :on-mouse-out #(do (reset! hover? false) (reset! press? false))
+             :on-mouse-down #(reset! press? true)
+             :on-mouse-up #(reset! press? false)
+             :on-click #(rf/dispatch [:set-editor-type editor-type true])} label])))
 
 (defn- toggle-button [label event subscription]
   (let [hover? (r/atom false)
@@ -128,14 +152,16 @@
                  :overflow         "hidden"
                  :display          "flex"
                  :align-items      "center"}}
-   [history-limit "5m" (* 1000 60 5)]
-   [history-limit "H" (* 1000 60 60)]
-   [history-limit "D" (* 1000 60 60 24)]
-   [history-limit "W" (* 1000 60 60 24 7)]
-   [history-limit "M" (* 1000 60 60 24 30)]
-   [history-limit "Y" (* 1000 60 60 24 365)]
-   [history-limit "A" (* 1000 60 60 24 10000)]
-   [toggle-button "Table" :toggle-table-on :table-on]
+   [history-limit-button "5m" (* 1000 60 5)]
+   [history-limit-button "H" (* 1000 60 60)]
+   [history-limit-button "D" (* 1000 60 60 24)]
+   [history-limit-button "W" (* 1000 60 60 24 7)]
+   [history-limit-button "M" (* 1000 60 60 24 30)]
+   [history-limit-button "Y" (* 1000 60 60 24 365)]
+   [history-limit-button "A" (* 1000 60 60 24 10000)]
+   [editor-type-button "Ace" :ace]
+   [editor-type-button "Excel" :excel]
+   [editor-type-button "Graph" :graph]
    [toggle-button "Autosave" :toggle-autosave :autosave]
    [plugin-button "F1"]
    [plugin-button "F2"]
