@@ -60,15 +60,15 @@
 ;       db-uri (str "datomic:dev://localhost:4334/" db-name)]
 ;     (d/transact
 ;       (d/connect db-uri)
-;       {:db/ident       :blob/hash
-;        :db/unique      :db.unique/identity
-;        :db/valueType   :db.type/string
-;        :db/cardinality :db.cardinality/one
-;        :db/doc         "sha1 hash of a blob"}
-;       {:db/ident       :blob/buffer
-;        :db/valueType   :db.type/bytes
-;        :db/cardinality :db.cardinality/one
-;        :db/doc         "byte buffer of its content"}))
+;       [{:db/ident       :blob/hash
+;              :db/unique      :db.unique/identity
+;              :db/valueType   :db.type/string
+;              :db/cardinality :db.cardinality/one
+;              :db/doc         "sha1 hash of a blob"}
+;        {:db/ident       :blob/buffer
+;         :db/valueType   :db.type/bytes
+;         :db/cardinality :db.cardinality/one
+;         :db/doc         "byte buffer of its content"}]))
 
 (defn all-notes-q []
   '[:find ?name ?new-time ?upd-time ?content
