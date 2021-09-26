@@ -87,7 +87,7 @@
     (if (or (str/starts-with? s "\"<TBL>") (str/starts-with? s "<TBL>"))
      :excel
      (if (str/starts-with? s "{")
-       :graph :ace))))
+       :graph :graph))))
 
 (defn active-instance []
   ((:active-instance @state) (:instances @state)))

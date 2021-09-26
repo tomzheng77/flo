@@ -157,7 +157,8 @@
           (for [file (if (vector? files) files [files])]
             (let [buffer (byte-streams/to-byte-array file)
                   hash (digest/sha1 buffer)]
-              (set-blob hash buffer)
+              (if-not (:buffer (get-blob hash))
+                (set-blob hash buffer))
               {:hash hash})))]
         {:status 200
          :headers {"Content-Type" "text/plain"}
