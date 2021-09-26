@@ -28,8 +28,9 @@
 ;; scans through the note for the first occurrence of
 ;; an ntag e.g. [&A=] (navigation/note tag)
 (defn find-ntag [content]
-  (let [ntag-raw (re-find #"\[&[A-Z0-9]+=\]" content)]
-    (if ntag-raw (subs ntag-raw 2 (dec (dec (count ntag-raw)))))))
+  (if content
+    (let [ntag-raw (re-find #"\[&[A-Z0-9]+=\]" content)]
+      (if ntag-raw (subs ntag-raw 2 (dec (dec (count ntag-raw))))))))
 
 (def name-length-limit 100)
 (rf/reg-event-fx

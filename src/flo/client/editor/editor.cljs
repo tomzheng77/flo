@@ -83,11 +83,12 @@
    #(event-handler :graph-editor-history %)})}})
 
 (defn preferred-editor-type [content]
-  (let [s content]
-    (if (or (str/starts-with? s "\"<TBL>") (str/starts-with? s "<TBL>"))
-     :excel
-     (if (str/starts-with? s "{")
-       :graph :graph))))
+  (if-not content :ace
+    (let [s content]
+      (if (or (str/starts-with? s "\"<TBL>") (str/starts-with? s "<TBL>"))
+       :excel
+       (if (str/starts-with? s "{")
+         :graph :ace)))))
 
 (defn active-instance []
   ((:active-instance @state) (:instances @state)))
@@ -124,7 +125,6 @@
 
 (defn set-instance [instance-label]  
   ; set the active instance
-  (print instance-label)
   (swap! state #(assoc % :active-instance instance-label))
 
   ; set the known last instance before activating a preview or history instance

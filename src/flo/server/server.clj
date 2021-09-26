@@ -30,6 +30,7 @@
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [clojure.string :as str])
   (:import (java.util UUID)
+           (java.io ByteArrayInputStream)
            (java.io FileInputStream)))
 
 (timbre/set-config!
@@ -147,7 +148,7 @@
       (let [hash (get (:query-params request) "hash")
             buffer (:buffer (get-blob hash))]
         (if buffer
-          {:status 200 :headers {"Content-Type" "application/octet-stream"} :body buffer}
+          {:status 200 :headers {"Content-Type" "application/octet-stream"} :body (new ByteArrayInputStream buffer)}
           {:status 404 :headers {"Content-Type" "text/plain"} :body (str (pr-str hash) " Not Found")}))))
   (POST "/blob-upload" request
     (if-not (:login (:session request))
@@ -155,7 +156,7 @@
       (let [response
         (let [files (:files (:params request))]
           (for [file (if (vector? files) files [files])]
-            (let [buffer (byte-streams/to-byte-array file)
+            (let [buffer (byte-streams/to-byte-array (:tempfile file))
                   hash (digest/sha1 buffer)]
               (if-not (:buffer (get-blob hash))
                 (set-blob hash buffer))

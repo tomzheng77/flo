@@ -58,6 +58,7 @@
      [:body
       [:pre#init {:style "display: none"} (base64-encode (pr-str init))]
       [:div#app]
+      [:script {:src "mxgraph/js/jquery-3.6.0.slim.min.js" :type "text/javascript"}]
       [:script {:src "mxgraph/js/sha1.js" :type "text/javascript"}]
       [:script {:src "mxgraph/js/Init.js" :type "text/javascript"}]
       [:script {:src "mxgraph/deflate/pako.min.js" :type "text/javascript"}]
