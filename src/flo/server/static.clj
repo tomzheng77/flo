@@ -51,7 +51,7 @@
       [:style
        (css [:#app-inner
              {:margin "0" :display "flex" :flex-direction "column" :justify-content "center"}]
-            [:html :body :#app :#app-inner {:margin 0 :height "100%"}]
+            [:html :body :#app :#app-inner {:margin 0 :height "100%" :position "relative" :overflow "hidden"}]
             [:#editor :#editor-read-only
              {:flex-grow "1" :flex-shrink "1" :display "block" :border-bottom "none" :overflow-y "hidden"}])]
       [:title "FloNote"]]
