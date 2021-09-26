@@ -155,7 +155,7 @@
 (defn view []
   (into []
     (concat
-      [:div {:style {:flex-grow 1 :flex-shrink 1 :height 100 :display "flex" :flex-direction "column"}}]
+      [:div {:style {:flex-grow 1 :flex-shrink 1 :display "flex" :flex-direction "column"}}]
       (into [] (for [[k instance] (:instances @state)] [(:view instance)])))))
 
 ; opens the note in the appropriate instance
