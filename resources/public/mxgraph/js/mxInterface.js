@@ -49,7 +49,7 @@ function mxInterfaceInit(container) {
       // Displays an error message if the browser is not supported.
       mxUtils.error('Browser is not supported!', 200, false);
     } else {
-      mxEvent.addListener(container, 'dragover', function(evt)
+      mxEvent.addListener(graph.container, 'dragover', function(evt)
       {
         if (graph.isEnabled())
         {
@@ -58,7 +58,7 @@ function mxInterfaceInit(container) {
         }
       });
       
-      mxEvent.addListener(container, 'drop', function(evt)
+      mxEvent.addListener(graph.container, 'drop', function(evt)
       {
         if (graph.isEnabled())
         {
@@ -111,6 +111,7 @@ function mxInterfaceInit(container) {
     container.innerHTML = '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
   });
 
+  instance.container = container;
   instance.cache = {};
   instance.notInGraph = {};
   return instance;
@@ -256,6 +257,7 @@ function insertNewVertex(instance, x, y, w, h, style) {
 // Use barrier to handle multiple files as a single insert.
 function handleDrop(instance, graph, file, x, y)
 {
+  console.log('drop');
   if (file.type.substring(0, 5) == 'image')
   {
     var reader = new FileReader();
