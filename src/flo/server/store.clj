@@ -31,11 +31,11 @@
               :db/unique      :db.unique/identity
               :db/valueType   :db.type/string
               :db/cardinality :db.cardinality/one
-              :db/doc         "unique hash of a blob"}
+              :db/doc         "sha1 hash of a blob"}
              {:db/ident       :blob/buffer
               :db/valueType   :db.type/bytes
               :db/cardinality :db.cardinality/one
-              :db/doc         "byte buffer of the its content"}])
+              :db/doc         "byte buffer of its content"}])
 
 ; connections are long lived and cached by d/connect
 ; hence there is no need to store the connection
@@ -53,6 +53,22 @@
           ; initialize the schema
           (d/transact (d/connect db-uri) schema))))
     (d/connect db-uri)))
+
+
+; migration script to add blobs to flo-ace
+; (let [db-name "flo-ace"
+;       db-uri (str "datomic:dev://localhost:4334/" db-name)]
+;     (d/transact
+;       (d/connect db-uri)
+;       {:db/ident       :blob/hash
+;        :db/unique      :db.unique/identity
+;        :db/valueType   :db.type/string
+;        :db/cardinality :db.cardinality/one
+;        :db/doc         "sha1 hash of a blob"}
+;       {:db/ident       :blob/buffer
+;        :db/valueType   :db.type/bytes
+;        :db/cardinality :db.cardinality/one
+;        :db/doc         "byte buffer of its content"}))
 
 (defn all-notes-q []
   '[:find ?name ?new-time ?upd-time ?content
