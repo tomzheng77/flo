@@ -111,6 +111,8 @@ function mxInterfaceInit(container) {
     container.innerHTML = '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
   });
 
+  instance.cache = {};
+  instance.notInGraph = {};
   return instance;
 };
 
@@ -119,11 +121,12 @@ function round00(num) {
 }
 
 // cache from hash to Promise<content>
-var cache = {};
+// moved to instance since there can be multiple (three) editors
+// var instance.cache = {};
 
 // vertices which have been added by setContent but haven't
 // shown up in the graph yet (waiting for AJAX to load)
-var notInGraph = {};
+// var instance.notInGraph = {};
 
 function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -155,9 +158,9 @@ function mxInterfaceGetContent(instance) {
     }
   }
 
-  Object.keys(notInGraph).forEach(function (key) {
+  Object.keys(instance.notInGraph).forEach(function (key) {
     if (key !== 'uuid') {
-      json.vs.push(notInGraph[key]);
+      json.vs.push(instance.notInGraph[key]);
     }
   });
 
@@ -196,16 +199,16 @@ async function mxInterfaceSetContent(instance, content) {
   graph.removeCells(graph.getChildVertices(graph.getDefaultParent()));
 
   var thisContentUUID = uuidv4();
-  notInGraph = {};  
-  notInGraph['uuid'] = thisContentUUID;
+  instance.notInGraph = {};  
+  instance.notInGraph['uuid'] = thisContentUUID;
   for (var i = 0; i < json.vs.length; i++) {
-    notInGraph[i] = json.vs[i];
+    instance.notInGraph[i] = json.vs[i];
   }
   json.vs.forEach(function (v, i) {
     // x, y, w, h, style_sha1
     var hash = v[4];
-    if (typeof cache[hash] === 'undefined') {
-      cache[hash] = $.ajax({
+    if (typeof instance.cache[hash] === 'undefined') {
+      instance.cache[hash] = $.ajax({
         type: 'GET',
         data: {
           hash: hash
@@ -215,9 +218,9 @@ async function mxInterfaceSetContent(instance, content) {
       });
     }
 
-    cache[hash].then(function (style) {
-      if (notInGraph['uuid'] === thisContentUUID) {
-        delete notInGraph[i];
+    instance.cache[hash].then(function (style) {
+      if (instance.notInGraph['uuid'] === thisContentUUID) {
+        delete instance.notInGraph[i];
         graph.insertVertex(null, null, '', v[0], v[1], v[2], v[3], style);
       }
     });
@@ -269,7 +272,7 @@ function handleDrop(instance, graph, file, x, y)
         var comma = data.indexOf(',');
         var svgText = atob(data.substring(comma + 1));
         var root = mxUtils.parseXml(svgText);
-        
+
         // Parses SVG to find width and height
         if (root != null)
         {
@@ -280,10 +283,10 @@ function handleDrop(instance, graph, file, x, y)
             var svgRoot = svgs[0];
             var w = parseFloat(svgRoot.getAttribute('width'));
             var h = parseFloat(svgRoot.getAttribute('height'));
-            
+
             // Check if viewBox attribute already exists
             var vb = svgRoot.getAttribute('viewBox');
-            
+
             if (vb == null || vb.length == 0)
             {
               svgRoot.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
@@ -293,7 +296,7 @@ function handleDrop(instance, graph, file, x, y)
             else if (isNaN(w) || isNaN(h))
             {
               var tokens = vb.split(' ');
-              
+
               if (tokens.length > 3)
               {
                 w = parseFloat(tokens[2]);
@@ -303,7 +306,7 @@ function handleDrop(instance, graph, file, x, y)
 
             w = Math.max(1, Math.round(w));
             h = Math.max(1, Math.round(h));
-            
+
             data = 'data:image/svg+xml,' + btoa(mxUtils.getXml(svgs[0], '\n'));
             var style = 'shape=image;image=' + data + ';';
             insertNewVertex(instance, x, y, w, h, style);
@@ -313,7 +316,7 @@ function handleDrop(instance, graph, file, x, y)
       else
       {
         var img = new Image();
-        
+
         img.onload = function()
         {
           var w = Math.max(1, img.width);
@@ -321,7 +324,7 @@ function handleDrop(instance, graph, file, x, y)
 
           // Converts format of data url to cell style value for use in vertex
           var semi = data.indexOf(';');
-          
+
           if (semi > 0)
           {
             data = data.substring(0, semi) + data.substring(data.indexOf(',', semi + 1));
@@ -334,7 +337,7 @@ function handleDrop(instance, graph, file, x, y)
         img.src = data;
       }
     };
-    
+
     reader.readAsDataURL(file);
   }
 };

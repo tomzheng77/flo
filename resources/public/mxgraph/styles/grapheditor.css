@@ -1,3 +1,8 @@
+/** {
+  outline: 1px solid #f00 !important;
+}*/
+/* NOTE: figwheel's additional components can cause scrollbars to appear */
+
 .geEditor {
 	font-family:Helvetica,Arial,sans-serif;
 	font-size:14px;
