@@ -80,7 +80,9 @@
    :read-only? true
    :init-active? false
    :event-handler
-   #(event-handler :graph-editor-history %)})}})
+   #(event-handler :graph-editor-history %)})
+
+  }})
 
 (defn preferred-editor-type [content]
   (if-not content :ace

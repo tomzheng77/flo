@@ -1,10 +1,19 @@
 /**
- * wiring between flo and mxgraph
+ * wiring between flo and mxgraph, most important functions
+ * are init, get-content and set-content
  */
 
 function mxInterfaceInit(container) {
   var editorUiInit = EditorUi.prototype.init;
   var instance = {};
+  var editorPromiseResolve = null;
+  var editorUiPromiseResolve = null;
+  instance.editorPromise = new Promise((resolve, reject) => {
+    editorPromiseResolve = resolve;
+  });
+  instance.editorUiPromise = new Promise((resolve, reject) => {
+    editorUiPromiseResolve = resolve;
+  });
 
   EditorUi.prototype.init = function()
   {
@@ -94,6 +103,8 @@ function mxInterfaceInit(container) {
     // Main
     instance.editor = new Editor(urlParams['chrome'] == '0', themes);
     instance.editorUi = new EditorUi(instance.editor, container);
+    editorPromiseResolve(instance.editor);
+    editorUiPromiseResolve(instance.editorUi);
     instance.contentRaw = null;
   }, function()
   {
@@ -105,6 +116,20 @@ function mxInterfaceInit(container) {
 
 function round00(num) {
   return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
+// cache from hash to Promise<content>
+var cache = {};
+
+// vertices which have been added by setContent but haven't
+// shown up in the graph yet (waiting for AJAX to load)
+var notInGraph = {};
+
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 
 function mxInterfaceGetContent(instance) {
@@ -130,6 +155,12 @@ function mxInterfaceGetContent(instance) {
     }
   }
 
+  Object.keys(notInGraph).forEach(function (key) {
+    if (key !== 'uuid') {
+      json.vs.push(notInGraph[key]);
+    }
+  });
+
   var buffer = '';
   buffer += '{\n'
   buffer += '  "format_version": ' + json.format_version + ',\n'
@@ -146,10 +177,7 @@ function mxInterfaceGetContent(instance) {
   return buffer;
 };
 
-// cache from hash to Promise<content>
-var cache = {};
-
-function mxInterfaceSetContent(instance, content) {
+async function mxInterfaceSetContent(instance, content) {
   instance.contentRaw = content;
   var json = null;
   try {
@@ -163,33 +191,42 @@ function mxInterfaceSetContent(instance, content) {
     return;
   }
 
-  var editor = instance.editor;
-  if (editor != null) {
-    var graph = editor.graph;
-    graph.removeCells(graph.getChildVertices(graph.getDefaultParent()));
-    for (var i = 0; i < json.vs.length; i++) {
-      // x, y, w, h, style_sha1
-      var v = json.vs[i];
-      var hash = v[4];
-      if (typeof cache[hash] === 'undefined') {
-        cache[hash] = $.ajax({
-          type: 'GET',
-          data: {
-            hash: hash
-          },
-          url: '/blob',
-          dataType : 'text'
-        });
-      }
+  var editor = await instance.editorPromise;
+  var graph = editor.graph;
+  graph.removeCells(graph.getChildVertices(graph.getDefaultParent()));
 
-      cache[hash].then(function (style) {
-        graph.insertVertex(null, null, '', v[0], v[1], v[2], v[3], style);
+  var thisContentUUID = uuidv4();
+  notInGraph = {};  
+  notInGraph['uuid'] = thisContentUUID;
+  for (var i = 0; i < json.vs.length; i++) {
+    notInGraph[i] = json.vs[i];
+  }
+  json.vs.forEach(function (v, i) {
+    // x, y, w, h, style_sha1
+    var hash = v[4];
+    if (typeof cache[hash] === 'undefined') {
+      cache[hash] = $.ajax({
+        type: 'GET',
+        data: {
+          hash: hash
+        },
+        url: '/blob',
+        dataType : 'text'
       });
     }
-  }
+
+    cache[hash].then(function (style) {
+      if (notInGraph['uuid'] === thisContentUUID) {
+        delete notInGraph[i];
+        graph.insertVertex(null, null, '', v[0], v[1], v[2], v[3], style);
+      }
+    });
+  });
 };
 
-function insertVertex(instance, x, y, w, h, style) {
+// main difference from graph.insertVertex is that this assumes
+// the style of the vertex is new and will upload it
+function insertNewVertex(instance, x, y, w, h, style) {
   var editor = instance.editor;
   if (editor != null) {
     var graph = editor.graph;
@@ -206,7 +243,7 @@ function insertVertex(instance, x, y, w, h, style) {
       url: '/blob-upload',
       dataType : 'text',
       success: function(text) {
-        console.log(text);
+        // console.log(text);
       }
     });
   }
@@ -269,7 +306,7 @@ function handleDrop(instance, graph, file, x, y)
             
             data = 'data:image/svg+xml,' + btoa(mxUtils.getXml(svgs[0], '\n'));
             var style = 'shape=image;image=' + data + ';';
-            insertVertex(instance, x, y, w, h, style);
+            insertNewVertex(instance, x, y, w, h, style);
           }
         }
       }
@@ -281,7 +318,7 @@ function handleDrop(instance, graph, file, x, y)
         {
           var w = Math.max(1, img.width);
           var h = Math.max(1, img.height);
-          
+
           // Converts format of data url to cell style value for use in vertex
           var semi = data.indexOf(';');
           
@@ -291,7 +328,7 @@ function handleDrop(instance, graph, file, x, y)
           }
 
           var style = 'shape=image;image=' + data + ';';
-          insertVertex(instance, x, y, w, h, style);
+          insertNewVertex(instance, x, y, w, h, style);
         };
 
         img.src = data;
