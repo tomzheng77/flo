@@ -106,12 +106,12 @@ function mxInterfaceInit(container) {
     instance.editorUi.toggleFormatPanel();
     instance.editorUi.instance = instance;
     instance.editorUi.handleDropFile = handleDropFile;
+    instance.editorUi.setPageVisible(false);
     instance.editor.graph.setGridEnabled(false);
-    instance.editor.graph.pageVisible = false;
     instance.editor.graph.background = '#FFFFFF';
     instance.editor.graph.connectionArrowsEnabled = false;
     instance.editor.graph.connectionHandler.setEnabled(false);
-    instance.editor.graph.guidesEnabled = false;
+    instance.editor.graph.graphHandler.guidesEnabled = false;
     editorPromiseResolve(instance.editor);
     editorUiPromiseResolve(instance.editorUi);
     instance.contentRaw = null;
