@@ -77,7 +77,7 @@ function mxInterfaceInit(container) {
           
           for (var i = 0; i < filesArray.length; i++)
           {
-            handleDrop(instance, graph, filesArray[i], x + i * 10, y + i * 10);
+            handleDropFile(instance, graph, filesArray[i], x + i * 10, y + i * 10);
           }
         }
       });
@@ -104,6 +104,8 @@ function mxInterfaceInit(container) {
     instance.editor = new Editor(urlParams['chrome'] == '0', themes);
     instance.editorUi = new EditorUi(instance.editor, container);
     instance.editorUi.toggleFormatPanel();
+    instance.editorUi.instance = instance;
+    instance.editorUi.handleDropFile = handleDropFile;
     instance.editor.graph.setGridEnabled(false);
     instance.editor.graph.pageVisible = false;
     instance.editor.graph.background = '#FFFFFF';
@@ -113,6 +115,27 @@ function mxInterfaceInit(container) {
     editorPromiseResolve(instance.editor);
     editorUiPromiseResolve(instance.editorUi);
     instance.contentRaw = null;
+
+    // HACK(flo): record last known location of cursor in graph
+    var ui = instance.editorUi;
+    var graph = instance.editor.graph;
+    ui.lastCursorX = 0;
+    ui.lastCursorY = 0;
+    mxEvent.addListener(graph.container, 'mousemove', function(evt)
+    {
+      if (graph.isEnabled())
+      {
+        // Gets drop location point for vertex
+        var pt = mxUtils.convertPoint(graph.container, mxEvent.getClientX(evt), mxEvent.getClientY(evt));
+        var tr = graph.view.translate;
+        var scale = graph.view.scale;
+        var x = pt.x / scale - tr.x;
+        var y = pt.y / scale - tr.y;
+
+        ui.lastCursorX = x;
+        ui.lastCursorY = y;
+      }
+    });
   }, function()
   {
     container.innerHTML = '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
@@ -271,7 +294,7 @@ function insertNewVertex(instance, x, y, w, h, style) {
 
 // Handles each file as a separate insert for simplicity.
 // Use barrier to handle multiple files as a single insert.
-function handleDrop(instance, graph, file, x, y)
+function handleDropFile(instance, graph, file, x, y)
 {
   if (file.type.substring(0, 5) == 'image')
   {

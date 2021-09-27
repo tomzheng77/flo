@@ -91,13 +91,25 @@ Actions.prototype.init = function()
 			ui.handleError(e);
 		}
 	}, null, 'sprite-copy', Editor.ctrlKey + '+C');
-	this.addAction('paste', function()
+
+	this.addAction('paste', async function()
 	{
-		if (graph.isEnabled() && !graph.isCellLocked(graph.getDefaultParent()))
-		{
-			mxClipboard.paste(graph);
-		}
-	}, false, 'sprite-paste', Editor.ctrlKey + '+V');
+    // HACK(flo): paste BLOBs from the clipboard as if dropping files
+    var clipboardItems = await navigator.clipboard.read();
+    var iter = 0;
+    for (const clipboardItem of clipboardItems) {
+      for (const type of clipboardItem.types) {
+        const blob = await clipboardItem.getType(type);
+        ui.handleDropFile(ui.instance, graph, blob, ui.lastCursorX + iter * 10, ui.lastCursorY + iter * 10);
+        iter++;
+      }
+    }
+    if (graph.isEnabled() && !graph.isCellLocked(graph.getDefaultParent()))
+    {
+      mxClipboard.paste(graph);
+    }
+	}, true, 'sprite-paste', Editor.ctrlKey + '+V');
+
 	this.addAction('pasteHere', function(evt)
 	{
 		if (graph.isEnabled() && !graph.isCellLocked(graph.getDefaultParent()))

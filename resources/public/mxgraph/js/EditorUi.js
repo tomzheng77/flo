@@ -1595,6 +1595,9 @@ EditorUi.prototype.updatePasteActionStates = function()
 	paste.setEnabled(this.editor.graph.cellEditor.isContentEditing() || (!mxClipboard.isEmpty() &&
 		graph.isEnabled() && !graph.isCellLocked(graph.getDefaultParent())));
 	pasteHere.setEnabled(paste.isEnabled());
+
+  // HACK(flo): always enable paste, to allow pasting from clipboard
+  paste.setEnabled(true);
 };
 
 /**
