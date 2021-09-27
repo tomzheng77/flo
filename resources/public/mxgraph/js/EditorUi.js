@@ -4570,6 +4570,9 @@ EditorUi.prototype.createKeyHandler = function(editor)
 	var isEventIgnored = keyHandler.isEventIgnored;
 	keyHandler.isEventIgnored = function(evt)
 	{
+		// HACK(flo): ignore the ctrl+p combo
+		if (evt.keyCode == 17 || evt.keyCode == 80) return true;
+
 		// Handles undo/redo/ctrl+./,/u via action and allows ctrl+b/i
 		// only if editing value is HTML (except for FF and Safari)
 		return !(mxEvent.isShiftDown(evt) && evt.keyCode == 9) &&
