@@ -103,6 +103,13 @@ function mxInterfaceInit(container) {
     // Main
     instance.editor = new Editor(urlParams['chrome'] == '0', themes);
     instance.editorUi = new EditorUi(instance.editor, container);
+    instance.editorUi.toggleFormatPanel();
+    instance.editor.graph.setGridEnabled(false);
+    instance.editor.graph.pageVisible = false;
+    instance.editor.graph.background = '#FFFFFF';
+    instance.editor.graph.connectionArrowsEnabled = false;
+    instance.editor.graph.connectionHandler.setEnabled(false);
+    instance.editor.graph.guidesEnabled = false;
     editorPromiseResolve(instance.editor);
     editorUiPromiseResolve(instance.editorUi);
     instance.contentRaw = null;
@@ -191,13 +198,14 @@ async function mxInterfaceSetContent(instance, content) {
     console.log(e);
     console.log(json);
   }
-  if (json == null || json.format_version != 0) {
-    return;
-  }
 
   var editor = await instance.editorPromise;
   var graph = editor.graph;
   graph.removeCells(graph.getChildVertices(graph.getDefaultParent()));
+
+  if (json == null || json.format_version != 0) {
+    return;
+  }
 
   var thisContentUUID = uuidv4();
   instance.notInGraph = {};  
@@ -226,7 +234,15 @@ async function mxInterfaceSetContent(instance, content) {
       }
     });
   });
+
+  var editorUi = await instance.editorUiPromise;
+  editorUi.resizeHandler();
 };
+
+async function mxInterfaceFocus(instance) {
+  var editorUi = await instance.editorUiPromise;
+  editorUi.resizeHandler();
+}
 
 // main difference from graph.insertVertex is that this assumes
 // the style of the vertex is new and will upload it
@@ -257,7 +273,6 @@ function insertNewVertex(instance, x, y, w, h, style) {
 // Use barrier to handle multiple files as a single insert.
 function handleDrop(instance, graph, file, x, y)
 {
-  console.log('drop');
   if (file.type.substring(0, 5) == 'image')
   {
     var reader = new FileReader();

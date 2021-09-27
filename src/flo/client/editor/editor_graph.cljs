@@ -46,7 +46,7 @@
   ([this {:keys [content]} open-opts] (set-content this content)))
 
 ; OPTIONAL, for better user experience
-(defn focus [this])
+(defn focus [this] (js/mxInterfaceFocus @(:graph-editor this)))
 (defn on-press-key [this event])
 (defn on-release-key [this event])
 (defn on-window-blur [this event])

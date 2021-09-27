@@ -3610,6 +3610,10 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 	}
 	
 	var effHsplitPosition = Math.max(0, Math.min(this.hsplitPosition, w - this.splitSize - 20));
+
+	// HACK(flo): don't show the left side menu
+	effHsplitPosition = 0;
+
 	var tmp = 0;
 	
 	if (this.menubar != null)
