@@ -19,7 +19,7 @@
                 :enableLiveAutocompletion false
                 :enableSnippets false
                 :enableLinking true
-                :tabSize 4
+                :tabSize 2
                 :useSoftTabs true
                 :enableClickables true
                 :enableColors true
