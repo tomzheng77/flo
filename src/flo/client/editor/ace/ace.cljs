@@ -106,7 +106,7 @@
         session
         (:start-row range)
         (:end-row range)
-        "    "))))
+        (clojure.string/join (repeat (.getTabSize session) " "))))))
 
 (defn show-clickables [this]
   (let [$clickable-layer (.-clickableLayer this)]
