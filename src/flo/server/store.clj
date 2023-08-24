@@ -48,7 +48,6 @@
     (locking started-dbs
       (when (not (@started-dbs db-name))
         (swap! started-dbs #(conj % db-name))
-        (println db-uri)
         (when (d/create-database db-uri)
           ; the database has just been created
           ; initialize the schema
