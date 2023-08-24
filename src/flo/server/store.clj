@@ -42,12 +42,13 @@
 (def started-dbs (atom #{})) ; set of names of databases that have been started
 (defn get-conn []
   (let [db-name @global/db-name
-        db-uri (str "datomic:dev://database:4334/" db-name)]
+        db-uri (str "datomic:dev://database:4334/" db-name "?user=datomic&password=peer-pwd")] ; HACK(tom): wire up to database docker
     ; when this function is called for the first time
     ; check if the database has been created
     (locking started-dbs
       (when (not (@started-dbs db-name))
         (swap! started-dbs #(conj % db-name))
+        (println db-uri)
         (when (d/create-database db-uri)
           ; the database has just been created
           ; initialize the schema

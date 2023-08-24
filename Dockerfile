@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:17
 COPY target/flo.jar /flo/flo.jar
 WORKDIR /rundir
 EXPOSE 5432
