@@ -1,6 +1,7 @@
 FROM openjdk:11
-WORKDIR /
-COPY datomic-pro-1.0.6735 ./
+# FROM clojure
+COPY datomic-pro-1.0.6735 /datomic
+WORKDIR /datomic
 EXPOSE 4334
-CMD ["datomic-pro-1.0.6735/bin/transactor", "-Xmx8G", "dev-transactor-template.properties"]
+CMD ["bin/transactor", "-Xmx8G", "dev-transactor-template.properties"]
 
