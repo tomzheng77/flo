@@ -1,0 +1,12 @@
+services:
+  database:
+    image: tomzheng77/flo-database:1.0
+    volumes:
+      - ./database:/datomic/data
+  server:
+    image: tomzheng77/flo-server:1.0
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./server:/rundir
+

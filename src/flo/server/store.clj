@@ -42,7 +42,7 @@
 (def started-dbs (atom #{})) ; set of names of databases that have been started
 (defn get-conn []
   (let [db-name @global/db-name
-        db-uri (str "datomic:dev://localhost:4334/" db-name)]
+        db-uri (str "datomic:dev://database:4334/" db-name)]
     ; when this function is called for the first time
     ; check if the database has been created
     (locking started-dbs
