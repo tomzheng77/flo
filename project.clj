@@ -45,7 +45,7 @@
                  [digest "1.4.10"]
 
                  ; requires /flo/datomic/bin/maven-install
-                 [com.datomic/datomic-pro "0.9.5786"]]
+                 [com.datomic/peer "1.0.6735"]]
 
   :plugins [[lein-figwheel "0.5.19"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
