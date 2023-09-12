@@ -1,6 +1,6 @@
 # flo
 
-Notes app with time travel, lets you see what you were working on a day, month or even a year ago!
+Markdown notes app with time travel, lets you see what you were working on a day, month or even a year ago!
 
 https://github.com/tomzheng77/flo/assets/16983027/07b60df5-e0bc-4eb3-abde-200d6bdd2c8d
 
