@@ -6,7 +6,7 @@ services:
   server:
     image: tomzheng77/flo-server:1.0
     ports:
-      - "3451:3451"
+      - "3452:3451"
     volumes:
       - ./server:/rundir
 
